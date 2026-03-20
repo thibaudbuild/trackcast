@@ -118,47 +118,120 @@ pub async fn restart_unbox_for_software(software: String) {
     // (port conflict would cause the new instance to silently fail)
     let port_in_use = tokio::net::TcpStream::connect("127.0.0.1:8080").await.is_ok();
     if port_in_use {
-        println!("[TrackCast] Port 8080 already in use — killing existing Unbox instance");
-        let _ = tokio::process::Command::new("pkill")
-            .arg("-f")
-            .arg("unbox-aarch64-apple-darwin")
+        println!("[TrackCast] Port 8080 already in use — killing listener PID(s) on :8080");
+
+        let pids_out = tokio::process::Command::new("lsof")
+            .arg("-tiTCP:8080")
+            .arg("-sTCP:LISTEN")
             .output()
             .await;
-        let _ = tokio::process::Command::new("pkill")
-            .arg("-f")
-            .arg("unbox-x86_64-apple-darwin")
-            .output()
-            .await;
-        // Wait for port to be released
-        sleep(Duration::from_millis(500)).await;
+
+        match pids_out {
+            Ok(out) => {
+                let txt = String::from_utf8_lossy(&out.stdout);
+                let pids: Vec<String> = txt
+                    .lines()
+                    .map(|l| l.trim().to_string())
+                    .filter(|l| !l.is_empty())
+                    .collect();
+                if pids.is_empty() {
+                    println!("[TrackCast][kill] No LISTEN PID found by lsof");
+                } else {
+                    for pid in &pids {
+                        match tokio::process::Command::new("kill")
+                            .arg("-TERM")
+                            .arg(pid)
+                            .output()
+                            .await
+                        {
+                            Ok(k) => {
+                                if k.status.success() {
+                                    println!("[TrackCast][kill] TERM sent to PID {}", pid);
+                                } else {
+                                    println!(
+                                        "[TrackCast][kill] TERM failed for PID {}: {}",
+                                        pid,
+                                        String::from_utf8_lossy(&k.stderr)
+                                    );
+                                }
+                            }
+                            Err(e) => println!("[TrackCast][kill] TERM exec failed for PID {}: {}", pid, e),
+                        }
+                    }
+                    sleep(Duration::from_millis(700)).await;
+
+                    // Escalate if still listening
+                    let still_in_use = tokio::net::TcpStream::connect("127.0.0.1:8080").await.is_ok();
+                    if still_in_use {
+                        for pid in &pids {
+                            match tokio::process::Command::new("kill")
+                                .arg("-KILL")
+                                .arg(pid)
+                                .output()
+                                .await
+                            {
+                                Ok(k) => {
+                                    if k.status.success() {
+                                        println!("[TrackCast][kill] KILL sent to PID {}", pid);
+                                    } else {
+                                        println!(
+                                            "[TrackCast][kill] KILL failed for PID {}: {}",
+                                            pid,
+                                            String::from_utf8_lossy(&k.stderr)
+                                        );
+                                    }
+                                }
+                                Err(e) => println!("[TrackCast][kill] KILL exec failed for PID {}: {}", pid, e),
+                            }
+                        }
+                        sleep(Duration::from_millis(300)).await;
+                    }
+                }
+            }
+            Err(e) => {
+                println!("[TrackCast][kill] Failed to query PID on :8080 via lsof: {}", e);
+            }
+        }
     }
 
     // Use `expect` (/usr/bin/expect, pre-installed on macOS) to run Unbox in a hidden PTY.
     // `expect` allocates a pseudo-terminal so Unbox thinks it has a real TTY,
     // but no Terminal window ever opens — fully invisible to the user.
     //
-    // Instead of a fixed delay, we use expect's pattern matching:
-    // we wait until "Rekordbox" actually appears in Unbox's TUI output (= menu is ready),
-    // then send keystrokes. This works regardless of how long setup took or how slow the Mac is.
+    // Keep the launcher deterministic: wait for the TUI to initialize, then send keys.
+    // Relying on exact menu text matching is brittle because ANSI rendering can vary.
     let mut script = String::from("log_user 0\n");
-    script.push_str("set timeout 15\n"); // abort if Unbox doesn't show menu within 15s
+    script.push_str("set timeout 20\n");
     script.push_str(&format!("spawn {}\n", binary_path.display()));
-    // Wait for the first menu item to appear — guarantees the TUI is ready
-    script.push_str("expect \"Rekordbox\"\n");
-    script.push_str("after 100\n"); // tiny settle pause after render
+    script.push_str("expect -re \"Select DJ Software|Press h for help\"\n");
+    script.push_str("after 150\n");
     for _ in 0..menu_index {
         // ESC [ B = down arrow in ANSI escape sequences
         // \[ must be escaped in Tcl double-quoted strings to avoid command substitution
-        script.push_str("send \"\\033\\[B\"\nafter 80\n");
+        script.push_str("send \"\\033\\[B\"\nafter 120\n");
     }
-    script.push_str("send \"\\r\"\nwait\n");
+    script.push_str("send \"\\r\"\n");
+    script.push_str("set timeout 8\n");
+    script.push_str("expect {\n");
+    script.push_str("  -re \"monitoring started|Integration URLs\" {}\n");
+    script.push_str("  timeout {\n");
+    script.push_str("    send \" \"\n");
+    script.push_str("    set timeout 5\n");
+    script.push_str("    expect {\n");
+    script.push_str("      -re \"monitoring started|Integration URLs\" {}\n");
+    script.push_str("      timeout { puts stderr {[TrackCast][expect] monitoring start not confirmed} }\n");
+    script.push_str("    }\n");
+    script.push_str("  }\n");
+    script.push_str("}\n");
+    script.push_str("set timeout -1\n");
+    script.push_str("wait\n");
 
     match tokio::process::Command::new("/usr/bin/expect")
         .arg("-c")
         .arg(&script)
         .stdin(std::process::Stdio::null())
-        .stdout(std::process::Stdio::null())
-        .stderr(std::process::Stdio::null())
+        .stdout(std::process::Stdio::inherit())
+        .stderr(std::process::Stdio::inherit())
         .spawn()
     {
         Ok(_child) => {
@@ -166,6 +239,27 @@ pub async fn restart_unbox_for_software(software: String) {
         }
         Err(e) => {
             println!("[TrackCast] Failed to launch Unbox via expect: {}", e);
+        }
+    }
+
+    // Debug: show which process is actually listening on 8080
+    match tokio::process::Command::new("lsof")
+        .arg("-nP")
+        .arg("-iTCP:8080")
+        .arg("-sTCP:LISTEN")
+        .output()
+        .await
+    {
+        Ok(out) => {
+            let txt = String::from_utf8_lossy(&out.stdout);
+            if txt.trim().is_empty() {
+                println!("[TrackCast][debug] no LISTEN process on 8080 right after launch");
+            } else {
+                println!("[TrackCast][debug] 8080 listener:\\n{}", txt);
+            }
+        }
+        Err(e) => {
+            println!("[TrackCast][debug] lsof failed: {}", e);
         }
     }
 }
@@ -190,12 +284,27 @@ async fn connect_to_unbox(
     while let Some(msg) = read.next().await {
         match msg {
             Ok(tokio_tungstenite::tungstenite::Message::Text(text)) => {
+                let preview: String = text.chars().take(180).collect();
+                println!(
+                    "[TrackCast][ws] text message received ({} chars): {}",
+                    text.len(),
+                    preview
+                );
                 match serde_json::from_str::<TrackInfo>(&text) {
-                    Ok(track) => handle_track_change(app_handle, state, track).await,
+                    Ok(track) => {
+                        println!(
+                            "[TrackCast][ws] parsed track artist='{}' title='{}'",
+                            track.artist.clone().unwrap_or_default(),
+                            track.title.clone().unwrap_or_default()
+                        );
+                        handle_track_change(app_handle, state, track).await
+                    }
                     Err(e) => println!("[TrackCast] JSON parse error: {} — raw: {}", e, text),
                 }
             }
-            Ok(_) => {} // Ignore non-text messages
+            Ok(other) => {
+                println!("[TrackCast][ws] non-text message received: {:?}", other);
+            }
             Err(e) => {
                 println!("[TrackCast] WebSocket read error: {}", e);
                 break;
@@ -215,14 +324,25 @@ async fn handle_track_change(
 
     // Skip empty tracks
     if track.is_empty() {
+        println!("[TrackCast][track] skipped: empty artist/title");
         return;
     }
 
     let mut s = state.lock().await;
+    println!(
+        "[TrackCast][track] incoming='{}' tracking={} unbox_connected={}",
+        track.display_name(),
+        s.is_tracking,
+        s.unbox_connected
+    );
 
     // Anti-duplicate: if same as current track (normalized), update display but skip log
     if let Some(ref current) = s.current_track {
         if track.is_same_as(current) {
+            println!(
+                "[TrackCast][track] skipped duplicate current='{}'",
+                current.display_name()
+            );
             return;
         }
     }
@@ -230,9 +350,11 @@ async fn handle_track_change(
     // New track — update display
     s.current_track = Some(track.clone());
     let _ = app_handle.emit("track-changed", &track);
+    println!("[TrackCast][track] emitted track-changed");
 
     // If not tracking, nothing more to do
     if !s.is_tracking {
+        println!("[TrackCast][track] tracking=false, skipping history/telegram");
         return;
     }
 
@@ -247,6 +369,7 @@ async fn handle_track_change(
 
     if let Some(ref mut set) = s.current_set {
         set.tracks.push(entry);
+        println!("[TrackCast][track] appended to history ({} tracks)", set.tracks.len());
     }
 
     let logged_ms = received_at.elapsed().as_millis();
@@ -272,6 +395,7 @@ async fn handle_track_change(
         drop(s);
         tokio::spawn(async move {
             let send_started = Instant::now();
+            println!("[TrackCast][telegram] sending '{}'", display);
             match telegram::send_message(&token, &chat_id, &message).await {
                 Ok(_) => {
                     println!(
@@ -287,6 +411,11 @@ async fn handle_track_change(
             }
         });
     } else {
+        println!(
+            "[TrackCast][telegram] skipped send (token/chat_id missing) token_set={} chat_set={}",
+            !token.is_empty(),
+            !chat_id.is_empty()
+        );
         drop(s);
     }
 }

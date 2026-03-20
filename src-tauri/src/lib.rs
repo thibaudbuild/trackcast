@@ -16,7 +16,6 @@ async fn start_tracking(
     let (
         already_tracking,
         should_start_listener,
-        should_restart_unbox,
         dj_software,
         current_track_snapshot,
         session_config_snapshot,
@@ -26,7 +25,6 @@ async fn start_tracking(
         if already_tracking {
             (
                 already_tracking,
-                false,
                 false,
                 String::new(),
                 None,
@@ -44,11 +42,9 @@ async fn start_tracking(
             if should_start_listener {
                 s.unbox_listener_started = true;
             }
-            let should_restart_unbox = !s.unbox_connected;
             (
                 already_tracking,
                 should_start_listener,
-                should_restart_unbox,
                 snapshot.dj_software.clone(),
                 s.current_track.clone(),
                 snapshot,
@@ -59,10 +55,8 @@ async fn start_tracking(
         return Ok("Already tracking".to_string());
     }
 
-    // Relaunch Unbox for this session only if no active connection is ready.
-    if should_restart_unbox {
-        unbox::restart_unbox_for_software(dj_software).await;
-    }
+    // Always relaunch Unbox at Start to guarantee the selected software is applied.
+    unbox::restart_unbox_for_software(dj_software).await;
 
     // Launch Unbox + WebSocket listener only once for app lifetime.
     // (prevents duplicate listeners across multiple Start/Stop cycles)
