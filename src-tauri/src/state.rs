@@ -19,6 +19,9 @@ pub struct UserConfig {
     pub message_template: String,  // e.g. "🎵 {set_name} · {artist} — {title}"
     pub show_bpm: bool,
     pub show_key: bool,
+    pub session_messages_enabled: bool,
+    pub session_start_template: String,
+    pub session_end_template: String,
 }
 
 impl Default for UserConfig {
@@ -35,6 +38,9 @@ impl Default for UserConfig {
             message_template: "🎵 {artist} — {title}".to_string(),
             show_bpm: true,
             show_key: false,
+            session_messages_enabled: false,
+            session_start_template: "is starting to play {set_name}".to_string(),
+            session_end_template: "just finished playing {set_name}".to_string(),
         }
     }
 }
@@ -42,6 +48,7 @@ impl Default for UserConfig {
 pub struct AppState {
     pub is_tracking: bool,
     pub current_track: Option<TrackInfo>,
+    pub skip_first_track_after_start: bool,
     pub current_set: Option<DjSet>,
     pub unbox_connected: bool,
     pub unbox_listener_started: bool,

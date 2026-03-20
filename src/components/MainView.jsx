@@ -33,22 +33,12 @@ export default function MainView({
   const [software, setSoftware]       = useState(config.dj_software || "");
   const [softwareLocked, setSoftwareLocked] = useState(!!config.dj_software);
   const [initDone, setInitDone]       = useState(!!config.dj_software);
-  const [token, setToken]             = useState(config.telegram_token || "");
-  const [tokenValid, setTokenValid]   = useState(!!config.telegram_token);
-  const [chatId, setChatId]           = useState(config.telegram_chat_id || "");
-  const [chatIdValid, setChatIdValid] = useState(!!config.telegram_chat_id);
-  const [testing, setTesting]         = useState(false);
-  const [tokenError, setTokenError]   = useState("");
   const [retryingConnection, setRetryingConnection] = useState(false);
 
   useEffect(() => {
     setSoftware(config.dj_software || "");
     setSoftwareLocked(!!config.dj_software);
     setInitDone(!!config.dj_software);
-    setToken(config.telegram_token || "");
-    setTokenValid(!!config.telegram_token);
-    setChatId(config.telegram_chat_id || "");
-    setChatIdValid(!!config.telegram_chat_id);
   }, [config]);
 
   const selectedSw = DJ_OPTIONS.find((d) => d.value === software);
@@ -57,22 +47,16 @@ export default function MainView({
     DJ_OPTIONS.find((d) => d.value === config.dj_software)?.label ||
     "DJ software";
   const softwareReadOnly = isTracking || softwareLocked;
-  const isReady = softwareLocked && initDone && tokenValid && chatIdValid;
-
-  // Step visibility
-  const showToken   = initDone;
-  const showChatId  = tokenValid;
+  const isReady = softwareLocked && initDone;
 
   const handleSoftwareChange = (e) => {
     if (isTracking) return;
     setSoftware(e.target.value);
     setSoftwareLocked(false);
     setInitDone(false);
-    setTokenValid(false);
-    setChatIdValid(false);
   };
 
-  const handleSoftwareLock = () => {
+  const handleSoftwareLock = async () => {
     if (isTracking) return;
     if (!software) return;
     setSoftwareLocked(true);
@@ -80,27 +64,7 @@ export default function MainView({
     if (sw && !sw.needsInit) {
       setInitDone(true); // auto-skip init for non-Traktor
     }
-  };
-
-  const handleTestToken = async () => {
-    if (!token) return;
-    setTesting(true);
-    setTokenError("");
-    try {
-      await invoke("verify_token", { token });
-      setTokenValid(true);
-      await onConfigChange({ ...config, telegram_token: token });
-    } catch (e) {
-      setTokenValid(false);
-      setTokenError("Invalid token — check your bot token and try again");
-    }
-    setTesting(false);
-  };
-
-  const handleChatIdConfirm = async () => {
-    if (!chatId) return;
-    setChatIdValid(true);
-    await onConfigChange({ ...config, telegram_chat_id: chatId });
+    await onConfigChange({ ...config, dj_software: software });
   };
 
   const handleRetryConnection = async () => {
@@ -193,96 +157,18 @@ export default function MainView({
         )}
       </div>
 
-      {/* ── Row 02: Telegram token ────────────── */}
-      {showToken && (
-        <div className={`row ${tokenValid ? "done" : "active"} ${!showToken ? "locked" : ""}`}>
-          <div className="row-label">
-            <span className="row-num">02</span>
-            Telegram Bot Token
-            <div className={`row-status ${tokenValid ? "on" : ""}`} />
-          </div>
-          {tokenValid ? (
-            <div className="select-locked">
-              <span className="select-check">✓</span>
-              <span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--text-mid)" }}>
-                {token.slice(0, 14)}···
-              </span>
-            </div>
-          ) : (
-            <div className="input-col">
-              <div className="input-row">
-                <input
-                  className={`tc-input ${tokenError ? "error" : ""}`}
-                  type="text"
-                  value={token}
-                  onChange={(e) => { setToken(e.target.value); setTokenError(""); }}
-                  placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
-                  spellCheck={false}
-                />
-                <button
-                  className="inline-btn"
-                  onClick={handleTestToken}
-                  disabled={!token || testing}
-                >
-                  {testing ? "···" : "verify"}
-                </button>
-              </div>
-              {tokenError && <div className="input-error">{tokenError}</div>}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Row 03: Chat ID ───────────────────── */}
-      {showChatId && (
-        <div className={`row ${chatIdValid ? "done" : "active"}`}>
-          <div className="row-label">
-            <span className="row-num">03</span>
-            Channel / Group ID
-            <div className={`row-status ${chatIdValid ? "on" : ""}`} />
-          </div>
-          {chatIdValid ? (
-            <div className="select-locked">
-              <span className="select-check">✓</span>
-              <span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--text-mid)" }}>
-                {chatId}
-              </span>
-            </div>
-          ) : (
-            <div className="input-row">
-              <input
-                className={`tc-input ${chatIdValid ? "valid" : ""}`}
-                type="text"
-                value={chatId}
-                onChange={(e) => setChatId(e.target.value)}
-                placeholder="@yourchannel or -1001234567890"
-                spellCheck={false}
-                onKeyDown={(e) => e.key === "Enter" && handleChatIdConfirm()}
-              />
-              <button
-                className="inline-btn"
-                onClick={handleChatIdConfirm}
-                disabled={!chatId}
-              >
-                confirm
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Row 04: Connection status ───────────────────── */}
-      {showChatId && (
+      {/* ── Row 02: Receiver status ───────────────────── */}
+      {softwareLocked && (
         <div className={`row ${unboxConnected ? "done" : "active"}`}>
           <div className="row-label">
-            <span className="row-num">04</span>
-            Broadcast connection
+            <span className="row-num">02</span>
+            Track Receiver
             <div className={`row-status ${unboxConnected ? "on" : ""}`} />
           </div>
           <div className="input-row">
             <div className="select-locked" style={{ flex: 1 }}>
               <span className="select-check">{unboxConnected ? "✓" : "·"}</span>
-              <span>{unboxConnected ? "Connected" : "Not connected"}</span>
+              <span>{unboxConnected ? "Ready" : "Not ready"}</span>
             </div>
             {!unboxConnected && (
               <button

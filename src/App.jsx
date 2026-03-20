@@ -39,6 +39,9 @@ export default function App() {
           message_template: "🎵 {artist} — {title}",
           show_bpm: true,
           show_key: false,
+          session_messages_enabled: false,
+          session_start_template: "is starting to play {set_name}",
+          session_end_template: "just finished playing {set_name}",
         })
       );
   }, []);

@@ -8,6 +8,11 @@ use std::sync::Arc;
 use tauri::{Emitter, Manager};
 use tokio::sync::Mutex;
 
+fn build_session_message(template: &str, set_name: &str) -> String {
+    template
+        .replace("{set_name}", set_name)
+}
+
 #[tauri::command]
 async fn start_tracking(
     app_handle: tauri::AppHandle,
@@ -17,7 +22,6 @@ async fn start_tracking(
         already_tracking,
         should_start_listener,
         dj_software,
-        current_track_snapshot,
         session_config_snapshot,
     ) = {
         let mut s = state.lock().await;
@@ -27,7 +31,6 @@ async fn start_tracking(
                 already_tracking,
                 false,
                 String::new(),
-                None,
                 s.config.clone(),
             )
         } else {
@@ -36,6 +39,8 @@ async fn start_tracking(
                 return Err("DJ software is not configured".to_string());
             }
             s.is_tracking = true;
+            s.current_track = None;
+            s.skip_first_track_after_start = true;
             s.current_set = Some(history::DjSet::new());
             s.session_config = Some(snapshot.clone());
             let should_start_listener = !s.unbox_listener_started;
@@ -46,7 +51,6 @@ async fn start_tracking(
                 already_tracking,
                 should_start_listener,
                 snapshot.dj_software.clone(),
-                s.current_track.clone(),
                 snapshot,
             )
         }
@@ -58,6 +62,30 @@ async fn start_tracking(
     // Always relaunch Unbox at Start to guarantee the selected software is applied.
     unbox::restart_unbox_for_software(dj_software).await;
 
+    // Optional start message (session snapshot, immutable during the run)
+    if session_config_snapshot.session_messages_enabled
+        && !session_config_snapshot.telegram_token.is_empty()
+        && !session_config_snapshot.telegram_chat_id.is_empty()
+        && !session_config_snapshot.set_name.trim().is_empty()
+    {
+        let token = session_config_snapshot.telegram_token.clone();
+        let chat_id = session_config_snapshot.telegram_chat_id.clone();
+        let set_name = session_config_snapshot.set_name.trim().to_string();
+        let template = session_config_snapshot.session_start_template.clone();
+        let msg = build_session_message(&template, &set_name);
+        let app_handle_clone = app_handle.clone();
+        tauri::async_runtime::spawn(async move {
+            match telegram::send_message(&token, &chat_id, &msg).await {
+                Ok(_) => {
+                    let _ = app_handle_clone.emit("telegram-sent", "set-start");
+                }
+                Err(e) => {
+                    let _ = app_handle_clone.emit("telegram-error", &e.to_string());
+                }
+            }
+        });
+    }
+
     // Launch Unbox + WebSocket listener only once for app lifetime.
     // (prevents duplicate listeners across multiple Start/Stop cycles)
     if should_start_listener {
@@ -66,43 +94,6 @@ async fn start_tracking(
         tauri::async_runtime::spawn(async move {
             unbox::run_unbox_listener(app_handle_listener, state_clone).await;
         });
-    }
-
-    // If retry/prewarm already fetched a current track before Start,
-    // register it immediately in the set and send Telegram once at start.
-    if let Some(track) = current_track_snapshot {
-        if !track.is_empty() {
-            {
-                let mut s = state.lock().await;
-                if let Some(ref mut set) = s.current_set {
-                    set.tracks.push(history::HistoryEntry {
-                        time: chrono::Local::now().format("%H:%M").to_string(),
-                        artist: track.artist.clone().unwrap_or_default(),
-                        title: track.title.clone().unwrap_or_default(),
-                        bpm: track.bpm,
-                        key: track.key.clone(),
-                    });
-                }
-            }
-
-            let token = session_config_snapshot.telegram_token.clone();
-            let chat_id = session_config_snapshot.telegram_chat_id.clone();
-            if !token.is_empty() && !chat_id.is_empty() {
-                let message = unbox::build_message(&track, &session_config_snapshot);
-                let app_handle_clone = app_handle.clone();
-                let display = track.display_name();
-                tauri::async_runtime::spawn(async move {
-                    match telegram::send_message(&token, &chat_id, &message).await {
-                        Ok(_) => {
-                            let _ = app_handle_clone.emit("telegram-sent", &display);
-                        }
-                        Err(e) => {
-                            let _ = app_handle_clone.emit("telegram-error", &e.to_string());
-                        }
-                    }
-                });
-            }
-        }
     }
 
     // Auto-save every 2 minutes (crash protection)
@@ -129,7 +120,8 @@ async fn start_tracking(
 async fn stop_tracking(state: tauri::State<'_, Arc<Mutex<AppState>>>) -> Result<String, String> {
     let mut s = state.lock().await;
     s.is_tracking = false;
-    s.session_config = None;
+    s.skip_first_track_after_start = false;
+    let session_config_snapshot = s.session_config.clone();
 
     // Stamp end time and save
     if let Some(ref mut set) = s.current_set {
@@ -139,6 +131,23 @@ async fn stop_tracking(state: tauri::State<'_, Arc<Mutex<AppState>>>) -> Result<
         }
     }
 
+    if let Some(cfg) = session_config_snapshot {
+        if cfg.session_messages_enabled
+            && !cfg.telegram_token.is_empty()
+            && !cfg.telegram_chat_id.is_empty()
+            && !cfg.set_name.trim().is_empty()
+        {
+            let token = cfg.telegram_token.clone();
+            let chat_id = cfg.telegram_chat_id.clone();
+            let set_name = cfg.set_name.trim().to_string();
+            let msg = build_session_message(&cfg.session_end_template, &set_name);
+            tauri::async_runtime::spawn(async move {
+                let _ = telegram::send_message(&token, &chat_id, &msg).await;
+            });
+        }
+    }
+
+    s.session_config = None;
     Ok("Tracking stopped".to_string())
 }
 
@@ -286,6 +295,7 @@ pub fn run() {
             let app_state = Arc::new(Mutex::new(AppState {
                 is_tracking: false,
                 current_track: None,
+                skip_first_track_after_start: false,
                 current_set: None,
                 unbox_connected: false,
                 unbox_listener_started: false,

@@ -20,6 +20,8 @@ const TEMPLATE_PRESETS = [
   { label: "Minimal",       value: "{artist} — {title}" },
   { label: "Custom",        value: null },
 ];
+const DEFAULT_SESSION_START = "is starting to play {set_name}";
+const DEFAULT_SESSION_END = "just finished playing {set_name}";
 
 const telegramFingerprint = (token, chatId) =>
   `${(token || "").trim()}::${(chatId || "").trim()}`;
@@ -59,6 +61,15 @@ export default function Settings({ config, onSave, isTracking = false }) {
   );
   const [showBpm, setShowBpm]       = useState(config?.show_bpm ?? true);
   const [showKey, setShowKey]       = useState(config?.show_key ?? false);
+  const [sessionMessagesEnabled, setSessionMessagesEnabled] = useState(
+    config?.session_messages_enabled ?? false
+  );
+  const [sessionStartTemplate, setSessionStartTemplate] = useState(
+    config?.session_start_template || DEFAULT_SESSION_START
+  );
+  const [sessionEndTemplate, setSessionEndTemplate] = useState(
+    config?.session_end_template || DEFAULT_SESSION_END
+  );
 
   const activePreset = TEMPLATE_PRESETS.find((p) => p.value === template) || TEMPLATE_PRESETS[3];
   const tokenChatChanged = token !== initialToken || chatId !== initialChatId;
@@ -71,8 +82,14 @@ export default function Settings({ config, onSave, isTracking = false }) {
     setName !== (config?.set_name || "") ||
     template !== (config?.message_template || "🎵 {artist} — {title}") ||
     showBpm !== (config?.show_bpm ?? true) ||
-    showKey !== (config?.show_key ?? false);
-  const canSave = tab === "connection" ? connectionSaveEnabled : displayChanged;
+    showKey !== (config?.show_key ?? false) ||
+    sessionMessagesEnabled !== (config?.session_messages_enabled ?? false) ||
+    sessionStartTemplate !== (config?.session_start_template || DEFAULT_SESSION_START) ||
+    sessionEndTemplate !== (config?.session_end_template || DEFAULT_SESSION_END);
+  const sessionMessagesInvalid = sessionMessagesEnabled && setName.trim() === "";
+  const canSave = tab === "connection"
+    ? connectionSaveEnabled
+    : (displayChanged && !sessionMessagesInvalid);
 
   const handleTest = async () => {
     setTesting(true);
@@ -104,6 +121,9 @@ export default function Settings({ config, onSave, isTracking = false }) {
       message_template: template,
       show_bpm: showBpm,
       show_key: showKey,
+      session_messages_enabled: sessionMessagesEnabled,
+      session_start_template: sessionStartTemplate,
+      session_end_template: sessionEndTemplate,
     });
   };
 
@@ -116,6 +136,10 @@ export default function Settings({ config, onSave, isTracking = false }) {
     .replace("{key}", "Am")
     + (showBpm && !template.includes("{bpm}") ? " [130 BPM" + (showKey ? " · Am" : "") + "]" : "")
     + (showKey && !showBpm && !template.includes("{key}") ? " [Am]" : "");
+  const sessionStartPreview = (sessionStartTemplate || DEFAULT_SESSION_START)
+    .replace("{set_name}", setName || "My Live Set");
+  const sessionEndPreview = (sessionEndTemplate || DEFAULT_SESSION_END)
+    .replace("{set_name}", setName || "My Live Set");
 
   return (
     <>
@@ -279,7 +303,7 @@ export default function Settings({ config, onSave, isTracking = false }) {
           <div className="row active">
             <div className="row-label">
               <span className="row-num">—</span>
-              Set / Event name
+              Set Name
             </div>
             <input
               className="tc-input"
@@ -293,16 +317,15 @@ export default function Settings({ config, onSave, isTracking = false }) {
             <span className="selectable-text" style={{
               fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-dim)"
             }}>
-              Optional — use <code style={{ color: "var(--amber)" }}>{"{set_name}"}</code> in template to display it
+              Shown in track and set messages
             </span>
           </div>
 
           <div className="row active">
             <div className="row-label">
               <span className="row-num">—</span>
-              Message template
+              Track Messages
             </div>
-            {/* Presets */}
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               {TEMPLATE_PRESETS.filter(p => p.value).map((p) => (
                 <button
@@ -323,20 +346,6 @@ export default function Settings({ config, onSave, isTracking = false }) {
               disabled={isTracking}
               spellCheck={false}
             />
-            <span className="selectable-text" style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-dim)" }}>
-              Placeholders: <code style={{ color: "var(--amber)" }}>{"{artist}"}</code>{" "}
-              <code style={{ color: "var(--amber)" }}>{"{title}"}</code>{" "}
-              <code style={{ color: "var(--amber)" }}>{"{set_name}"}</code>{" "}
-              <code style={{ color: "var(--amber)" }}>{"{bpm}"}</code>{" "}
-              <code style={{ color: "var(--amber)" }}>{"{key}"}</code>
-            </span>
-          </div>
-
-          <div className="row active">
-            <div className="row-label">
-              <span className="row-num">—</span>
-              Append to message
-            </div>
             <div style={{ display: "flex", gap: 8 }}>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                 <input
@@ -346,7 +355,7 @@ export default function Settings({ config, onSave, isTracking = false }) {
                   disabled={isTracking}
                   style={{ accentColor: "var(--amber)" }}
                 />
-                <span style={{ fontSize: 13 }}>BPM</span>
+                <span style={{ fontSize: 13 }}>Append BPM</span>
               </label>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                 <input
@@ -356,17 +365,16 @@ export default function Settings({ config, onSave, isTracking = false }) {
                   disabled={isTracking}
                   style={{ accentColor: "var(--amber)" }}
                 />
-                <span style={{ fontSize: 13 }}>Key</span>
+                <span style={{ fontSize: 13 }}>Append Key</span>
               </label>
             </div>
-          </div>
-
-          {/* Live preview */}
-          <div className="row active">
-            <div className="row-label">
-              <span className="row-num">—</span>
-              Preview
-            </div>
+            <span className="selectable-text" style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-dim)" }}>
+              Variables: <code style={{ color: "var(--amber)" }}>artist</code>{" "}
+              <code style={{ color: "var(--amber)" }}>title</code>{" "}
+              <code style={{ color: "var(--amber)" }}>set_name</code>{" "}
+              <code style={{ color: "var(--amber)" }}>bpm</code>{" "}
+              <code style={{ color: "var(--amber)" }}>key</code>
+            </span>
             <div style={{
               fontFamily: "var(--mono)",
               fontSize: 12,
@@ -378,6 +386,61 @@ export default function Settings({ config, onSave, isTracking = false }) {
               lineHeight: 1.6,
             }}>
               {preview}
+            </div>
+          </div>
+
+          <div className="row active">
+            <div className="row-label">
+              <span className="row-num">—</span>
+              Set Auto Messages
+            </div>
+            <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: isTracking ? "default" : "pointer" }}>
+              <input
+                type="checkbox"
+                checked={sessionMessagesEnabled}
+                onChange={(e) => setSessionMessagesEnabled(e.target.checked)}
+                disabled={isTracking}
+                style={{ accentColor: "var(--amber)" }}
+              />
+              <span style={{ fontSize: 13 }}>Send automatic start/end set messages</span>
+            </label>
+            {sessionMessagesInvalid && (
+              <div className="input-error">Set name is required when auto messages are enabled.</div>
+            )}
+            <input
+              className="tc-input"
+              type="text"
+              value={sessionStartTemplate}
+              onChange={(e) => setSessionStartTemplate(e.target.value)}
+              disabled={isTracking || !sessionMessagesEnabled}
+              spellCheck={false}
+              placeholder="is starting to play {set_name}"
+            />
+            <input
+              className="tc-input"
+              type="text"
+              value={sessionEndTemplate}
+              onChange={(e) => setSessionEndTemplate(e.target.value)}
+              disabled={isTracking || !sessionMessagesEnabled}
+              spellCheck={false}
+              placeholder="just finished playing {set_name}"
+            />
+            <span className="selectable-text" style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-dim)" }}>
+              Variable: <code style={{ color: "var(--amber)" }}>set_name</code>
+            </span>
+            <div style={{
+              fontFamily: "var(--mono)",
+              fontSize: 12,
+              color: "var(--white)",
+              background: "var(--bg-2)",
+              border: "1px solid var(--border-2)",
+              borderRadius: "var(--radius-sm)",
+              padding: "10px 12px",
+              lineHeight: 1.6,
+              opacity: sessionMessagesEnabled ? 1 : 0.5,
+            }}>
+              <div>{sessionStartPreview}</div>
+              <div style={{ marginTop: 6 }}>{sessionEndPreview}</div>
             </div>
           </div>
         </>

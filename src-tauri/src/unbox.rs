@@ -5,7 +5,6 @@ use chrono::Local;
 use futures_util::StreamExt;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use std::time::Instant;
 use tauri::Emitter;
 use tokio::sync::Mutex;
 use tokio::time::{sleep, Duration};
@@ -171,9 +170,7 @@ pub async fn restart_unbox_for_software(software: String) {
                                 .await
                             {
                                 Ok(k) => {
-                                    if k.status.success() {
-                                        println!("[TrackCast][kill] KILL sent to PID {}", pid);
-                                    } else {
+                                    if !k.status.success() {
                                         println!(
                                             "[TrackCast][kill] KILL failed for PID {}: {}",
                                             pid,
@@ -242,26 +239,6 @@ pub async fn restart_unbox_for_software(software: String) {
         }
     }
 
-    // Debug: show which process is actually listening on 8080
-    match tokio::process::Command::new("lsof")
-        .arg("-nP")
-        .arg("-iTCP:8080")
-        .arg("-sTCP:LISTEN")
-        .output()
-        .await
-    {
-        Ok(out) => {
-            let txt = String::from_utf8_lossy(&out.stdout);
-            if txt.trim().is_empty() {
-                println!("[TrackCast][debug] no LISTEN process on 8080 right after launch");
-            } else {
-                println!("[TrackCast][debug] 8080 listener:\\n{}", txt);
-            }
-        }
-        Err(e) => {
-            println!("[TrackCast][debug] lsof failed: {}", e);
-        }
-    }
 }
 
 async fn connect_to_unbox(
@@ -284,27 +261,12 @@ async fn connect_to_unbox(
     while let Some(msg) = read.next().await {
         match msg {
             Ok(tokio_tungstenite::tungstenite::Message::Text(text)) => {
-                let preview: String = text.chars().take(180).collect();
-                println!(
-                    "[TrackCast][ws] text message received ({} chars): {}",
-                    text.len(),
-                    preview
-                );
                 match serde_json::from_str::<TrackInfo>(&text) {
-                    Ok(track) => {
-                        println!(
-                            "[TrackCast][ws] parsed track artist='{}' title='{}'",
-                            track.artist.clone().unwrap_or_default(),
-                            track.title.clone().unwrap_or_default()
-                        );
-                        handle_track_change(app_handle, state, track).await
-                    }
+                    Ok(track) => handle_track_change(app_handle, state, track).await,
                     Err(e) => println!("[TrackCast] JSON parse error: {} — raw: {}", e, text),
                 }
             }
-            Ok(other) => {
-                println!("[TrackCast][ws] non-text message received: {:?}", other);
-            }
+            Ok(_) => {}
             Err(e) => {
                 println!("[TrackCast] WebSocket read error: {}", e);
                 break;
@@ -320,29 +282,23 @@ async fn handle_track_change(
     state: &Arc<Mutex<AppState>>,
     track: TrackInfo,
 ) {
-    let received_at = Instant::now();
-
     // Skip empty tracks
     if track.is_empty() {
-        println!("[TrackCast][track] skipped: empty artist/title");
         return;
     }
 
     let mut s = state.lock().await;
-    println!(
-        "[TrackCast][track] incoming='{}' tracking={} unbox_connected={}",
-        track.display_name(),
-        s.is_tracking,
-        s.unbox_connected
-    );
+
+    // Drop the stale snapshot sent right after Start.
+    // The first incoming track event after Start is ignored by design.
+    if s.is_tracking && s.skip_first_track_after_start {
+        s.skip_first_track_after_start = false;
+        return;
+    }
 
     // Anti-duplicate: if same as current track (normalized), update display but skip log
     if let Some(ref current) = s.current_track {
         if track.is_same_as(current) {
-            println!(
-                "[TrackCast][track] skipped duplicate current='{}'",
-                current.display_name()
-            );
             return;
         }
     }
@@ -350,11 +306,9 @@ async fn handle_track_change(
     // New track — update display
     s.current_track = Some(track.clone());
     let _ = app_handle.emit("track-changed", &track);
-    println!("[TrackCast][track] emitted track-changed");
 
     // If not tracking, nothing more to do
     if !s.is_tracking {
-        println!("[TrackCast][track] tracking=false, skipping history/telegram");
         return;
     }
 
@@ -369,15 +323,7 @@ async fn handle_track_change(
 
     if let Some(ref mut set) = s.current_set {
         set.tracks.push(entry);
-        println!("[TrackCast][track] appended to history ({} tracks)", set.tracks.len());
     }
-
-    let logged_ms = received_at.elapsed().as_millis();
-    println!(
-        "[TrackCast][latency] local_log={}ms track='{}'",
-        logged_ms,
-        track.display_name()
-    );
 
     // Send to Telegram with the immutable session snapshot (if available)
     let runtime_config = s
@@ -394,28 +340,17 @@ async fn handle_track_change(
         // Release lock before async call
         drop(s);
         tokio::spawn(async move {
-            let send_started = Instant::now();
-            println!("[TrackCast][telegram] sending '{}'", display);
             match telegram::send_message(&token, &chat_id, &message).await {
                 Ok(_) => {
-                    println!(
-                        "[TrackCast][latency] telegram_send={}ms track='{}'",
-                        send_started.elapsed().as_millis(),
-                        display
-                    );
                     let _ = app_handle_clone.emit("telegram-sent", &display);
                 }
                 Err(e) => {
+                    println!("[TrackCast] Telegram send error: {}", e);
                     let _ = app_handle_clone.emit("telegram-error", &e.to_string());
                 }
             }
         });
     } else {
-        println!(
-            "[TrackCast][telegram] skipped send (token/chat_id missing) token_set={} chat_set={}",
-            !token.is_empty(),
-            !chat_id.is_empty()
-        );
         drop(s);
     }
 }
