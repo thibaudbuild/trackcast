@@ -261,6 +261,7 @@ async fn connect_to_unbox(
     while let Some(msg) = read.next().await {
         match msg {
             Ok(tokio_tungstenite::tungstenite::Message::Text(text)) => {
+                println!("[TrackCast][ws] text received");
                 match serde_json::from_str::<TrackInfo>(&text) {
                     Ok(track) => handle_track_change(app_handle, state, track).await,
                     Err(e) => println!("[TrackCast] JSON parse error: {} — raw: {}", e, text),
@@ -284,21 +285,35 @@ async fn handle_track_change(
 ) {
     // Skip empty tracks
     if track.is_empty() {
+        println!("[TrackCast][track] skip empty");
         return;
     }
 
     let mut s = state.lock().await;
 
-    // Drop the stale snapshot sent right after Start.
-    // The first incoming track event after Start is ignored by design.
-    if s.is_tracking && s.skip_first_track_after_start {
-        s.skip_first_track_after_start = false;
-        return;
+    // Broadcast start gating:
+    // 1) first incoming event becomes a baseline (never logged/sent)
+    // 2) we start broadcasting only once a different track arrives.
+    if s.is_tracking && s.awaiting_first_live_change {
+        if let Some(ref baseline) = s.start_baseline_track {
+            if track.is_same_as(baseline) {
+                println!("[TrackCast][track] waiting first live change (same baseline)");
+                return;
+            }
+            s.awaiting_first_live_change = false;
+            s.start_baseline_track = None;
+            println!("[TrackCast][track] first live change detected");
+        } else {
+            s.start_baseline_track = Some(track.clone());
+            println!("[TrackCast][track] baseline captured at start");
+            return;
+        }
     }
 
     // Anti-duplicate: if same as current track (normalized), update display but skip log
     if let Some(ref current) = s.current_track {
         if track.is_same_as(current) {
+            println!("[TrackCast][track] skip duplicate current");
             return;
         }
     }
@@ -306,9 +321,11 @@ async fn handle_track_change(
     // New track — update display
     s.current_track = Some(track.clone());
     let _ = app_handle.emit("track-changed", &track);
+    println!("[TrackCast][track] emitted track-changed");
 
     // If not tracking, nothing more to do
     if !s.is_tracking {
+        println!("[TrackCast][track] not tracking");
         return;
     }
 
@@ -323,6 +340,7 @@ async fn handle_track_change(
 
     if let Some(ref mut set) = s.current_set {
         set.tracks.push(entry);
+        println!("[TrackCast][track] appended set count={}", set.tracks.len());
     }
 
     // Send to Telegram with the immutable session snapshot (if available)

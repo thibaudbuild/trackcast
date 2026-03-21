@@ -48,7 +48,8 @@ impl Default for UserConfig {
 pub struct AppState {
     pub is_tracking: bool,
     pub current_track: Option<TrackInfo>,
-    pub skip_first_track_after_start: bool,
+    pub awaiting_first_live_change: bool,
+    pub start_baseline_track: Option<TrackInfo>,
     pub current_set: Option<DjSet>,
     pub unbox_connected: bool,
     pub unbox_listener_started: bool,

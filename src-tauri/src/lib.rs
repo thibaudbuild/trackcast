@@ -40,7 +40,8 @@ async fn start_tracking(
             }
             s.is_tracking = true;
             s.current_track = None;
-            s.skip_first_track_after_start = true;
+            s.awaiting_first_live_change = true;
+            s.start_baseline_track = None;
             s.current_set = Some(history::DjSet::new());
             s.session_config = Some(snapshot.clone());
             let should_start_listener = !s.unbox_listener_started;
@@ -120,7 +121,8 @@ async fn start_tracking(
 async fn stop_tracking(state: tauri::State<'_, Arc<Mutex<AppState>>>) -> Result<String, String> {
     let mut s = state.lock().await;
     s.is_tracking = false;
-    s.skip_first_track_after_start = false;
+    s.awaiting_first_live_change = false;
+    s.start_baseline_track = None;
     let session_config_snapshot = s.session_config.clone();
 
     // Stamp end time and save
@@ -295,7 +297,8 @@ pub fn run() {
             let app_state = Arc::new(Mutex::new(AppState {
                 is_tracking: false,
                 current_track: None,
-                skip_first_track_after_start: false,
+                awaiting_first_live_change: false,
+                start_baseline_track: None,
                 current_set: None,
                 unbox_connected: false,
                 unbox_listener_started: false,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 
 const DJ_OPTIONS = [
@@ -24,6 +24,7 @@ export default function MainView({
   onSettings,
   onHistory,
   onConfigChange,
+  canExportCurrentSet,
   actionBusy,
 }) {
   const telegramFingerprint = (token, chatId) =>
@@ -34,6 +35,7 @@ export default function MainView({
   const [softwareLocked, setSoftwareLocked] = useState(!!config.dj_software);
   const [initDone, setInitDone]       = useState(!!config.dj_software);
   const [retryingConnection, setRetryingConnection] = useState(false);
+  const connectTimeoutRef = useRef(null);
 
   useEffect(() => {
     setSoftware(config.dj_software || "");
@@ -69,22 +71,59 @@ export default function MainView({
 
   const handleRetryConnection = async () => {
     setRetryingConnection(true);
+    if (connectTimeoutRef.current) {
+      clearTimeout(connectTimeoutRef.current);
+    }
+    // Failsafe: release button if backend never flips status.
+    connectTimeoutRef.current = setTimeout(() => {
+      setRetryingConnection(false);
+      connectTimeoutRef.current = null;
+    }, 12000);
     try {
       await invoke("retry_connection");
     } catch (e) {
+      if (connectTimeoutRef.current) {
+        clearTimeout(connectTimeoutRef.current);
+        connectTimeoutRef.current = null;
+      }
+      setRetryingConnection(false);
       alert(`Retry failed: ${e}`);
     }
-    setRetryingConnection(false);
   };
+
+  useEffect(() => {
+    if (unboxConnected && retryingConnection) {
+      if (connectTimeoutRef.current) {
+        clearTimeout(connectTimeoutRef.current);
+        connectTimeoutRef.current = null;
+      }
+      setRetryingConnection(false);
+    }
+  }, [unboxConnected, retryingConnection]);
+
+  useEffect(() => {
+    return () => {
+      if (connectTimeoutRef.current) {
+        clearTimeout(connectTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const telegramCurrentFp = telegramFingerprint(config.telegram_token, config.telegram_chat_id);
   const telegramConnected = Boolean(
     config.telegram_verified &&
     telegramCurrentFp !== "::" &&
-    config.telegram_verified_fingerprint === telegramCurrentFp
+    (
+      config.telegram_verified_fingerprint === telegramCurrentFp ||
+      !config.telegram_verified_fingerprint
+    )
   );
   const telegramStatusClass =
     telegramStatus === "sent" ? "amber" :
+    telegramStatus === "error" ? "red" :
+    telegramConnected ? "green" : "";
+  const telegramDotClass =
+    telegramStatus === "sent" ? "amber pulse" :
     telegramStatus === "error" ? "red" :
     telegramConnected ? "green" : "";
 
@@ -115,7 +154,7 @@ export default function MainView({
             {selectedSw?.label || "DJ Software"}
           </div>
           <div className={`sb-item ${telegramStatusClass}`}>
-            <div className={`sb-dot ${telegramStatusClass}`} />
+            <div className={`sb-dot ${telegramDotClass}`} />
             Telegram
           </div>
           <div className="sb-spacer" />
@@ -172,11 +211,11 @@ export default function MainView({
             </div>
             {!unboxConnected && (
               <button
-                className="inline-btn"
+                className={`inline-btn ${retryingConnection ? "busy" : ""}`}
                 onClick={handleRetryConnection}
                 disabled={retryingConnection || !softwareLocked || actionBusy}
               >
-                {retryingConnection ? "···" : "retry"}
+                {retryingConnection ? "connecting" : "connect"}
               </button>
             )}
           </div>
@@ -237,17 +276,15 @@ export default function MainView({
             ▶ &nbsp;Start broadcasting
           </button>
         )}
-        {/* Export always visible once there are tracks, live or not */}
-        {trackHistory.length > 0 && (
-          <button
-            className="btn-ghost"
-            onClick={onExport}
-            disabled={isTracking}
-            style={{ marginLeft: "auto" }}
-          >
-            Export set
-          </button>
-        )}
+        <button
+          className="btn-ghost"
+          onClick={onExport}
+          disabled={isTracking || !canExportCurrentSet}
+          title={!canExportCurrentSet ? "No active set to export" : undefined}
+          style={{ marginLeft: "auto" }}
+        >
+          Export set
+        </button>
       </div>
 
       {/* ── Set log ──────────────────────────── */}

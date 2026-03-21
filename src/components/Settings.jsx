@@ -71,7 +71,6 @@ export default function Settings({ config, onSave, isTracking = false }) {
     config?.session_end_template || DEFAULT_SESSION_END
   );
 
-  const activePreset = TEMPLATE_PRESETS.find((p) => p.value === template) || TEMPLATE_PRESETS[3];
   const tokenChatChanged = token !== initialToken || chatId !== initialChatId;
   const tokenChatFilled = token.trim() !== "" && chatId.trim() !== "";
   const softwareChanged = djSoftware !== (config?.dj_software || "");
@@ -431,9 +430,9 @@ export default function Settings({ config, onSave, isTracking = false }) {
             <div style={{
               fontFamily: "var(--mono)",
               fontSize: 12,
-              color: "var(--white)",
-              background: "var(--bg-2)",
-              border: "1px solid var(--border-2)",
+              color: "var(--text-mid)",
+              background: "transparent",
+              border: "1px solid var(--border)",
               borderRadius: "var(--radius-sm)",
               padding: "10px 12px",
               lineHeight: 1.6,

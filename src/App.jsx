@@ -16,6 +16,7 @@ export default function App() {
   const [actionBusy, setActionBusy] = useState(false);
   const [unboxConnected, setUnboxConnected] = useState(false);
   const [telegramStatus, setTelegramStatus] = useState("idle"); // idle, sent, error
+  const [canExportCurrentSet, setCanExportCurrentSet] = useState(false);
 
   const normalizeTrackValue = (v) => (v || "").trim().toLowerCase();
   const sameTrack = (a, b) =>
@@ -44,6 +45,13 @@ export default function App() {
           session_end_template: "just finished playing {set_name}",
         })
       );
+  }, []);
+
+  // Export availability depends on current in-memory set, not history files.
+  useEffect(() => {
+    invoke("get_track_history")
+      .then((tracks) => setCanExportCurrentSet(Array.isArray(tracks) && tracks.length > 0))
+      .catch(() => setCanExportCurrentSet(false));
   }, []);
 
   // Listen to backend events
@@ -78,6 +86,9 @@ export default function App() {
           ...prev,
         ];
       });
+      invoke("get_track_history")
+        .then((tracks) => setCanExportCurrentSet(Array.isArray(tracks) && tracks.length > 0))
+        .catch(() => {});
     });
 
     registerListener("unbox-status", (event) => {
@@ -112,6 +123,9 @@ export default function App() {
       try {
         await invoke("stop_tracking");
         setIsTracking(false);
+        setCurrentTrack(null);
+        const tracks = await invoke("get_track_history");
+        setCanExportCurrentSet(Array.isArray(tracks) && tracks.length > 0);
       } finally {
         setActionBusy(false);
       }
@@ -119,7 +133,9 @@ export default function App() {
       try {
         await invoke("start_tracking");
         setIsTracking(true);
+        setCurrentTrack(null);
         setTrackHistory([]);
+        setCanExportCurrentSet(false);
       } finally {
         setActionBusy(false);
       }
@@ -148,8 +164,12 @@ export default function App() {
 
   const handleSaveConfig = async (newConfig) => {
     const full = { ...newConfig, onboarding_done: true };
+    const softwareChanged = (config?.dj_software || "") !== (full.dj_software || "");
     await invoke("save_config", { config: full });
     setConfig(full);
+    if (softwareChanged) {
+      setUnboxConnected(false);
+    }
     setView("main");
   };
 
@@ -200,6 +220,7 @@ export default function App() {
       onSettings={() => setView("settings")}
       onHistory={() => setView("history")}
       onConfigChange={handleSaveConfig}
+      canExportCurrentSet={canExportCurrentSet}
       actionBusy={actionBusy}
     />
   );

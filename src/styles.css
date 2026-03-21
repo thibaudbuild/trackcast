@@ -248,6 +248,12 @@ body {
   transition: border-color 0.15s;
 }
 .tc-select:focus { border-color: var(--amber); }
+.tc-select:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  color: var(--text-dim);
+  border-color: var(--border);
+}
 
 .tc-input {
   width: 100%;
@@ -266,6 +272,12 @@ body {
 .tc-input::placeholder { color: var(--text-dim); }
 .tc-input.valid  { border-color: var(--green) !important; }
 .tc-input.error  { border-color: #ef4444 !important; }
+.tc-input:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  color: var(--text-dim);
+  border-color: var(--border);
+}
 
 .input-col { display: flex; flex-direction: column; gap: 4px; flex: 1; }
 .input-error { font-family: var(--mono); font-size: 11px; color: #ef4444; padding-left: 2px; }
@@ -317,6 +329,13 @@ body {
 .inline-btn:hover { border-color: var(--amber); color: var(--amber); }
 .inline-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 .inline-btn.ok { border-color: var(--green); color: var(--green); background: var(--green-dim); }
+.inline-btn.busy {
+  border-color: var(--amber);
+  color: var(--amber);
+  background: rgba(217,119,6,0.12);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.45);
+  transform: translateY(1px);
+}
 
 .inline-ok-indicator {
   font-family: var(--mono);
@@ -471,8 +490,16 @@ body {
 }
 .btn-ghost:hover { border-color: var(--text-mid); color: var(--text); }
 .btn-ghost:disabled {
-  opacity: 0.35;
+  opacity: 0.72;
   cursor: not-allowed;
+  color: var(--text-mid);
+  border-color: var(--border-2);
+  background: transparent;
+}
+.btn-ghost:disabled:hover {
+  color: var(--text-mid);
+  border-color: var(--border-2);
+  background: transparent;
 }
 
 .live-badge {
