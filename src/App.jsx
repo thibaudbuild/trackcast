@@ -7,17 +7,6 @@ import MainView from "./components/MainView";
 import Settings from "./components/Settings";
 import HistoryView from "./components/HistoryView";
 
-const DJ_OPTIONS = [
-  { value: "rekordbox", label: "Rekordbox" },
-  { value: "serato", label: "Serato DJ Pro" },
-  { value: "traktor", label: "Traktor Pro 3" },
-  { value: "virtualdj", label: "VirtualDJ" },
-  { value: "mixxx", label: "Mixxx" },
-  { value: "djuced", label: "DJUCED" },
-  { value: "djay", label: "djay Pro" },
-  { value: "denon", label: "Denon DJ" },
-];
-
 export default function App() {
   const NOW_PLAYING_FRESH_MS = 300000;
   const [config, setConfig] = useState(null);
@@ -29,7 +18,6 @@ export default function App() {
   const [actionBusy, setActionBusy] = useState(false);
   const [unboxConnected, setUnboxConnected] = useState(false);
   const [retryingConnection, setRetryingConnection] = useState(false);
-  const [telegramStatus, setTelegramStatus] = useState("idle"); // idle, sent, error
   const [canExportCurrentSet, setCanExportCurrentSet] = useState(false);
   const [liveStartedAt, setLiveStartedAt] = useState(null);
   const [liveElapsedLabel, setLiveElapsedLabel] = useState("00:00");
@@ -150,16 +138,6 @@ export default function App() {
       setUnboxConnected(event.payload);
     });
 
-    registerListener("telegram-sent", () => {
-      setTelegramStatus("sent");
-      setTimeout(() => setTelegramStatus("idle"), 3000);
-    });
-
-    registerListener("telegram-error", () => {
-      setTelegramStatus("error");
-      setTimeout(() => setTelegramStatus("idle"), 5000);
-    });
-
     return () => {
       disposed = true;
       unlisteners.forEach((u) => u());
@@ -276,28 +254,9 @@ export default function App() {
   if (!config) return null;
 
   const softwareConfigured = Boolean((config.dj_software || "").trim());
-  const softwareLabel = DJ_OPTIONS.find((d) => d.value === config.dj_software)?.label || "Not configured";
   const canStart = softwareConfigured && !actionBusy;
   const hasFreshTrackEvent =
     lastTrackEventAt != null && (trackFreshTick - lastTrackEventAt) < NOW_PLAYING_FRESH_MS;
-
-  const telegramFingerprint = (token, chatId) =>
-    `${(token || "").trim()}::${(chatId || "").trim()}`;
-  const telegramCurrentFp = telegramFingerprint(config.telegram_token, config.telegram_chat_id);
-  const telegramConnected = Boolean(
-    config.telegram_verified &&
-    telegramCurrentFp !== "::" &&
-    (config.telegram_verified_fingerprint === telegramCurrentFp || !config.telegram_verified_fingerprint)
-  );
-
-  const telegramStatusClass =
-    telegramStatus === "sent" ? "amber" :
-    telegramStatus === "error" ? "red" :
-    telegramConnected ? "green" : "";
-  const telegramDotClass =
-    telegramStatus === "sent" ? "amber pulse" :
-    telegramStatus === "error" ? "red" :
-    telegramConnected ? "green" : "";
 
   const receiverConnecting = retryingConnection;
   const receiverReady = unboxConnected;
@@ -311,24 +270,7 @@ export default function App() {
       <div className="app">
         <div className="titlebar">
           <div className="app-logo" aria-hidden="true" />
-          <div className="titlebar-status">
-            <div className={`sb-item ${softwareConfigured ? "green" : ""}`}>
-              <div className={`sb-dot ${softwareConfigured ? "green" : ""}`} />
-              {softwareLabel}
-            </div>
-            <div className={`sb-item ${telegramStatusClass}`}>
-              <div className={`sb-dot ${telegramDotClass}`} />
-              Telegram
-            </div>
-            <button
-              className={`sb-item sb-item-action ${receiverStatusClass} ${receiverCanConnect ? "clickable" : ""}`}
-              onClick={receiverCanConnect ? handleRetryConnection : undefined}
-              disabled={!receiverCanConnect}
-            >
-              <div className={`sb-dot ${receiverDotClass}`} />
-              <span>{receiverStatusLabel}</span>
-            </button>
-          </div>
+          <div className="titlebar-spacer" />
           <div className="titlebar-right">
             <button
               className={`settings-btn icon-only history-btn ${activeTab === "history" ? "active" : ""}`}
@@ -363,6 +305,16 @@ export default function App() {
           >
             Display
           </button>
+          <div className="tabs-status-single">
+            <button
+              className={`sb-item sb-item-action ${receiverStatusClass} ${receiverCanConnect ? "clickable" : ""}`}
+              onClick={receiverCanConnect ? handleRetryConnection : undefined}
+              disabled={!receiverCanConnect}
+            >
+              <div className={`sb-dot ${receiverDotClass}`} />
+              <span>{receiverStatusLabel}</span>
+            </button>
+          </div>
         </div>
 
         {activeTab === "main" && (
