@@ -99,6 +99,14 @@ pub fn export_set_by_filename(filename: &str) -> Result<String, String> {
     Ok(export_set_txt(&set))
 }
 
+pub fn delete_set_by_filename(filename: &str) -> Result<(), String> {
+    let path = sets_dir().join(filename);
+    if !path.exists() {
+        return Err("Set file not found".to_string());
+    }
+    fs::remove_file(path).map_err(|e| e.to_string())
+}
+
 pub fn export_set_txt(set: &DjSet) -> String {
     let mut lines = Vec::new();
     lines.push(format!("TrackCast — Set du {}", set.date));

@@ -25,6 +25,7 @@ export default function MainView({
   onHistory,
   onConfigChange,
   canExportCurrentSet,
+  liveElapsedLabel,
   actionBusy,
 }) {
   const telegramFingerprint = (token, chatId) =>
@@ -50,6 +51,8 @@ export default function MainView({
     "DJ software";
   const softwareReadOnly = isTracking || softwareLocked;
   const isReady = softwareLocked && initDone;
+  const isStartConnecting = actionBusy && !isTracking && !unboxConnected;
+  const connectionInProgress = retryingConnection || isStartConnecting;
 
   const handleSoftwareChange = (e) => {
     if (isTracking) return;
@@ -92,14 +95,14 @@ export default function MainView({
   };
 
   useEffect(() => {
-    if (unboxConnected && retryingConnection) {
+    if (unboxConnected && connectionInProgress) {
       if (connectTimeoutRef.current) {
         clearTimeout(connectTimeoutRef.current);
         connectTimeoutRef.current = null;
       }
       setRetryingConnection(false);
     }
-  }, [unboxConnected, retryingConnection]);
+  }, [unboxConnected, connectionInProgress]);
 
   useEffect(() => {
     return () => {
@@ -207,15 +210,15 @@ export default function MainView({
           <div className="input-row">
             <div className="select-locked" style={{ flex: 1 }}>
               <span className="select-check">{unboxConnected ? "✓" : "·"}</span>
-              <span>{unboxConnected ? "Ready" : "Not ready"}</span>
+              <span>{unboxConnected ? "Ready" : (connectionInProgress ? "Connecting..." : "Not ready")}</span>
             </div>
             {!unboxConnected && (
               <button
-                className={`inline-btn ${retryingConnection ? "busy" : ""}`}
+                className={`inline-btn ${connectionInProgress ? "busy" : ""}`}
                 onClick={handleRetryConnection}
-                disabled={retryingConnection || !softwareLocked || actionBusy}
+                disabled={connectionInProgress || !softwareLocked || actionBusy}
               >
-                {retryingConnection ? "connecting" : "connect"}
+                {connectionInProgress ? "connecting" : "connect"}
               </button>
             )}
           </div>
@@ -265,6 +268,7 @@ export default function MainView({
             <div className="live-badge">
               <div className="live-dot" />
               LIVE
+              <span className="live-time">{liveElapsedLabel}</span>
             </div>
           </>
         ) : (
@@ -287,9 +291,9 @@ export default function MainView({
         </button>
       </div>
 
-      {/* ── Set log ──────────────────────────── */}
+      {/* ── Set list ─────────────────────────── */}
       <div className="log-header">
-        <span className="log-label">Set log</span>
+        <span className="log-label">Set list</span>
         <span className="log-count">{trackHistory.length} tracks</span>
       </div>
 

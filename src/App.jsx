@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { save } from "@tauri-apps/plugin-dialog";
@@ -17,11 +17,24 @@ export default function App() {
   const [unboxConnected, setUnboxConnected] = useState(false);
   const [telegramStatus, setTelegramStatus] = useState("idle"); // idle, sent, error
   const [canExportCurrentSet, setCanExportCurrentSet] = useState(false);
+  const [liveStartedAt, setLiveStartedAt] = useState(null);
+  const [liveElapsedLabel, setLiveElapsedLabel] = useState("00:00");
+  const [showStopConfirm, setShowStopConfirm] = useState(false);
+  const isTrackingRef = useRef(false);
 
   const normalizeTrackValue = (v) => (v || "").trim().toLowerCase();
   const sameTrack = (a, b) =>
     normalizeTrackValue(a?.artist) === normalizeTrackValue(b?.artist) &&
     normalizeTrackValue(a?.title) === normalizeTrackValue(b?.title);
+
+  const formatLiveElapsed = (ms) => {
+    const totalSec = Math.max(0, Math.floor(ms / 1000));
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    if (h > 0) return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  };
 
   // Load config on mount
   useEffect(() => {
@@ -54,6 +67,22 @@ export default function App() {
       .catch(() => setCanExportCurrentSet(false));
   }, []);
 
+  useEffect(() => {
+    isTrackingRef.current = isTracking;
+  }, [isTracking]);
+
+  useEffect(() => {
+    if (!isTracking || !liveStartedAt) {
+      setLiveElapsedLabel("00:00");
+      return;
+    }
+    setLiveElapsedLabel(formatLiveElapsed(Date.now() - liveStartedAt));
+    const id = setInterval(() => {
+      setLiveElapsedLabel(formatLiveElapsed(Date.now() - liveStartedAt));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [isTracking, liveStartedAt]);
+
   // Listen to backend events
   useEffect(() => {
     const unlisteners = [];
@@ -69,6 +98,7 @@ export default function App() {
     };
 
     registerListener("track-changed", (event) => {
+      if (!isTrackingRef.current) return;
       const incoming = event.payload;
       setCurrentTrack(incoming);
       setTrackHistory((prev) => {
@@ -113,32 +143,40 @@ export default function App() {
 
   const handleStartStop = async () => {
     if (actionBusy) return;
-    setActionBusy(true);
     if (isTracking) {
-      const confirmed = window.confirm("Stop broadcasting now?");
-      if (!confirmed) {
-        setActionBusy(false);
-        return;
-      }
-      try {
-        await invoke("stop_tracking");
-        setIsTracking(false);
-        setCurrentTrack(null);
-        const tracks = await invoke("get_track_history");
-        setCanExportCurrentSet(Array.isArray(tracks) && tracks.length > 0);
-      } finally {
-        setActionBusy(false);
-      }
+      setShowStopConfirm(true);
     } else {
+      setActionBusy(true);
       try {
         await invoke("start_tracking");
         setIsTracking(true);
+        setLiveStartedAt(Date.now());
+        setLiveElapsedLabel("00:00");
         setCurrentTrack(null);
         setTrackHistory([]);
         setCanExportCurrentSet(false);
+      } catch (e) {
+        alert(`Start failed: ${e}`);
       } finally {
         setActionBusy(false);
       }
+    }
+  };
+
+  const handleConfirmStop = async () => {
+    if (actionBusy) return;
+    setActionBusy(true);
+    try {
+      await invoke("stop_tracking");
+      setIsTracking(false);
+      setLiveStartedAt(null);
+      setLiveElapsedLabel("00:00");
+      setCurrentTrack(null);
+      const tracks = await invoke("get_track_history");
+      setCanExportCurrentSet(Array.isArray(tracks) && tracks.length > 0);
+    } finally {
+      setActionBusy(false);
+      setShowStopConfirm(false);
     }
   };
 
@@ -208,20 +246,39 @@ export default function App() {
   }
 
   return (
-    <MainView
-      config={config}
-      currentTrack={currentTrack}
-      trackHistory={trackHistory}
-      isTracking={isTracking}
-      unboxConnected={unboxConnected}
-      telegramStatus={telegramStatus}
-      onStartStop={handleStartStop}
-      onExport={handleExport}
-      onSettings={() => setView("settings")}
-      onHistory={() => setView("history")}
-      onConfigChange={handleSaveConfig}
-      canExportCurrentSet={canExportCurrentSet}
-      actionBusy={actionBusy}
-    />
+    <>
+      <MainView
+        config={config}
+        currentTrack={currentTrack}
+        trackHistory={trackHistory}
+        isTracking={isTracking}
+        unboxConnected={unboxConnected}
+        telegramStatus={telegramStatus}
+        onStartStop={handleStartStop}
+        onExport={handleExport}
+        onSettings={() => setView("settings")}
+        onHistory={() => setView("history")}
+        onConfigChange={handleSaveConfig}
+        canExportCurrentSet={canExportCurrentSet}
+        liveElapsedLabel={liveElapsedLabel}
+        actionBusy={actionBusy}
+      />
+      {showStopConfirm && (
+        <div className="tc-modal-backdrop">
+          <div className="tc-modal">
+            <div className="tc-modal-title">Stop Live</div>
+            <div className="tc-modal-text">Stop broadcasting now?</div>
+            <div className="tc-modal-actions">
+              <button className="inline-btn" onClick={() => setShowStopConfirm(false)} disabled={actionBusy}>
+                Cancel
+              </button>
+              <button className="inline-btn tc-danger-btn" onClick={handleConfirmStop} disabled={actionBusy}>
+                {actionBusy ? "···" : "Stop"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

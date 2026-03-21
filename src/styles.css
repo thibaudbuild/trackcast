@@ -337,6 +337,89 @@ body {
   transform: translateY(1px);
 }
 
+.history-delete-btn {
+  min-width: 24px;
+  height: 28px;
+  padding: 0 4px;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  color: var(--text-dim);
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.history-delete-btn:hover {
+  color: var(--red);
+  background: transparent;
+}
+.history-delete-btn:disabled:hover {
+  color: var(--text-dim);
+  background: transparent;
+}
+.history-delete-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.history-delete-icon {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
+
+.tc-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.tc-modal {
+  width: min(360px, calc(100vw - 40px));
+  background: var(--bg-1);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+}
+
+.tc-modal-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.tc-modal-text {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--text-mid);
+}
+
+.tc-modal-actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.tc-danger-btn {
+  color: var(--red);
+  border-color: rgba(239,68,68,0.45);
+}
+.tc-danger-btn:hover {
+  color: var(--red);
+  border-color: rgba(239,68,68,0.65);
+  background: var(--red-dim);
+}
+
 .inline-ok-indicator {
   font-family: var(--mono);
   font-size: 10px;
@@ -488,7 +571,7 @@ body {
   letter-spacing: 0.5px;
   transition: all 0.15s;
 }
-.btn-ghost:hover { border-color: var(--text-mid); color: var(--text); }
+.btn-ghost:hover { border-color: var(--amber); color: var(--amber); }
 .btn-ghost:disabled {
   opacity: 0.72;
   cursor: not-allowed;
@@ -511,6 +594,12 @@ body {
   align-items: center;
   gap: 5px;
   margin-left: auto;
+}
+
+.live-time {
+  color: var(--text);
+  letter-spacing: 0.8px;
+  margin-left: 4px;
 }
 
 .live-dot {

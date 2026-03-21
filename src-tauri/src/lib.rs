@@ -7,6 +7,7 @@ use state::AppState;
 use std::sync::Arc;
 use tauri::{Emitter, Manager};
 use tokio::sync::Mutex;
+use tokio::time::{sleep, Duration, Instant};
 
 fn build_session_message(template: &str, set_name: &str) -> String {
     template
@@ -21,6 +22,7 @@ async fn start_tracking(
     let (
         already_tracking,
         should_start_listener,
+        should_restart_unbox,
         dj_software,
         session_config_snapshot,
     ) = {
@@ -29,6 +31,7 @@ async fn start_tracking(
         if already_tracking {
             (
                 already_tracking,
+                false,
                 false,
                 String::new(),
                 s.config.clone(),
@@ -45,12 +48,14 @@ async fn start_tracking(
             s.current_set = Some(history::DjSet::new());
             s.session_config = Some(snapshot.clone());
             let should_start_listener = !s.unbox_listener_started;
+            let should_restart_unbox = !s.unbox_connected;
             if should_start_listener {
                 s.unbox_listener_started = true;
             }
             (
                 already_tracking,
                 should_start_listener,
+                should_restart_unbox,
                 snapshot.dj_software.clone(),
                 snapshot,
             )
@@ -60,8 +65,50 @@ async fn start_tracking(
         return Ok("Already tracking".to_string());
     }
 
-    // Always relaunch Unbox at Start to guarantee the selected software is applied.
-    unbox::restart_unbox_for_software(dj_software).await;
+    // If receiver is already connected (row 2 connect), keep it stable at Start.
+    if should_restart_unbox {
+        {
+            let mut s = state.lock().await;
+            s.unbox_connected = false;
+        }
+        let _ = app_handle.emit("unbox-status", false);
+        unbox::restart_unbox_for_software(dj_software).await;
+    }
+
+    // Launch Unbox + WebSocket listener only once for app lifetime.
+    // (prevents duplicate listeners across multiple Start/Stop cycles)
+    if should_start_listener {
+        let state_clone = Arc::clone(&state);
+        let app_handle_listener = app_handle.clone();
+        tauri::async_runtime::spawn(async move {
+            unbox::run_unbox_listener(app_handle_listener, state_clone).await;
+        });
+    }
+
+    // Ensure "live started" is returned only once the receiver is actually ready.
+    // This keeps UI progression coherent: connecting state first, then LIVE.
+    if should_restart_unbox || should_start_listener {
+        let deadline = Instant::now() + Duration::from_secs(15);
+        loop {
+            let is_connected = {
+                let s = state.lock().await;
+                s.unbox_connected
+            };
+            if is_connected {
+                break;
+            }
+            if Instant::now() >= deadline {
+                let mut s = state.lock().await;
+                s.is_tracking = false;
+                s.awaiting_first_live_change = false;
+                s.start_baseline_track = None;
+                s.current_set = None;
+                s.session_config = None;
+                return Err("Track receiver not ready. Click Connect and retry.".to_string());
+            }
+            sleep(Duration::from_millis(150)).await;
+        }
+    }
 
     // Optional start message (session snapshot, immutable during the run)
     if session_config_snapshot.session_messages_enabled
@@ -84,16 +131,6 @@ async fn start_tracking(
                     let _ = app_handle_clone.emit("telegram-error", &e.to_string());
                 }
             }
-        });
-    }
-
-    // Launch Unbox + WebSocket listener only once for app lifetime.
-    // (prevents duplicate listeners across multiple Start/Stop cycles)
-    if should_start_listener {
-        let state_clone = Arc::clone(&state);
-        let app_handle_listener = app_handle.clone();
-        tauri::async_runtime::spawn(async move {
-            unbox::run_unbox_listener(app_handle_listener, state_clone).await;
         });
     }
 
@@ -161,6 +198,12 @@ async fn get_set_history() -> Result<Vec<history::SetSummary>, String> {
 #[tauri::command]
 async fn export_set_by_filename(filename: String) -> Result<String, String> {
     history::export_set_by_filename(&filename)
+}
+
+#[tauri::command]
+async fn delete_set_by_filename(filename: String) -> Result<String, String> {
+    history::delete_set_by_filename(&filename)?;
+    Ok("Set deleted".to_string())
 }
 
 #[tauri::command]
@@ -324,6 +367,7 @@ pub fn run() {
             retry_connection,
             get_set_history,
             export_set_by_filename,
+            delete_set_by_filename,
         ])
         .run(tauri::generate_context!())
         .expect("error while running TrackCast");

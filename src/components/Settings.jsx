@@ -368,11 +368,11 @@ export default function Settings({ config, onSave, isTracking = false }) {
               </label>
             </div>
             <span className="selectable-text" style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-dim)" }}>
-              Variables: <code style={{ color: "var(--amber)" }}>artist</code>{" "}
-              <code style={{ color: "var(--amber)" }}>title</code>{" "}
-              <code style={{ color: "var(--amber)" }}>set_name</code>{" "}
-              <code style={{ color: "var(--amber)" }}>bpm</code>{" "}
-              <code style={{ color: "var(--amber)" }}>key</code>
+              Variables: <code style={{ color: "var(--amber)" }}>{"{artist}"}</code>{" "}
+              <code style={{ color: "var(--amber)" }}>{"{title}"}</code>{" "}
+              <code style={{ color: "var(--amber)" }}>{"{set_name}"}</code>{" "}
+              <code style={{ color: "var(--amber)" }}>{"{bpm}"}</code>{" "}
+              <code style={{ color: "var(--amber)" }}>{"{key}"}</code>
             </span>
             <div style={{
               fontFamily: "var(--mono)",
@@ -425,7 +425,7 @@ export default function Settings({ config, onSave, isTracking = false }) {
               placeholder="just finished playing {set_name}"
             />
             <span className="selectable-text" style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-dim)" }}>
-              Variable: <code style={{ color: "var(--amber)" }}>set_name</code>
+              Variable: <code style={{ color: "var(--amber)" }}>{"{set_name}"}</code>
             </span>
             <div style={{
               fontFamily: "var(--mono)",
