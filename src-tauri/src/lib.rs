@@ -41,10 +41,10 @@ async fn start_tracking(
             if snapshot.dj_software.trim().is_empty() {
                 return Err("DJ software is not configured".to_string());
             }
+            let baseline = s.current_track.clone();
             s.is_tracking = true;
-            s.current_track = None;
-            s.awaiting_first_live_change = true;
-            s.start_baseline_track = None;
+            s.awaiting_first_live_change = baseline.is_some();
+            s.start_baseline_track = baseline;
             s.current_set = Some(history::DjSet::new());
             s.session_config = Some(snapshot.clone());
             let should_start_listener = !s.unbox_listener_started;
@@ -312,6 +312,10 @@ async fn retry_connection(
         return Err("DJ software is not configured".to_string());
     }
 
+    {
+        let mut s = state.lock().await;
+        s.unbox_connected = false;
+    }
     let _ = app_handle.emit("unbox-status", false);
     unbox::restart_unbox_for_software(software).await;
 

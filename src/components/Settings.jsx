@@ -53,6 +53,7 @@ export default function Settings({
   const [editingSoftware, setEditingSoftware] = useState(!config?.dj_software);
   const [editingToken, setEditingToken] = useState(!config?.telegram_token);
   const [editingChat, setEditingChat] = useState(!config?.telegram_chat_id);
+  const [tokenCopied, setTokenCopied] = useState(false);
 
   const initialToken = config?.telegram_token || "";
   const initialChatId = config?.telegram_chat_id || "";
@@ -112,6 +113,14 @@ export default function Settings({
       setTestError("Test failed. Check token / chat ID.");
     }
     setTesting(false);
+  };
+
+  const handleCopyToken = async () => {
+    try {
+      await navigator.clipboard.writeText(token);
+      setTokenCopied(true);
+      setTimeout(() => setTokenCopied(false), 1200);
+    } catch (_) {}
   };
 
   const handleSave = async () => {
@@ -249,11 +258,11 @@ export default function Settings({
                   edit
                 </button>
                 <button
-                  className="inline-btn"
+                  className={`inline-btn token-copy-btn ${tokenCopied ? "ok" : ""}`}
                   disabled={isTracking}
-                  onClick={() => navigator.clipboard.writeText(token).catch(() => {})}
+                  onClick={handleCopyToken}
                 >
-                  copy
+                  {tokenCopied ? "copied" : "copy"}
                 </button>
               </div>
             ) : (
@@ -476,8 +485,7 @@ export default function Settings({
 
       <div className="row settings-save-row" style={{ borderBottom: "none" }}>
         <button
-          className="btn-broadcast start"
-          style={{ alignSelf: "flex-start" }}
+          className="btn-broadcast start settings-save-btn"
           onClick={handleSave}
           disabled={isTracking || !canSave}
         >

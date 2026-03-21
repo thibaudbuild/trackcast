@@ -19,6 +19,7 @@ const DJ_OPTIONS = [
 ];
 
 export default function App() {
+  const NOW_PLAYING_FRESH_MS = 300000;
   const [config, setConfig] = useState(null);
   const [activeTab, setActiveTab] = useState("main"); // main, connection, display, history
   const [theme, setTheme] = useState(() => localStorage.getItem("trackcast-theme") || "night");
@@ -33,6 +34,8 @@ export default function App() {
   const [liveStartedAt, setLiveStartedAt] = useState(null);
   const [liveElapsedLabel, setLiveElapsedLabel] = useState("00:00");
   const [showStopConfirm, setShowStopConfirm] = useState(false);
+  const [lastTrackEventAt, setLastTrackEventAt] = useState(null);
+  const [trackFreshTick, setTrackFreshTick] = useState(Date.now());
   const isTrackingRef = useRef(false);
   const connectTimeoutRef = useRef(null);
 
@@ -101,6 +104,11 @@ export default function App() {
   }, [isTracking, liveStartedAt]);
 
   useEffect(() => {
+    const id = setInterval(() => setTrackFreshTick(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
     const unlisteners = [];
     let disposed = false;
 
@@ -116,6 +124,7 @@ export default function App() {
     registerListener("track-changed", (event) => {
       const incoming = event.payload;
       setCurrentTrack(incoming);
+      setLastTrackEventAt(Date.now());
       if (!isTrackingRef.current) return;
       setTrackHistory((prev) => {
         if (prev.length > 0 && sameTrack(incoming, prev[0])) {
@@ -269,6 +278,8 @@ export default function App() {
   const softwareConfigured = Boolean((config.dj_software || "").trim());
   const softwareLabel = DJ_OPTIONS.find((d) => d.value === config.dj_software)?.label || "Not configured";
   const canStart = softwareConfigured && !actionBusy;
+  const hasFreshTrackEvent =
+    lastTrackEventAt != null && (trackFreshTick - lastTrackEventAt) < NOW_PLAYING_FRESH_MS;
 
   const telegramFingerprint = (token, chatId) =>
     `${(token || "").trim()}::${(chatId || "").trim()}`;
@@ -292,8 +303,8 @@ export default function App() {
   const receiverReady = unboxConnected;
   const receiverCanConnect = softwareConfigured && !receiverReady && !receiverConnecting && !actionBusy;
   const receiverStatusClass = receiverReady ? "green" : receiverConnecting ? "amber" : "";
-  const receiverDotClass = receiverReady ? "green" : receiverConnecting ? "amber pulse" : "";
-  const receiverStatusLabel = receiverReady ? "Ready" : receiverConnecting ? "Connecting..." : "Not ready";
+  const receiverDotClass = receiverReady ? "green" : receiverConnecting ? "loading" : "";
+  const receiverStatusLabel = receiverReady ? "Ready" : receiverConnecting ? "Connecting..." : "Connect";
 
   return (
     <>
@@ -313,11 +324,8 @@ export default function App() {
               className={`sb-item sb-item-action ${receiverStatusClass} ${receiverCanConnect ? "clickable" : ""}`}
               onClick={receiverCanConnect ? handleRetryConnection : undefined}
               disabled={!receiverCanConnect}
-              title={receiverCanConnect ? "Connect track input" : undefined}
             >
               <div className={`sb-dot ${receiverDotClass}`} />
-              <span>Track Input:</span>
-              {receiverConnecting && <span className="btn-spinner" aria-hidden="true" />}
               <span>{receiverStatusLabel}</span>
             </button>
           </div>
@@ -341,13 +349,13 @@ export default function App() {
             className={`shell-tab ${activeTab === "main" ? "active" : ""}`}
             onClick={() => setActiveTab("main")}
           >
-            Session
+            Live
           </button>
           <button
             className={`shell-tab ${activeTab === "connection" ? "active" : ""}`}
             onClick={() => setActiveTab("connection")}
           >
-            Connection
+            Setup
           </button>
           <button
             className={`shell-tab ${activeTab === "display" ? "active" : ""}`}
@@ -362,6 +370,7 @@ export default function App() {
             currentTrack={currentTrack}
             trackHistory={trackHistory}
             isTracking={isTracking}
+            hasFreshTrackEvent={hasFreshTrackEvent}
             unboxConnected={unboxConnected}
             onStartStop={handleStartStop}
             onExport={handleExport}

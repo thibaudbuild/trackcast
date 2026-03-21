@@ -291,10 +291,32 @@ async fn handle_track_change(
 
     let mut s = state.lock().await;
 
-    // Broadcast start gating:
-    // 1) first incoming event becomes a baseline (never logged/sent)
-    // 2) we start broadcasting only once a different track arrives.
-    if s.is_tracking && s.awaiting_first_live_change {
+    let is_duplicate_current = s
+        .current_track
+        .as_ref()
+        .map(|current| track.is_same_as(current))
+        .unwrap_or(false);
+
+    // Receiver/UI is independent from broadcast mode:
+    // update now playing whenever input track really changes.
+    if !is_duplicate_current {
+        s.current_track = Some(track.clone());
+        let _ = app_handle.emit("track-changed", &track);
+        println!("[TrackCast][track] emitted track-changed");
+    } else {
+        println!("[TrackCast][track] duplicate current (ui unchanged)");
+    }
+
+    // If not tracking, nothing more to do
+    if !s.is_tracking {
+        println!("[TrackCast][track] receiver-only mode (broadcast off)");
+        return;
+    }
+
+    // Broadcast start gating (logging/Telegram only):
+    // if we started while a track was already loaded, ignore same-track events
+    // until the first real track change.
+    if s.awaiting_first_live_change {
         if let Some(ref baseline) = s.start_baseline_track {
             if track.is_same_as(baseline) {
                 println!("[TrackCast][track] waiting first live change (same baseline)");
@@ -310,22 +332,9 @@ async fn handle_track_change(
         }
     }
 
-    // Anti-duplicate: if same as current track (normalized), update display but skip log
-    if let Some(ref current) = s.current_track {
-        if track.is_same_as(current) {
-            println!("[TrackCast][track] skip duplicate current");
-            return;
-        }
-    }
-
-    // New track — update display
-    s.current_track = Some(track.clone());
-    let _ = app_handle.emit("track-changed", &track);
-    println!("[TrackCast][track] emitted track-changed");
-
-    // If not tracking, nothing more to do
-    if !s.is_tracking {
-        println!("[TrackCast][track] not tracking");
+    // Keep broadcast set/telegram duplicate-safe too.
+    if is_duplicate_current {
+        println!("[TrackCast][track] skip duplicate in broadcast");
         return;
     }
 

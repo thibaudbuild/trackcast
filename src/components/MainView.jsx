@@ -2,6 +2,7 @@ export default function MainView({
   currentTrack,
   trackHistory,
   isTracking,
+  hasFreshTrackEvent,
   unboxConnected,
   onStartStop,
   onExport,
@@ -19,15 +20,13 @@ export default function MainView({
     label: "Stereo Deluxe",
   };
 
-  const demoHistory = [
-    { time: "22:41", artist: "Binary Digit", title: "Sneaking Out Of The Club", bpm: 136 },
-    { time: "22:35", artist: "Phonique", title: "Vincent Price", bpm: 121 },
-    { time: "22:28", artist: "Daft Punk", title: "The Game of Love", bpm: 100 },
-  ];
-
   const displayTrack = currentTrack || (!isTracking ? demoTrack : null);
-  const displayHistory = trackHistory.length > 0 ? trackHistory : (!isTracking ? demoHistory : []);
-  const nowPlayingActive = isTracking;
+  const displayHistory = trackHistory;
+  const hasRealNowPlaying = Boolean(currentTrack);
+  const nowPlayingActive = isTracking || (hasRealNowPlaying && hasFreshTrackEvent);
+  const nowPlayingLabel = hasRealNowPlaying
+    ? (nowPlayingActive ? "now playing" : "last known")
+    : "now playing";
 
   return (
     <div className="app">
@@ -35,7 +34,7 @@ export default function MainView({
       <div className="now-playing">
         <div className={`np-eyebrow ${nowPlayingActive ? "live" : ""}`}>
           <div className={`np-eyebrow-dot ${nowPlayingActive ? "live" : ""}`} />
-          now playing
+          {nowPlayingLabel}
         </div>
         {displayTrack ? (
           <>
@@ -109,7 +108,7 @@ export default function MainView({
 
       <div className="log-list">
         {displayHistory.length === 0 ? (
-          <div className="log-empty">—</div>
+          <div className="log-empty">{isTracking ? "Recording... first track pending" : "—"}</div>
         ) : (
           displayHistory.map((track, i) => (
             <div key={i} className={`log-item ${i === 0 ? "current" : ""}`}>
