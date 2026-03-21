@@ -347,9 +347,7 @@ export default function Settings({
               placeholder="Live @ Fabric, Club night, Open air..."
               spellCheck={false}
             />
-            <span className="selectable-text" style={{
-              fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-dim)"
-            }}>
+            <span className="settings-hint selectable-text">
               Shown in track and set messages
             </span>
           </div>
@@ -359,11 +357,11 @@ export default function Settings({
               <span className="row-num">—</span>
               Track Messages
             </div>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            <div className="settings-presets">
               {TEMPLATE_PRESETS.filter(p => p.value).map((p) => (
                 <button
                   key={p.value}
-                  className={`inline-btn ${template === p.value ? "ok" : ""}`}
+                  className={`inline-btn template-preset-btn ${template === p.value ? "ok" : ""}`}
                   onClick={() => setTemplate(p.value)}
                   disabled={isTracking}
                 >
@@ -405,23 +403,14 @@ export default function Settings({
                 <span className="tc-check-text">Append Key</span>
               </label>
             </div>
-            <span className="selectable-text" style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-dim)" }}>
+            <span className="settings-hint selectable-text">
               Variables: <code style={{ color: "var(--amber)" }}>{"{artist}"}</code>{" "}
               <code style={{ color: "var(--amber)" }}>{"{title}"}</code>{" "}
               <code style={{ color: "var(--amber)" }}>{"{set_name}"}</code>{" "}
               <code style={{ color: "var(--amber)" }}>{"{bpm}"}</code>{" "}
               <code style={{ color: "var(--amber)" }}>{"{key}"}</code>
             </span>
-            <div style={{
-              fontFamily: "var(--mono)",
-              fontSize: 11,
-              color: "var(--text-mid)",
-              background: "transparent",
-              border: "1px solid var(--border)",
-              borderRadius: "var(--radius-sm)",
-              padding: "8px 10px",
-              lineHeight: 1.5,
-            }}>
+            <div className="settings-preview">
               {preview}
             </div>
           </div>
@@ -462,22 +451,12 @@ export default function Settings({
               spellCheck={false}
               placeholder="just finished playing {set_name}"
             />
-            <span className="selectable-text" style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-dim)" }}>
+            <span className="settings-hint selectable-text">
               Variable: <code style={{ color: "var(--amber)" }}>{"{set_name}"}</code>
             </span>
-            <div style={{
-              fontFamily: "var(--mono)",
-              fontSize: 11,
-              color: "var(--text-mid)",
-              background: "transparent",
-              border: "1px solid var(--border)",
-              borderRadius: "var(--radius-sm)",
-              padding: "8px 10px",
-              lineHeight: 1.5,
-              opacity: sessionMessagesEnabled ? 1 : 0.5,
-            }}>
+            <div className={`settings-preview ${sessionMessagesEnabled ? "" : "muted"}`}>
               <div>{sessionStartPreview}</div>
-              <div style={{ marginTop: 4 }}>{sessionEndPreview}</div>
+              <div className="settings-preview-line">{sessionEndPreview}</div>
             </div>
           </div>
         </>

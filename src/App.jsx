@@ -335,9 +335,9 @@ export default function App() {
               onClick={() => setActiveTab(activeTab === "history" ? "main" : "history")}
             >
               <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">
-                <path d="M6 7.5h12" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-                <path d="M6 12h12" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-                <path d="M6 16.5h12" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+                <path d="M6 7.5h12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                <path d="M6 12h12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                <path d="M6 16.5h12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
               </svg>
             </button>
             <button className="settings-btn theme-btn" onClick={handleToggleTheme}>◐</button>

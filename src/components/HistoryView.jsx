@@ -111,7 +111,7 @@ export default function HistoryView() {
                           d="M9 3h6m-9 4h12M10 10v7m4-7v7M7 7l1 12a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2l1-12"
                           fill="none"
                           stroke="currentColor"
-                          strokeWidth="1.7"
+                          strokeWidth="1.8"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         />
