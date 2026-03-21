@@ -32,8 +32,17 @@ const maskToken = (token) => {
   return `${token.slice(0, 6)}···${token.slice(-4)}`;
 };
 
-export default function Settings({ config, onSave, isTracking = false }) {
-  const [tab, setTab] = useState("connection");
+export default function Settings({
+  config,
+  onSave,
+  isTracking = false,
+  tab: controlledTab,
+  onTabChange,
+  showTabBar = true,
+}) {
+  const [localTab, setLocalTab] = useState("connection");
+  const tab = controlledTab ?? localTab;
+  const setTab = onTabChange ?? setLocalTab;
 
   // Connection fields
   const [token, setToken]           = useState(config?.telegram_token || "");
@@ -148,34 +157,35 @@ export default function Settings({ config, onSave, isTracking = false }) {
 
   return (
     <div className={`settings-panel ${isTracking ? "is-locked" : ""}`}>
-      {/* Tab bar */}
-      <div style={{
-        display: "flex",
-        borderBottom: "1px solid var(--border)",
-        background: "var(--bg)",
-      }}>
-        {TABS.map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            style={{
-              padding: "10px 20px",
-              background: "none",
-              border: "none",
-              borderBottom: tab === t ? "1px solid var(--amber)" : "1px solid transparent",
-              color: tab === t ? "var(--amber)" : "var(--text-dim)",
-              fontFamily: "var(--mono)",
-              fontSize: "10px",
-              letterSpacing: "1.5px",
-              textTransform: "uppercase",
-              cursor: "pointer",
-              marginBottom: "-1px",
-            }}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
+      {showTabBar && (
+        <div style={{
+          display: "flex",
+          borderBottom: "1px solid var(--border)",
+          background: "var(--bg)",
+        }}>
+          {TABS.map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              style={{
+                padding: "10px 20px",
+                background: "none",
+                border: "none",
+                borderBottom: tab === t ? "1px solid var(--amber)" : "1px solid transparent",
+                color: tab === t ? "var(--amber)" : "var(--text-dim)",
+                fontFamily: "var(--mono)",
+                fontSize: "10px",
+                letterSpacing: "1.5px",
+                textTransform: "uppercase",
+                cursor: "pointer",
+                marginBottom: "-1px",
+              }}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      )}
 
       {isTracking && (
         <div className="settings-locked-banner">
@@ -395,13 +405,13 @@ export default function Settings({ config, onSave, isTracking = false }) {
             </span>
             <div style={{
               fontFamily: "var(--mono)",
-              fontSize: 12,
+              fontSize: 11,
               color: "var(--text-mid)",
               background: "transparent",
               border: "1px solid var(--border)",
               borderRadius: "var(--radius-sm)",
-              padding: "10px 12px",
-              lineHeight: 1.6,
+              padding: "8px 10px",
+              lineHeight: 1.5,
             }}>
               {preview}
             </div>
@@ -448,17 +458,17 @@ export default function Settings({ config, onSave, isTracking = false }) {
             </span>
             <div style={{
               fontFamily: "var(--mono)",
-              fontSize: 12,
+              fontSize: 11,
               color: "var(--text-mid)",
               background: "transparent",
               border: "1px solid var(--border)",
               borderRadius: "var(--radius-sm)",
-              padding: "10px 12px",
-              lineHeight: 1.6,
+              padding: "8px 10px",
+              lineHeight: 1.5,
               opacity: sessionMessagesEnabled ? 1 : 0.5,
             }}>
               <div>{sessionStartPreview}</div>
-              <div style={{ marginTop: 6 }}>{sessionEndPreview}</div>
+              <div style={{ marginTop: 4 }}>{sessionEndPreview}</div>
             </div>
           </div>
         </>

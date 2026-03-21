@@ -7,21 +7,34 @@ import MainView from "./components/MainView";
 import Settings from "./components/Settings";
 import HistoryView from "./components/HistoryView";
 
+const DJ_OPTIONS = [
+  { value: "rekordbox", label: "Rekordbox" },
+  { value: "serato", label: "Serato DJ Pro" },
+  { value: "traktor", label: "Traktor Pro 3" },
+  { value: "virtualdj", label: "VirtualDJ" },
+  { value: "mixxx", label: "Mixxx" },
+  { value: "djuced", label: "DJUCED" },
+  { value: "djay", label: "djay Pro" },
+  { value: "denon", label: "Denon DJ" },
+];
+
 export default function App() {
   const [config, setConfig] = useState(null);
-  const [view, setView] = useState("main"); // main, settings, history
+  const [activeTab, setActiveTab] = useState("main"); // main, connection, display, history
   const [theme, setTheme] = useState(() => localStorage.getItem("trackcast-theme") || "night");
   const [currentTrack, setCurrentTrack] = useState(null);
   const [trackHistory, setTrackHistory] = useState([]);
   const [isTracking, setIsTracking] = useState(false);
   const [actionBusy, setActionBusy] = useState(false);
   const [unboxConnected, setUnboxConnected] = useState(false);
+  const [retryingConnection, setRetryingConnection] = useState(false);
   const [telegramStatus, setTelegramStatus] = useState("idle"); // idle, sent, error
   const [canExportCurrentSet, setCanExportCurrentSet] = useState(false);
   const [liveStartedAt, setLiveStartedAt] = useState(null);
   const [liveElapsedLabel, setLiveElapsedLabel] = useState("00:00");
   const [showStopConfirm, setShowStopConfirm] = useState(false);
   const isTrackingRef = useRef(false);
+  const connectTimeoutRef = useRef(null);
 
   const normalizeTrackValue = (v) => (v || "").trim().toLowerCase();
   const sameTrack = (a, b) =>
@@ -37,7 +50,6 @@ export default function App() {
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
 
-  // Load config on mount
   useEffect(() => {
     invoke("get_config")
       .then((cfg) => setConfig(cfg))
@@ -61,7 +73,6 @@ export default function App() {
       );
   }, []);
 
-  // Export availability depends on current in-memory set, not history files.
   useEffect(() => {
     invoke("get_track_history")
       .then((tracks) => setCanExportCurrentSet(Array.isArray(tracks) && tracks.length > 0))
@@ -89,7 +100,6 @@ export default function App() {
     return () => clearInterval(id);
   }, [isTracking, liveStartedAt]);
 
-  // Listen to backend events
   useEffect(() => {
     const unlisteners = [];
     let disposed = false;
@@ -104,9 +114,9 @@ export default function App() {
     };
 
     registerListener("track-changed", (event) => {
-      if (!isTrackingRef.current) return;
       const incoming = event.payload;
       setCurrentTrack(incoming);
+      if (!isTrackingRef.current) return;
       setTrackHistory((prev) => {
         if (prev.length > 0 && sameTrack(incoming, prev[0])) {
           return prev;
@@ -147,6 +157,37 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (unboxConnected && retryingConnection) {
+      if (connectTimeoutRef.current) {
+        clearTimeout(connectTimeoutRef.current);
+        connectTimeoutRef.current = null;
+      }
+      setRetryingConnection(false);
+    }
+  }, [unboxConnected, retryingConnection]);
+
+  const handleRetryConnection = async () => {
+    setRetryingConnection(true);
+    if (connectTimeoutRef.current) {
+      clearTimeout(connectTimeoutRef.current);
+    }
+    connectTimeoutRef.current = setTimeout(() => {
+      setRetryingConnection(false);
+      connectTimeoutRef.current = null;
+    }, 12000);
+    try {
+      await invoke("retry_connection");
+    } catch (e) {
+      if (connectTimeoutRef.current) {
+        clearTimeout(connectTimeoutRef.current);
+        connectTimeoutRef.current = null;
+      }
+      setRetryingConnection(false);
+      alert(`Retry failed: ${e}`);
+    }
+  };
+
   const handleStartStop = async () => {
     if (actionBusy) return;
     if (isTracking) {
@@ -158,7 +199,6 @@ export default function App() {
         setIsTracking(true);
         setLiveStartedAt(Date.now());
         setLiveElapsedLabel("00:00");
-        setCurrentTrack(null);
         setTrackHistory([]);
         setCanExportCurrentSet(false);
       } catch (e) {
@@ -177,7 +217,6 @@ export default function App() {
       setIsTracking(false);
       setLiveStartedAt(null);
       setLiveElapsedLabel("00:00");
-      setCurrentTrack(null);
       const tracks = await invoke("get_track_history");
       setCanExportCurrentSet(Array.isArray(tracks) && tracks.length > 0);
     } finally {
@@ -198,7 +237,6 @@ export default function App() {
         await writeTextFile(filePath, txt);
       }
     } catch (_) {
-      // fallback: clipboard
       try {
         const txt = await invoke("export_set");
         await navigator.clipboard.writeText(txt);
@@ -228,75 +266,148 @@ export default function App() {
 
   if (!config) return null;
 
-  if (view === "settings") {
-    return (
-      <div className="app">
-        <div className="titlebar">
-          <span className="titlebar-name">TrackCast</span>
-          <div className="titlebar-right">
-            <button className="settings-btn icon-only slot-ghost" aria-hidden="true" tabIndex={-1}>
-              <svg viewBox="0 0 24 24" width="13" height="13">
-                <path d="M12 3v11" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-                <path d="M7.5 10.5 12 15l4.5-4.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M5 17.5v1.8c0 1.5 1.2 2.7 2.7 2.7h8.6c1.5 0 2.7-1.2 2.7-2.7v-1.8" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-              </svg>
-            </button>
-            <button
-              className="settings-btn theme-btn"
-              onClick={handleToggleTheme}
-            >
-              ◐
-            </button>
-            <button className="settings-btn close-btn" onClick={() => setView("main")}>✕</button>
-          </div>
-        </div>
-        <div className="settings-view">
-          <Settings config={config} onSave={handleSaveConfig} isTracking={isTracking} />
-        </div>
-      </div>
-    );
-  }
+  const softwareConfigured = Boolean((config.dj_software || "").trim());
+  const softwareLabel = DJ_OPTIONS.find((d) => d.value === config.dj_software)?.label || "Not configured";
+  const canStart = softwareConfigured && !actionBusy;
 
-  if (view === "history") {
-    return (
-      <div className="app">
-        <div className="titlebar">
-          <span className="titlebar-name">TrackCast</span>
-          <div className="titlebar-right">
-            <button className="settings-btn" onClick={() => setView("main")}>✕</button>
-          </div>
-        </div>
-        <div className="settings-view">
-          <HistoryView />
-        </div>
-      </div>
-    );
-  }
+  const telegramFingerprint = (token, chatId) =>
+    `${(token || "").trim()}::${(chatId || "").trim()}`;
+  const telegramCurrentFp = telegramFingerprint(config.telegram_token, config.telegram_chat_id);
+  const telegramConnected = Boolean(
+    config.telegram_verified &&
+    telegramCurrentFp !== "::" &&
+    (config.telegram_verified_fingerprint === telegramCurrentFp || !config.telegram_verified_fingerprint)
+  );
+
+  const telegramStatusClass =
+    telegramStatus === "sent" ? "amber" :
+    telegramStatus === "error" ? "red" :
+    telegramConnected ? "green" : "";
+  const telegramDotClass =
+    telegramStatus === "sent" ? "amber pulse" :
+    telegramStatus === "error" ? "red" :
+    telegramConnected ? "green" : "";
+
+  const receiverConnecting = retryingConnection;
+  const receiverReady = unboxConnected;
+  const receiverCanConnect = softwareConfigured && !receiverReady && !receiverConnecting && !actionBusy;
+  const receiverStatusClass = receiverReady ? "green" : receiverConnecting ? "amber" : "";
+  const receiverDotClass = receiverReady ? "green" : receiverConnecting ? "amber pulse" : "";
+  const receiverStatusLabel = receiverReady ? "Ready" : receiverConnecting ? "Connecting..." : "Not ready";
 
   return (
     <>
-      <MainView
-        config={config}
-        currentTrack={currentTrack}
-        trackHistory={trackHistory}
-        isTracking={isTracking}
-        unboxConnected={unboxConnected}
-        telegramStatus={telegramStatus}
-        onStartStop={handleStartStop}
-        onExport={handleExport}
-        onSettings={() => setView("settings")}
-        onHistory={() => setView("history")}
-        onToggleTheme={handleToggleTheme}
-        theme={theme}
-        onConfigChange={handleSaveConfig}
-        canExportCurrentSet={canExportCurrentSet}
-        liveElapsedLabel={liveElapsedLabel}
-        actionBusy={actionBusy}
-      />
+      <div className="app">
+        <div className="titlebar">
+          <div className="app-logo" aria-hidden="true" />
+          <div className="titlebar-status">
+            <div className={`sb-item ${softwareConfigured ? "green" : ""}`}>
+              <div className={`sb-dot ${softwareConfigured ? "green" : ""}`} />
+              {softwareLabel}
+            </div>
+            <div className={`sb-item ${telegramStatusClass}`}>
+              <div className={`sb-dot ${telegramDotClass}`} />
+              Telegram
+            </div>
+            <button
+              className={`sb-item sb-item-action ${receiverStatusClass} ${receiverCanConnect ? "clickable" : ""}`}
+              onClick={receiverCanConnect ? handleRetryConnection : undefined}
+              disabled={!receiverCanConnect}
+              title={receiverCanConnect ? "Connect track input" : undefined}
+            >
+              <div className={`sb-dot ${receiverDotClass}`} />
+              <span>Track Input:</span>
+              {receiverConnecting && <span className="btn-spinner" aria-hidden="true" />}
+              <span>{receiverStatusLabel}</span>
+            </button>
+          </div>
+          <div className="titlebar-right">
+            <button
+              className={`settings-btn icon-only history-btn ${activeTab === "history" ? "active" : ""}`}
+              onClick={() => setActiveTab(activeTab === "history" ? "main" : "history")}
+            >
+              <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">
+                <path d="M6 7.5h12" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+                <path d="M6 12h12" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+                <path d="M6 16.5h12" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+              </svg>
+            </button>
+            <button className="settings-btn theme-btn" onClick={handleToggleTheme}>◐</button>
+          </div>
+        </div>
+
+        <div className="shell-tabs">
+          <button
+            className={`shell-tab ${activeTab === "main" ? "active" : ""}`}
+            onClick={() => setActiveTab("main")}
+          >
+            Session
+          </button>
+          <button
+            className={`shell-tab ${activeTab === "connection" ? "active" : ""}`}
+            onClick={() => setActiveTab("connection")}
+          >
+            Connection
+          </button>
+          <button
+            className={`shell-tab ${activeTab === "display" ? "active" : ""}`}
+            onClick={() => setActiveTab("display")}
+          >
+            Display
+          </button>
+        </div>
+
+        {activeTab === "main" && (
+          <MainView
+            currentTrack={currentTrack}
+            trackHistory={trackHistory}
+            isTracking={isTracking}
+            unboxConnected={unboxConnected}
+            onStartStop={handleStartStop}
+            onExport={handleExport}
+            canExportCurrentSet={canExportCurrentSet}
+            liveElapsedLabel={liveElapsedLabel}
+            actionBusy={actionBusy}
+            canStart={canStart}
+            softwareConfigured={softwareConfigured}
+          />
+        )}
+
+        {activeTab === "connection" && (
+          <div className="settings-view">
+            <Settings
+              config={config}
+              onSave={handleSaveConfig}
+              isTracking={isTracking}
+              tab="connection"
+              showTabBar={false}
+            />
+          </div>
+        )}
+
+        {activeTab === "display" && (
+          <div className="settings-view">
+            <Settings
+              config={config}
+              onSave={handleSaveConfig}
+              isTracking={isTracking}
+              tab="display"
+              showTabBar={false}
+            />
+          </div>
+        )}
+
+        {activeTab === "history" && (
+          <div className="settings-view">
+            <HistoryView />
+          </div>
+        )}
+      </div>
+
       {showStopConfirm && (
         <div className="tc-modal-backdrop">
           <div className="tc-modal">
-            <div className="tc-modal-title">Stop Live</div>
+            <div className="tc-modal-header" />
             <div className="tc-modal-text">Stop broadcasting now?</div>
             <div className="tc-modal-actions">
               <button className="inline-btn" onClick={() => setShowStopConfirm(false)} disabled={actionBusy}>

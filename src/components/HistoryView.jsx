@@ -127,7 +127,7 @@ export default function HistoryView() {
       {deleteCandidate && (
         <div className="tc-modal-backdrop">
           <div className="tc-modal">
-            <div className="tc-modal-title">Delete Set</div>
+            <div className="tc-modal-header" />
             <div className="tc-modal-text">Delete "{deleteCandidate.label}" permanently?</div>
             <div className="tc-modal-actions">
               <button className="inline-btn" onClick={() => setDeleteCandidate(null)} disabled={!!deletingFile}>
