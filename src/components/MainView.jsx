@@ -23,6 +23,8 @@ export default function MainView({
   onExport,
   onSettings,
   onHistory,
+  onToggleTheme,
+  theme,
   onConfigChange,
   canExportCurrentSet,
   liveElapsedLabel,
@@ -136,14 +138,20 @@ export default function MainView({
       <div className="titlebar">
         <span className="titlebar-name">TrackCast</span>
         <div className="titlebar-right">
-          <button className="settings-btn icon-only" onClick={onHistory} title="History">
-            <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
-              <path d="M12 3v11" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-              <path d="M7.5 10.5 12 15l4.5-4.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M5 17.5v1.8c0 1.5 1.2 2.7 2.7 2.7h8.6c1.5 0 2.7-1.2 2.7-2.7v-1.8" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+          <button className="settings-btn icon-only history-btn" onClick={onHistory}>
+            <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">
+              <path d="M12 3v11" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+              <path d="M7.5 10.5 12 15l4.5-4.5" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M5 17.5v1.8c0 1.5 1.2 2.7 2.7 2.7h8.6c1.5 0 2.7-1.2 2.7-2.7v-1.8" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
             </svg>
           </button>
-          <button className="settings-btn" onClick={onSettings} title="Settings">
+          <button
+            className="settings-btn theme-btn"
+            onClick={onToggleTheme}
+          >
+            ◐
+          </button>
+          <button className="settings-btn settings-glyph-btn" onClick={onSettings}>
             ⚙
           </button>
         </div>
@@ -259,36 +267,56 @@ export default function MainView({
       </div>
 
       {/* ── Controls ─────────────────────────── */}
-      <div className="controls-bar">
+      <div className={`controls-bar ${isTracking ? "is-live" : ""}`}>
         {isTracking ? (
           <>
-            <button className="btn-broadcast stop" onClick={onStartStop} disabled={actionBusy}>
-              ■ &nbsp;Stop
-            </button>
-            <div className="live-badge">
+            <div className="controls-left">
+              <button className="btn-broadcast stop" onClick={onStartStop} disabled={actionBusy}>
+                ■ &nbsp;Stop
+              </button>
+              <button
+                className="controls-export export-icon-only"
+                onClick={onExport}
+                disabled={isTracking || !canExportCurrentSet}
+                title={!canExportCurrentSet ? "No active set to export" : "Export set"}
+                aria-label="Export set"
+              >
+                <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
+                  <path d="M12 3v11" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                  <path d="M7.5 10.5 12 15l4.5-4.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M5 17.5v1.8c0 1.5 1.2 2.7 2.7 2.7h8.6c1.5 0 2.7-1.2 2.7-2.7v-1.8" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+            <div className="live-runtime">
               <div className="live-dot" />
-              LIVE
               <span className="live-time">{liveElapsedLabel}</span>
             </div>
           </>
         ) : (
-          <button
-            className="btn-broadcast start"
-            onClick={onStartStop}
-            disabled={!isReady || actionBusy}
-          >
-            ▶ &nbsp;Start broadcasting
-          </button>
+          <>
+            <button
+              className="btn-broadcast start"
+              onClick={onStartStop}
+              disabled={!isReady || actionBusy}
+            >
+              ▶ &nbsp;Start broadcasting
+            </button>
+            <button
+              className="controls-export export-icon-only"
+              onClick={onExport}
+              disabled={isTracking || !canExportCurrentSet}
+              title={!canExportCurrentSet ? "No active set to export" : "Export set"}
+              aria-label="Export set"
+            >
+              <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
+                <path d="M12 3v11" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                <path d="M7.5 10.5 12 15l4.5-4.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M5 17.5v1.8c0 1.5 1.2 2.7 2.7 2.7h8.6c1.5 0 2.7-1.2 2.7-2.7v-1.8" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+              </svg>
+            </button>
+          </>
         )}
-        <button
-          className="btn-ghost"
-          onClick={onExport}
-          disabled={isTracking || !canExportCurrentSet}
-          title={!canExportCurrentSet ? "No active set to export" : undefined}
-          style={{ marginLeft: "auto" }}
-        >
-          Export set
-        </button>
       </div>
 
       {/* ── Set list ─────────────────────────── */}

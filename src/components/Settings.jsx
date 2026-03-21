@@ -43,6 +43,7 @@ export default function Settings({ config, onSave, isTracking = false }) {
   const [testError, setTestError]   = useState("");
   const [editingSoftware, setEditingSoftware] = useState(!config?.dj_software);
   const [editingToken, setEditingToken] = useState(!config?.telegram_token);
+  const [editingChat, setEditingChat] = useState(!config?.telegram_chat_id);
 
   const initialToken = config?.telegram_token || "";
   const initialChatId = config?.telegram_chat_id || "";
@@ -74,7 +75,8 @@ export default function Settings({ config, onSave, isTracking = false }) {
   const tokenChatChanged = token !== initialToken || chatId !== initialChatId;
   const tokenChatFilled = token.trim() !== "" && chatId.trim() !== "";
   const softwareChanged = djSoftware !== (config?.dj_software || "");
-  const connectionChanged = softwareChanged || tokenChatChanged;
+  const connectionUiEditing = editingSoftware || editingToken || editingChat;
+  const connectionChanged = softwareChanged || tokenChatChanged || connectionUiEditing;
   const connectionSaveEnabled =
     connectionChanged && (!tokenChatChanged || !tokenChatFilled || testOk);
   const displayChanged =
@@ -103,11 +105,10 @@ export default function Settings({ config, onSave, isTracking = false }) {
     setTesting(false);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const fp = telegramFingerprint(token, chatId);
     const verifiedForCurrentValues = tokenChatFilled && (testOk || (!tokenChatChanged && initialVerified));
-
-    onSave({
+    await onSave({
       dj_software: djSoftware,
       telegram_token: token,
       telegram_chat_id: chatId,
@@ -124,6 +125,11 @@ export default function Settings({ config, onSave, isTracking = false }) {
       session_start_template: sessionStartTemplate,
       session_end_template: sessionEndTemplate,
     });
+
+    // Relock fields after successful save so UI reflects persisted state.
+    setEditingSoftware(false);
+    if (token.trim() !== "") setEditingToken(false);
+    if (chatId.trim() !== "") setEditingChat(false);
   };
 
   // Live preview of the message
@@ -141,12 +147,12 @@ export default function Settings({ config, onSave, isTracking = false }) {
     .replace("{set_name}", setName || "My Live Set");
 
   return (
-    <>
+    <div className={`settings-panel ${isTracking ? "is-locked" : ""}`}>
       {/* Tab bar */}
       <div style={{
         display: "flex",
         borderBottom: "1px solid var(--border)",
-        background: "var(--bg-1)",
+        background: "var(--bg)",
       }}>
         {TABS.map((t) => (
           <button
@@ -221,16 +227,9 @@ export default function Settings({ config, onSave, isTracking = false }) {
             </div>
             {token && !editingToken ? (
               <div className="input-row">
-                <div
-                  className="tc-input selectable-text"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    color: "var(--text)",
-                  }}
-                  title={token}
-                >
-                  {maskToken(token)}
+                <div className="select-locked selectable-text" style={{ flex: 1 }} title={token}>
+                  <span className="select-check">✓</span>
+                  <span>{maskToken(token)}</span>
                 </div>
                 <button
                   className="inline-btn"
@@ -270,19 +269,35 @@ export default function Settings({ config, onSave, isTracking = false }) {
               Channel / Group ID
             </div>
             <div className="input-row">
-              <input
-                className="tc-input"
-                type="text"
-                value={chatId}
-                onChange={(e) => {
-                  setChatId(e.target.value);
-                  setTestOk(false);
-                  setTestError("");
-                }}
-                disabled={isTracking}
-                placeholder="@yourchannel or -1001234567890"
-                spellCheck={false}
-              />
+              {chatId && !editingChat ? (
+                <div className="select-locked" style={{ flex: 1 }}>
+                  <span className="select-check">✓</span>
+                  <span>{chatId}</span>
+                </div>
+              ) : (
+                <input
+                  className="tc-input"
+                  type="text"
+                  value={chatId}
+                  onChange={(e) => {
+                    setChatId(e.target.value);
+                    setTestOk(false);
+                    setTestError("");
+                  }}
+                  disabled={isTracking}
+                  placeholder="@yourchannel or -1001234567890"
+                  spellCheck={false}
+                />
+              )}
+              {chatId && !editingChat && (
+                <button
+                  className="inline-btn"
+                  disabled={isTracking}
+                  onClick={() => setEditingChat(true)}
+                >
+                  edit
+                </button>
+              )}
               <button className="inline-btn" onClick={handleTest} disabled={isTracking || !token || !chatId || testing}>
                 {testing ? "···" : "test"}
               </button>
@@ -337,34 +352,38 @@ export default function Settings({ config, onSave, isTracking = false }) {
                 </button>
               ))}
             </div>
-            <input
-              className="tc-input"
-              type="text"
-              value={template}
-              onChange={(e) => setTemplate(e.target.value)}
-              disabled={isTracking}
-              spellCheck={false}
-            />
-            <div style={{ display: "flex", gap: 8 }}>
-              <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+            {isTracking ? (
+              <div className="settings-preview-like">{template}</div>
+            ) : (
+              <input
+                className="tc-input"
+                type="text"
+                value={template}
+                onChange={(e) => setTemplate(e.target.value)}
+                disabled={isTracking}
+                spellCheck={false}
+              />
+            )}
+            <div style={{ display: "flex", gap: 12 }}>
+              <label className="tc-check-label">
                 <input
+                  className="tc-checkbox"
                   type="checkbox"
                   checked={showBpm}
                   onChange={(e) => setShowBpm(e.target.checked)}
                   disabled={isTracking}
-                  style={{ accentColor: "var(--amber)" }}
                 />
-                <span style={{ fontSize: 13 }}>Append BPM</span>
+                <span className="tc-check-text">Append BPM</span>
               </label>
-              <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+              <label className="tc-check-label">
                 <input
+                  className="tc-checkbox"
                   type="checkbox"
                   checked={showKey}
                   onChange={(e) => setShowKey(e.target.checked)}
                   disabled={isTracking}
-                  style={{ accentColor: "var(--amber)" }}
                 />
-                <span style={{ fontSize: 13 }}>Append Key</span>
+                <span className="tc-check-text">Append Key</span>
               </label>
             </div>
             <span className="selectable-text" style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-dim)" }}>
@@ -377,9 +396,9 @@ export default function Settings({ config, onSave, isTracking = false }) {
             <div style={{
               fontFamily: "var(--mono)",
               fontSize: 12,
-              color: "var(--white)",
-              background: "var(--bg-2)",
-              border: "1px solid var(--border-2)",
+              color: "var(--text-mid)",
+              background: "transparent",
+              border: "1px solid var(--border)",
               borderRadius: "var(--radius-sm)",
               padding: "10px 12px",
               lineHeight: 1.6,
@@ -393,15 +412,15 @@ export default function Settings({ config, onSave, isTracking = false }) {
               <span className="row-num">—</span>
               Set Auto Messages
             </div>
-            <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: isTracking ? "default" : "pointer" }}>
+            <label className="tc-check-label">
               <input
+                className="tc-checkbox"
                 type="checkbox"
                 checked={sessionMessagesEnabled}
                 onChange={(e) => setSessionMessagesEnabled(e.target.checked)}
                 disabled={isTracking}
-                style={{ accentColor: "var(--amber)" }}
               />
-              <span style={{ fontSize: 13 }}>Send automatic start/end set messages</span>
+              <span className="tc-check-text">Send automatic start/end set messages</span>
             </label>
             {sessionMessagesInvalid && (
               <div className="input-error">Set name is required when auto messages are enabled.</div>
@@ -445,7 +464,7 @@ export default function Settings({ config, onSave, isTracking = false }) {
         </>
       )}
 
-      <div className="row active" style={{ borderBottom: "none" }}>
+      <div className="row settings-save-row" style={{ borderBottom: "none" }}>
         <button
           className="btn-broadcast start"
           style={{ alignSelf: "flex-start" }}
@@ -455,6 +474,6 @@ export default function Settings({ config, onSave, isTracking = false }) {
           Save
         </button>
       </div>
-    </>
+    </div>
   );
 }

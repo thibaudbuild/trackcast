@@ -10,6 +10,7 @@ import HistoryView from "./components/HistoryView";
 export default function App() {
   const [config, setConfig] = useState(null);
   const [view, setView] = useState("main"); // main, settings, history
+  const [theme, setTheme] = useState(() => localStorage.getItem("trackcast-theme") || "night");
   const [currentTrack, setCurrentTrack] = useState(null);
   const [trackHistory, setTrackHistory] = useState([]);
   const [isTracking, setIsTracking] = useState(false);
@@ -70,6 +71,11 @@ export default function App() {
   useEffect(() => {
     isTrackingRef.current = isTracking;
   }, [isTracking]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("trackcast-theme", theme);
+  }, [theme]);
 
   useEffect(() => {
     if (!isTracking || !liveStartedAt) {
@@ -208,7 +214,16 @@ export default function App() {
     if (softwareChanged) {
       setUnboxConnected(false);
     }
-    setView("main");
+  };
+
+  const handleToggleTheme = () => {
+    document.documentElement.classList.add("theme-changing");
+    setTheme((prev) => (prev === "day" ? "night" : "day"));
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.documentElement.classList.remove("theme-changing");
+      });
+    });
   };
 
   if (!config) return null;
@@ -219,7 +234,20 @@ export default function App() {
         <div className="titlebar">
           <span className="titlebar-name">TrackCast</span>
           <div className="titlebar-right">
-            <button className="settings-btn" onClick={() => setView("main")}>✕</button>
+            <button className="settings-btn icon-only slot-ghost" aria-hidden="true" tabIndex={-1}>
+              <svg viewBox="0 0 24 24" width="13" height="13">
+                <path d="M12 3v11" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                <path d="M7.5 10.5 12 15l4.5-4.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M5 17.5v1.8c0 1.5 1.2 2.7 2.7 2.7h8.6c1.5 0 2.7-1.2 2.7-2.7v-1.8" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+              </svg>
+            </button>
+            <button
+              className="settings-btn theme-btn"
+              onClick={handleToggleTheme}
+            >
+              ◐
+            </button>
+            <button className="settings-btn close-btn" onClick={() => setView("main")}>✕</button>
           </div>
         </div>
         <div className="settings-view">
@@ -258,6 +286,8 @@ export default function App() {
         onExport={handleExport}
         onSettings={() => setView("settings")}
         onHistory={() => setView("history")}
+        onToggleTheme={handleToggleTheme}
+        theme={theme}
         onConfigChange={handleSaveConfig}
         canExportCurrentSet={canExportCurrentSet}
         liveElapsedLabel={liveElapsedLabel}
