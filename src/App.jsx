@@ -24,6 +24,7 @@ export default function App() {
   const [showStopConfirm, setShowStopConfirm] = useState(false);
   const [lastTrackEventAt, setLastTrackEventAt] = useState(null);
   const [trackFreshTick, setTrackFreshTick] = useState(Date.now());
+  const [traktorSetupStatus, setTraktorSetupStatus] = useState(null);
   const isTrackingRef = useRef(false);
   const connectTimeoutRef = useRef(null);
 
@@ -63,6 +64,40 @@ export default function App() {
         })
       );
   }, []);
+
+  useEffect(() => {
+    if (!config) return;
+    if ((config.dj_software || "").trim() !== "traktor") {
+      setTraktorSetupStatus(null);
+      return;
+    }
+
+    let disposed = false;
+    const refresh = async () => {
+      try {
+        const status = await invoke("get_traktor_setup_status");
+        if (!disposed) setTraktorSetupStatus(status);
+      } catch (_) {
+        if (!disposed) {
+          setTraktorSetupStatus({
+            plugin_files_present: false,
+            runtime_api_reachable: false,
+            overall_ready: false,
+            expected_version: "unbox-d2-v1",
+            installed_version: null,
+            version_match: false,
+          });
+        }
+      }
+    };
+
+    refresh();
+    const id = setInterval(refresh, 2500);
+    return () => {
+      disposed = true;
+      clearInterval(id);
+    };
+  }, [config]);
 
   useEffect(() => {
     invoke("get_track_history")
@@ -239,6 +274,9 @@ export default function App() {
     if (softwareChanged) {
       setUnboxConnected(false);
     }
+    if ((full.dj_software || "").trim() !== "traktor") {
+      setTraktorSetupStatus(null);
+    }
   };
 
   const handleToggleTheme = () => {
@@ -254,16 +292,21 @@ export default function App() {
   if (!config) return null;
 
   const softwareConfigured = Boolean((config.dj_software || "").trim());
-  const canStart = softwareConfigured && !actionBusy;
+  const traktorSelected = (config.dj_software || "").trim() === "traktor";
+  const traktorSetupReady = !traktorSelected || Boolean(traktorSetupStatus?.overall_ready);
+  const canStart = softwareConfigured && traktorSetupReady && !actionBusy;
   const hasFreshTrackEvent =
     lastTrackEventAt != null && (trackFreshTick - lastTrackEventAt) < NOW_PLAYING_FRESH_MS;
 
   const receiverConnecting = retryingConnection;
   const receiverReady = unboxConnected;
-  const receiverCanConnect = softwareConfigured && !receiverReady && !receiverConnecting && !actionBusy;
+  const receiverCanConnect = softwareConfigured && traktorSetupReady && !receiverReady && !receiverConnecting && !actionBusy;
   const receiverStatusClass = receiverReady ? "green" : receiverConnecting ? "amber" : "";
   const receiverDotClass = receiverReady ? "green" : receiverConnecting ? "loading" : "";
   const receiverStatusLabel = receiverReady ? "Linked" : receiverConnecting ? "Pending" : "Connect";
+  const traktorSetupHint = traktorSelected && !traktorSetupReady
+    ? "Traktor setup incomplete — install helper + verify."
+    : "";
 
   return (
     <>
@@ -310,6 +353,7 @@ export default function App() {
               className={`sb-item sb-item-action ${receiverStatusClass} ${receiverCanConnect ? "clickable" : ""}`}
               onClick={receiverCanConnect ? handleRetryConnection : undefined}
               disabled={!receiverCanConnect}
+              title={!receiverCanConnect && traktorSetupHint ? traktorSetupHint : undefined}
             >
               <div className={`sb-dot ${receiverDotClass}`} />
               <span>{receiverStatusLabel}</span>
@@ -331,6 +375,7 @@ export default function App() {
             actionBusy={actionBusy}
             canStart={canStart}
             softwareConfigured={softwareConfigured}
+            startDisabledReason={traktorSetupHint}
           />
         )}
 
@@ -342,6 +387,7 @@ export default function App() {
               isTracking={isTracking}
               tab="connection"
               showTabBar={false}
+              traktorSetupStatus={traktorSetupStatus}
             />
           </div>
         )}
@@ -354,6 +400,7 @@ export default function App() {
               isTracking={isTracking}
               tab="display"
               showTabBar={false}
+              traktorSetupStatus={traktorSetupStatus}
             />
           </div>
         )}

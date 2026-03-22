@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 
 const DJ_OPTIONS = [
@@ -43,6 +43,7 @@ export default function Settings({
   tab: controlledTab,
   onTabChange,
   showTabBar = true,
+  traktorSetupStatus = null,
 }) {
   const [localTab, setLocalTab] = useState("connection");
   const tab = controlledTab ?? localTab;
@@ -61,6 +62,10 @@ export default function Settings({
   const [lockCopyUntilMouseLeave, setLockCopyUntilMouseLeave] = useState(false);
   const [testBtnHover, setTestBtnHover] = useState(false);
   const [lockOkUntilMouseLeave, setLockOkUntilMouseLeave] = useState(false);
+  const [traktorStatus, setTraktorStatus] = useState(traktorSetupStatus);
+  const [traktorBusyAction, setTraktorBusyAction] = useState("");
+  const [traktorInfo, setTraktorInfo] = useState("");
+  const [traktorError, setTraktorError] = useState("");
 
   const initialToken = config?.telegram_token || "";
   const initialChatId = config?.telegram_chat_id || "";
@@ -71,6 +76,41 @@ export default function Settings({
     initialFp === telegramFingerprint(initialToken, initialChatId)
   );
   const [testOk, setTestOk] = useState(initialVerified);
+
+  const refreshTraktorStatus = async () => {
+    if (djSoftware !== "traktor") return;
+    try {
+      const status = await invoke("get_traktor_setup_status");
+      setTraktorStatus(status);
+    } catch (_) {
+      setTraktorStatus({
+        plugin_files_present: false,
+        runtime_api_reachable: false,
+        overall_ready: false,
+        expected_version: "unbox-d2-v1",
+        installed_version: null,
+        version_match: false,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (djSoftware !== "traktor") {
+      setTraktorStatus(null);
+      setTraktorError("");
+      setTraktorInfo("");
+      setTraktorBusyAction("");
+      return;
+    }
+    refreshTraktorStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [djSoftware]);
+
+  useEffect(() => {
+    if (djSoftware === "traktor" && traktorSetupStatus) {
+      setTraktorStatus(traktorSetupStatus);
+    }
+  }, [djSoftware, traktorSetupStatus]);
 
   // Display fields
   const [setName, setSetName]       = useState(config?.set_name || "");
@@ -88,6 +128,8 @@ export default function Settings({
   const [sessionEndTemplate, setSessionEndTemplate] = useState(
     config?.session_end_template || DEFAULT_SESSION_END
   );
+  const displayScrollRef = useRef(null);
+  const [displayHasOverflow, setDisplayHasOverflow] = useState(false);
 
   const tokenChatChanged = token !== initialToken || chatId !== initialChatId;
   const tokenChatFilled = token.trim() !== "" && chatId.trim() !== "";
@@ -108,6 +150,55 @@ export default function Settings({
   const canSave = tab === "connection"
     ? connectionSaveEnabled
     : (displayChanged && !sessionMessagesInvalid);
+
+  const traktorNeedsSetup = djSoftware === "traktor" && !traktorStatus?.overall_ready;
+  const traktorStatusLabel =
+    !traktorStatus?.plugin_files_present
+      ? "Not installed"
+      : (traktorStatus?.overall_ready ? "Ready" : "Installed, waiting runtime verify");
+  const traktorInstallLabel = traktorStatus?.plugin_files_present ? "Reinstall" : "Install";
+
+  const handleInstallTraktorHelper = async () => {
+    setTraktorBusyAction("install");
+    setTraktorError("");
+    setTraktorInfo("");
+    try {
+      const msg = await invoke("install_traktor_helper");
+      setTraktorInfo(msg);
+      await refreshTraktorStatus();
+    } catch (e) {
+      setTraktorError(String(e));
+    }
+    setTraktorBusyAction("");
+  };
+
+  const handleOpenTraktorFolder = async () => {
+    setTraktorBusyAction("open");
+    setTraktorError("");
+    setTraktorInfo("");
+    try {
+      const msg = await invoke("open_traktor_csi_folder");
+      setTraktorInfo(msg);
+    } catch (e) {
+      setTraktorError(String(e));
+    }
+    setTraktorBusyAction("");
+  };
+
+  const handleVerifyTraktorRuntime = async () => {
+    setTraktorBusyAction("verify");
+    setTraktorError("");
+    setTraktorInfo("");
+    try {
+      const status = await invoke("verify_traktor_runtime");
+      setTraktorStatus(status);
+      setTraktorInfo("Traktor setup verified.");
+    } catch (e) {
+      setTraktorError(String(e));
+      await refreshTraktorStatus();
+    }
+    setTraktorBusyAction("");
+  };
 
   const handleTest = async () => {
     const startedAt = Date.now();
@@ -176,6 +267,29 @@ export default function Settings({
     .replace("{set_name}", setName || "My Live Set");
   const sessionEndPreview = (sessionEndTemplate || DEFAULT_SESSION_END)
     .replace("{set_name}", setName || "My Live Set");
+
+  useEffect(() => {
+    if (tab !== "display") {
+      setDisplayHasOverflow(false);
+      return;
+    }
+
+    const scrollEl = displayScrollRef.current;
+    if (!scrollEl) return;
+
+    const updateScrollState = () => {
+      setDisplayHasOverflow(scrollEl.scrollHeight - scrollEl.clientHeight > 2);
+    };
+
+    updateScrollState();
+    scrollEl.addEventListener("scroll", updateScrollState, { passive: true });
+    window.addEventListener("resize", updateScrollState);
+
+    return () => {
+      scrollEl.removeEventListener("scroll", updateScrollState);
+      window.removeEventListener("resize", updateScrollState);
+    };
+  }, [tab, setName, template, showBpm, showKey, sessionMessagesEnabled, sessionStartTemplate, sessionEndTemplate]);
 
   return (
     <div className={`settings-panel ${tab === "display" ? "tab-display" : ""} ${isTracking ? "is-locked" : ""}`}>
@@ -251,6 +365,50 @@ export default function Settings({
               </select>
             )}
           </div>
+
+          {djSoftware === "traktor" && (
+            <div className="row active">
+              <div className="row-label">
+                <span className="row-num">—</span>
+                Traktor Setup
+              </div>
+              <div className="traktor-setup-status">
+                <span className={`traktor-setup-dot ${traktorStatus?.overall_ready ? "ok" : (traktorStatus?.plugin_files_present ? "warn" : "")}`} />
+                <span>{traktorStatusLabel}</span>
+              </div>
+              <div className="input-row">
+                <button
+                  className="inline-btn"
+                  disabled={isTracking || traktorBusyAction !== ""}
+                  onClick={handleInstallTraktorHelper}
+                >
+                  {traktorBusyAction === "install" ? "···" : traktorInstallLabel}
+                </button>
+                <button
+                  className="inline-btn"
+                  disabled={isTracking || traktorBusyAction !== ""}
+                  onClick={handleOpenTraktorFolder}
+                >
+                  {traktorBusyAction === "open" ? "···" : "Open CSI folder"}
+                </button>
+                <button
+                  className={`inline-btn ${traktorStatus?.overall_ready ? "ok" : ""}`}
+                  disabled={isTracking || traktorBusyAction !== ""}
+                  onClick={handleVerifyTraktorRuntime}
+                >
+                  {traktorBusyAction === "verify" ? "···" : "Verify"}
+                </button>
+              </div>
+              {traktorNeedsSetup && (
+                <div className="input-error">Traktor setup incomplete — install helper + verify.</div>
+              )}
+              {traktorStatus?.plugin_files_present && traktorStatus?.version_match === false && (
+                <div className="settings-hint">Helper version mismatch. Reinstall recommended.</div>
+              )}
+              {traktorError && <div className="input-error">{traktorError}</div>}
+              {traktorInfo && <div className="settings-hint">{traktorInfo}</div>}
+            </div>
+          )}
 
           <div className="row active">
             <div className="row-label">
@@ -367,7 +525,7 @@ export default function Settings({
 
       {/* ── Display tab ──────────────────────── */}
       {tab === "display" && (
-        <div className="settings-display-scroll">
+        <div className="settings-display-scroll" ref={displayScrollRef}>
           <div className="row active">
             <div className="row-label">
               <span className="row-num">—</span>
@@ -507,7 +665,10 @@ export default function Settings({
         </div>
       )}
 
-      <div className="row settings-save-row" style={{ borderBottom: "none" }}>
+      <div
+        className={`row settings-save-row ${tab === "display" && displayHasOverflow ? "has-scroll-shadow" : ""}`}
+        style={{ borderBottom: "none" }}
+      >
         <button
           className="btn-broadcast start settings-save-btn"
           onClick={handleSave}

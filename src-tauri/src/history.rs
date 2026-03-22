@@ -99,6 +99,12 @@ pub fn export_set_by_filename(filename: &str) -> Result<String, String> {
     Ok(export_set_txt(&set))
 }
 
+pub fn load_set_by_filename(filename: &str) -> Result<DjSet, String> {
+    let path = sets_dir().join(filename);
+    let content = fs::read_to_string(&path).map_err(|e| e.to_string())?;
+    serde_json::from_str::<DjSet>(&content).map_err(|e| e.to_string())
+}
+
 pub fn delete_set_by_filename(filename: &str) -> Result<(), String> {
     let path = sets_dir().join(filename);
     if !path.exists() {

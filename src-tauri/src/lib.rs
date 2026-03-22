@@ -2,6 +2,7 @@ mod unbox;
 mod telegram;
 mod history;
 mod state;
+mod traktor_setup;
 
 use state::AppState;
 use std::sync::Arc;
@@ -19,6 +20,14 @@ async fn start_tracking(
     app_handle: tauri::AppHandle,
     state: tauri::State<'_, Arc<Mutex<AppState>>>,
 ) -> Result<String, String> {
+    let preflight_software = {
+        let s = state.lock().await;
+        s.config.dj_software.clone()
+    };
+    if preflight_software == "traktor" {
+        traktor_setup::ensure_traktor_ready_or_err().await?;
+    }
+
     let (
         already_tracking,
         should_start_listener,
@@ -72,7 +81,7 @@ async fn start_tracking(
             s.unbox_connected = false;
         }
         let _ = app_handle.emit("unbox-status", false);
-        unbox::restart_unbox_for_software(dj_software).await;
+        unbox::restart_unbox_for_software(&app_handle, dj_software).await;
     }
 
     // Launch Unbox + WebSocket listener only once for app lifetime.
@@ -201,6 +210,11 @@ async fn export_set_by_filename(filename: String) -> Result<String, String> {
 }
 
 #[tauri::command]
+async fn get_set_by_filename(filename: String) -> Result<history::DjSet, String> {
+    history::load_set_by_filename(&filename)
+}
+
+#[tauri::command]
 async fn delete_set_by_filename(filename: String) -> Result<String, String> {
     history::delete_set_by_filename(&filename)?;
     Ok("Set deleted".to_string())
@@ -291,6 +305,26 @@ async fn get_unbox_status(
 }
 
 #[tauri::command]
+async fn get_traktor_setup_status() -> Result<traktor_setup::TraktorSetupStatus, String> {
+    Ok(traktor_setup::get_traktor_setup_status().await)
+}
+
+#[tauri::command]
+async fn install_traktor_helper(app_handle: tauri::AppHandle) -> Result<String, String> {
+    traktor_setup::install_traktor_helper(&app_handle)
+}
+
+#[tauri::command]
+async fn open_traktor_csi_folder() -> Result<String, String> {
+    traktor_setup::open_traktor_csi_folder()
+}
+
+#[tauri::command]
+async fn verify_traktor_runtime() -> Result<traktor_setup::TraktorSetupStatus, String> {
+    traktor_setup::verify_traktor_runtime().await
+}
+
+#[tauri::command]
 async fn retry_connection(
     app_handle: tauri::AppHandle,
     state: tauri::State<'_, Arc<Mutex<AppState>>>,
@@ -311,13 +345,16 @@ async fn retry_connection(
     if software.trim().is_empty() {
         return Err("DJ software is not configured".to_string());
     }
+    if software == "traktor" {
+        traktor_setup::ensure_traktor_ready_or_err().await?;
+    }
 
     {
         let mut s = state.lock().await;
         s.unbox_connected = false;
     }
     let _ = app_handle.emit("unbox-status", false);
-    unbox::restart_unbox_for_software(software).await;
+    unbox::restart_unbox_for_software(&app_handle, software).await;
 
     if should_start_listener {
         let state_clone = Arc::clone(&state);
@@ -368,9 +405,14 @@ pub fn run() {
             test_telegram,
             export_set,
             get_unbox_status,
+            get_traktor_setup_status,
+            install_traktor_helper,
+            open_traktor_csi_folder,
+            verify_traktor_runtime,
             retry_connection,
             get_set_history,
             export_set_by_filename,
+            get_set_by_filename,
             delete_set_by_filename,
         ])
         .run(tauri::generate_context!())

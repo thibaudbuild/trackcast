@@ -4,8 +4,10 @@ use crate::telegram;
 use chrono::Local;
 use futures_util::StreamExt;
 use serde::{Deserialize, Serialize};
+use std::fs;
+use std::os::unix::fs::PermissionsExt;
 use std::sync::Arc;
-use tauri::Emitter;
+use tauri::{Emitter, Manager};
 use tokio::sync::Mutex;
 use tokio::time::{sleep, Duration};
 use tokio_tungstenite::connect_async;
@@ -74,7 +76,7 @@ pub async fn run_unbox_listener(app_handle: tauri::AppHandle, state: Arc<Mutex<A
     }
 }
 
-pub async fn restart_unbox_for_software(software: String) {
+pub async fn restart_unbox_for_software(app_handle: &tauri::AppHandle, software: String) {
     // Resolve binary path
     let binary_name = if cfg!(target_arch = "aarch64") {
         "unbox-aarch64-apple-darwin"
@@ -86,18 +88,41 @@ pub async fn restart_unbox_for_software(software: String) {
             .join("binaries")
             .join(binary_name)
     } else {
-        std::env::current_exe()
-            .unwrap()
-            .parent()
-            .unwrap()
-            .to_path_buf()
-            .join(binary_name)
+        let mut candidates: Vec<std::path::PathBuf> = Vec::new();
+        if let Ok(resource_dir) = app_handle.path().resource_dir() {
+            candidates.push(resource_dir.join(binary_name));
+            candidates.push(resource_dir.join("binaries").join(binary_name));
+            candidates.push(resource_dir.join("resources").join("binaries").join(binary_name));
+        }
+        if let Ok(exe) = std::env::current_exe() {
+            if let Some(exe_dir) = exe.parent() {
+                candidates.push(exe_dir.join(binary_name));
+                candidates.push(exe_dir.join("../Resources").join(binary_name));
+                candidates.push(exe_dir.join("../Resources").join("binaries").join(binary_name));
+                candidates.push(exe_dir.join("../Resources").join("resources").join("binaries").join(binary_name));
+            }
+        }
+
+        candidates
+            .into_iter()
+            .find(|p| p.exists())
+            .unwrap_or_else(|| std::path::PathBuf::from(binary_name))
     };
 
     println!(
         "[TrackCast] Launching Unbox in background for software '{}': {:?}",
         software, binary_path
     );
+    if !binary_path.exists() {
+        println!("[TrackCast] Unbox binary not found at expected path: {:?}", binary_path);
+    } else if let Ok(meta) = fs::metadata(&binary_path) {
+        let mut perms = meta.permissions();
+        let mode = perms.mode();
+        if mode & 0o111 == 0 {
+            perms.set_mode(mode | 0o755);
+            let _ = fs::set_permissions(&binary_path, perms);
+        }
+    }
 
     // Map DJ software to menu position in Unbox TUI
     let menu_index: usize = match software.as_str() {

@@ -11,6 +11,7 @@ export default function MainView({
   actionBusy,
   canStart,
   softwareConfigured,
+  startDisabledReason,
 }) {
   const demoTrack = {
     artist: "Martin Roth",
@@ -109,7 +110,7 @@ export default function MainView({
   const hasReceiverTrack = unboxConnected && Boolean(currentTrack);
   const hasRealNowPlaying = isTracking ? Boolean(currentTrack) : hasReceiverTrack;
   const isFallbackMode = !hasRealNowPlaying;
-  const displayTrack = hasRealNowPlaying ? currentTrack : demoTrack;
+  const displayTrack = hasRealNowPlaying ? currentTrack : (isTracking ? null : demoTrack);
   const displayHistory = trackHistory.length > 0
     ? trackHistory
     : (!isTracking && isFallbackMode ? fallbackSetList : []);
@@ -173,6 +174,7 @@ export default function MainView({
               className="btn-broadcast start"
               onClick={onStartStop}
               disabled={!canStart}
+              title={!canStart && startDisabledReason ? startDisabledReason : undefined}
             >
               ▶ &nbsp;Start broadcasting
             </button>
