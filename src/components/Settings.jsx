@@ -22,6 +22,10 @@ const TEMPLATE_PRESETS = [
 ];
 const DEFAULT_SESSION_START = "is starting to play {set_name}";
 const DEFAULT_SESSION_END = "just finished playing {set_name}";
+const MAX_SET_NAME = 36;
+const MAX_TEMPLATE = 52;
+const MAX_SESSION_START_TEMPLATE = 52;
+const MAX_SESSION_END_TEMPLATE = 72;
 
 const telegramFingerprint = (token, chatId) =>
   `${(token || "").trim()}::${(chatId || "").trim()}`;
@@ -54,6 +58,9 @@ export default function Settings({
   const [editingToken, setEditingToken] = useState(!config?.telegram_token);
   const [editingChat, setEditingChat] = useState(!config?.telegram_chat_id);
   const [tokenCopied, setTokenCopied] = useState(false);
+  const [lockCopyUntilMouseLeave, setLockCopyUntilMouseLeave] = useState(false);
+  const [testBtnHover, setTestBtnHover] = useState(false);
+  const [lockOkUntilMouseLeave, setLockOkUntilMouseLeave] = useState(false);
 
   const initialToken = config?.telegram_token || "";
   const initialChatId = config?.telegram_chat_id || "";
@@ -103,11 +110,17 @@ export default function Settings({
     : (displayChanged && !sessionMessagesInvalid);
 
   const handleTest = async () => {
+    const startedAt = Date.now();
     setTesting(true);
     setTestError("");
     try {
       await invoke("test_telegram", { token, chatId });
+      const elapsed = Date.now() - startedAt;
+      if (elapsed < 1500) {
+        await new Promise((resolve) => setTimeout(resolve, 1500 - elapsed));
+      }
       setTestOk(true);
+      setLockOkUntilMouseLeave(true);
     } catch (_) {
       setTestOk(false);
       setTestError("Test failed. Check token / chat ID.");
@@ -119,7 +132,7 @@ export default function Settings({
     try {
       await navigator.clipboard.writeText(token);
       setTokenCopied(true);
-      setTimeout(() => setTokenCopied(false), 1200);
+      setLockCopyUntilMouseLeave(true);
     } catch (_) {}
   };
 
@@ -165,7 +178,7 @@ export default function Settings({
     .replace("{set_name}", setName || "My Live Set");
 
   return (
-    <div className={`settings-panel ${isTracking ? "is-locked" : ""}`}>
+    <div className={`settings-panel ${tab === "display" ? "tab-display" : ""} ${isTracking ? "is-locked" : ""}`}>
       {showTabBar && (
         <div style={{
           display: "flex",
@@ -261,8 +274,14 @@ export default function Settings({
                   className={`inline-btn token-copy-btn ${tokenCopied ? "ok" : ""}`}
                   disabled={isTracking}
                   onClick={handleCopyToken}
+                  onMouseLeave={() => {
+                    if (tokenCopied && lockCopyUntilMouseLeave) {
+                      setTokenCopied(false);
+                      setLockCopyUntilMouseLeave(false);
+                    }
+                  }}
                 >
-                  {tokenCopied ? "copied" : "copy"}
+                  {tokenCopied ? <span className="copy-ok" aria-hidden="true">✓</span> : "copy"}
                 </button>
               </div>
             ) : (
@@ -317,13 +336,29 @@ export default function Settings({
                   edit
                 </button>
               )}
-              <button className="inline-btn" onClick={handleTest} disabled={isTracking || !token || !chatId || testing}>
-                {testing ? "···" : "test"}
+              <button
+                className={`inline-btn test-state-btn ${testing ? "testing" : ""} ${testOk ? "ok" : ""} ${testOk && lockOkUntilMouseLeave ? "ok-locked" : ""} ${!testOk && testError ? "tc-danger-btn test-retry-btn" : ""}`}
+                onClick={handleTest}
+                disabled={isTracking || !token || !chatId || testing}
+                onMouseEnter={() => setTestBtnHover(true)}
+                onMouseLeave={() => {
+                  setTestBtnHover(false);
+                  if (testOk) setLockOkUntilMouseLeave(false);
+                }}
+              >
+                {testing ? (
+                  <span className="btn-spinner" aria-hidden="true" />
+                ) : testOk ? (
+                  (testBtnHover && !lockOkUntilMouseLeave) ? "test" : <span className="test-ok-label">ok</span>
+                ) : testError ? (
+                  "retry"
+                ) : (
+                  "test"
+                )}
               </button>
-              {testOk && <span className="inline-ok-indicator">OK</span>}
             </div>
             {testError && <div className="input-error">{testError}</div>}
-            {tokenChatChanged && tokenChatFilled && !testOk && (
+            {tokenChatChanged && tokenChatFilled && !testOk && !testError && (
               <div className="input-error">Re-test required before save.</div>
             )}
           </div>
@@ -332,7 +367,7 @@ export default function Settings({
 
       {/* ── Display tab ──────────────────────── */}
       {tab === "display" && (
-        <>
+        <div className="settings-display-scroll">
           <div className="row active">
             <div className="row-label">
               <span className="row-num">—</span>
@@ -343,13 +378,17 @@ export default function Settings({
               type="text"
               value={setName}
               onChange={(e) => setSetName(e.target.value)}
+              maxLength={MAX_SET_NAME}
               disabled={isTracking}
               placeholder="Live @ Fabric, Club night, Open air..."
               spellCheck={false}
             />
-            <span className="settings-hint selectable-text">
-              Shown in track and set messages
-            </span>
+            <span className="settings-char-count">{setName.length}/{MAX_SET_NAME}</span>
+            <div className="settings-hint-row settings-hint-row-tight">
+              <span className="settings-hint selectable-text">
+                Shown in track and set messages
+              </span>
+            </div>
           </div>
 
           <div className="row active">
@@ -377,11 +416,13 @@ export default function Settings({
                 type="text"
                 value={template}
                 onChange={(e) => setTemplate(e.target.value)}
+                maxLength={MAX_TEMPLATE}
                 disabled={isTracking}
                 spellCheck={false}
               />
             )}
-            <div style={{ display: "flex", gap: 12 }}>
+            <span className="settings-char-count">{template.length}/{MAX_TEMPLATE}</span>
+            <div className="settings-inline-options" style={{ display: "flex", gap: 12 }}>
               <label className="tc-check-label">
                 <input
                   className="tc-checkbox"
@@ -403,7 +444,7 @@ export default function Settings({
                 <span className="tc-check-text">Append Key</span>
               </label>
             </div>
-            <span className="settings-hint selectable-text">
+            <span className="settings-hint selectable-text settings-hint-tight">
               Variables: <code style={{ color: "var(--amber)" }}>{"{artist}"}</code>{" "}
               <code style={{ color: "var(--amber)" }}>{"{title}"}</code>{" "}
               <code style={{ color: "var(--amber)" }}>{"{set_name}"}</code>{" "}
@@ -420,7 +461,7 @@ export default function Settings({
               <span className="row-num">—</span>
               Set Auto Messages
             </div>
-            <label className="tc-check-label">
+            <label className="tc-check-label settings-hint-tight">
               <input
                 className="tc-checkbox"
                 type="checkbox"
@@ -438,20 +479,24 @@ export default function Settings({
               type="text"
               value={sessionStartTemplate}
               onChange={(e) => setSessionStartTemplate(e.target.value)}
+              maxLength={MAX_SESSION_START_TEMPLATE}
               disabled={isTracking || !sessionMessagesEnabled}
               spellCheck={false}
               placeholder="is starting to play {set_name}"
             />
+            <span className="settings-char-count">{sessionStartTemplate.length}/{MAX_SESSION_START_TEMPLATE}</span>
             <input
               className="tc-input"
               type="text"
               value={sessionEndTemplate}
               onChange={(e) => setSessionEndTemplate(e.target.value)}
+              maxLength={MAX_SESSION_END_TEMPLATE}
               disabled={isTracking || !sessionMessagesEnabled}
               spellCheck={false}
               placeholder="just finished playing {set_name}"
             />
-            <span className="settings-hint selectable-text">
+            <span className="settings-char-count">{sessionEndTemplate.length}/{MAX_SESSION_END_TEMPLATE}</span>
+            <span className="settings-hint selectable-text settings-hint-tight">
               Variable: <code style={{ color: "var(--amber)" }}>{"{set_name}"}</code>
             </span>
             <div className={`settings-preview ${sessionMessagesEnabled ? "" : "muted"}`}>
@@ -459,7 +504,7 @@ export default function Settings({
               <div className="settings-preview-line">{sessionEndPreview}</div>
             </div>
           </div>
-        </>
+        </div>
       )}
 
       <div className="row settings-save-row" style={{ borderBottom: "none" }}>

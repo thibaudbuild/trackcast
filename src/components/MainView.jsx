@@ -19,19 +19,112 @@ export default function MainView({
     key: "A min",
     label: "Stereo Deluxe",
   };
+  const fallbackSetList = [
+    {
+      time: "23:18",
+      artist: demoTrack.artist,
+      title: demoTrack.title,
+      bpm: demoTrack.bpm,
+    },
+    {
+      time: "23:12",
+      artist: "Binary Digit",
+      title: "Sneaking Out Of The Club",
+      bpm: 124,
+    },
+    {
+      time: "23:07",
+      artist: "Phonique",
+      title: "Vincent Price",
+      bpm: 122,
+    },
+    {
+      time: "23:02",
+      artist: "Daft Punk",
+      title: "The Game Of Love",
+      bpm: 119,
+    },
+    {
+      time: "22:57",
+      artist: "Bicep",
+      title: "Glue",
+      bpm: 124,
+    },
+    {
+      time: "22:52",
+      artist: "Peggy Gou",
+      title: "Starry Night",
+      bpm: 122,
+    },
+    {
+      time: "22:47",
+      artist: "Moderat",
+      title: "Bad Kingdom",
+      bpm: 121,
+    },
+    {
+      time: "22:42",
+      artist: "Jamie xx",
+      title: "Loud Places",
+      bpm: 120,
+    },
+    {
+      time: "22:37",
+      artist: "NTO",
+      title: "Trauma",
+      bpm: 123,
+    },
+    {
+      time: "22:32",
+      artist: "The Blaze",
+      title: "Territory",
+      bpm: 120,
+    },
+    {
+      time: "22:27",
+      artist: "Sébastien Léger",
+      title: "La Danse Du Scorpion",
+      bpm: 123,
+    },
+    {
+      time: "22:22",
+      artist: "Maceo Plex",
+      title: "When The Lights Are Out",
+      bpm: 124,
+    },
+    {
+      time: "22:17",
+      artist: "Âme x Trikk",
+      title: "Helicopter",
+      bpm: 122,
+    },
+    {
+      time: "22:12",
+      artist: "DJ Koze",
+      title: "Pick Up",
+      bpm: 119,
+    },
+  ];
 
-  const displayTrack = currentTrack || (!isTracking ? demoTrack : null);
-  const displayHistory = trackHistory;
-  const hasRealNowPlaying = Boolean(currentTrack);
-  const nowPlayingActive = isTracking || (hasRealNowPlaying && hasFreshTrackEvent);
+  const hasReceiverTrack = unboxConnected && Boolean(currentTrack);
+  const hasRealNowPlaying = isTracking ? Boolean(currentTrack) : hasReceiverTrack;
+  const isFallbackMode = !hasRealNowPlaying;
+  const displayTrack = hasRealNowPlaying ? currentTrack : demoTrack;
+  const displayHistory = trackHistory.length > 0
+    ? trackHistory
+    : (!isTracking && isFallbackMode ? fallbackSetList : []);
+  const nowPlayingActive = hasRealNowPlaying && hasFreshTrackEvent;
   const nowPlayingLabel = hasRealNowPlaying
     ? (nowPlayingActive ? "now playing" : "last known")
     : "now playing";
+  const nowPlayingStateClass = hasRealNowPlaying
+    ? (nowPlayingActive ? "is-playing" : "is-last-known")
+    : "is-fallback";
 
   return (
-    <div className="app">
+    <div className={`main-view ${isFallbackMode ? "is-fallback" : ""}`}>
       {/* ── Now Playing ───────────────────────── */}
-      <div className="now-playing">
+      <div className={`now-playing ${nowPlayingStateClass}`}>
         <div className={`np-eyebrow ${nowPlayingActive ? "live" : ""}`}>
           <div className={`np-eyebrow-dot ${nowPlayingActive ? "live" : ""}`} />
           {nowPlayingLabel}
@@ -106,23 +199,29 @@ export default function MainView({
         <span className="log-count">{displayHistory.length} tracks</span>
       </div>
 
-      <div className="log-list">
-        {displayHistory.length === 0 ? (
-          <div className="log-empty">{isTracking ? "Recording... first track pending" : "—"}</div>
-        ) : (
-          displayHistory.map((track, i) => (
-            <div key={i} className={`log-item ${i === 0 ? "current" : ""}`}>
-              <span className="log-time">{track.time}</span>
-              <div className="log-track">
-                <div className="log-artist">{track.artist || "Unknown"}</div>
-                <div className="log-title">{track.title || "Unknown"}</div>
-              </div>
-              {track.bpm && (
-                <span className="log-bpm">{Math.round(track.bpm)}</span>
-              )}
+      <div className="main-setlist-region">
+        <div className="log-list main-setlist-scroll">
+          {displayHistory.length === 0 ? (
+            <div className="log-empty">
+              {isTracking
+                ? (hasRealNowPlaying ? "Waiting for next track change..." : "Waiting for first track...")
+                : "—"}
             </div>
-          ))
-        )}
+          ) : (
+            displayHistory.map((track, i) => (
+              <div key={i} className={`log-item ${i === 0 ? "current" : ""}`}>
+                <span className="log-time">{track.time}</span>
+                <div className="log-track">
+                  <div className="log-artist">{track.artist || "Unknown"}</div>
+                  <div className="log-title">{track.title || "Unknown"}</div>
+                </div>
+                {track.bpm && (
+                  <span className="log-bpm">{Math.round(track.bpm)}</span>
+                )}
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

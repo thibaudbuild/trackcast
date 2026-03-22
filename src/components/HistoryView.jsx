@@ -71,16 +71,16 @@ export default function HistoryView() {
 
   return (
     <>
-      <div className="log-list" style={{ flex: 1 }}>
+      <div className="log-list history-list">
         {setHistory.length === 0 ? (
-          <div className="log-empty">No sets recorded yet.</div>
+          <div className="log-empty history-empty">No sets yet. Completed live sessions appear here.</div>
         ) : (
           setHistory.map((s) => {
             const duration = formatDuration(s.start_time, s.end_time);
             const durationLabel = duration || "duration n/a";
             return (
-              <div key={s.filename} className="log-item" style={{ alignItems: "center" }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
+              <div key={s.filename} className="log-item history-item">
+                <div className="history-item-main">
                   <div className="log-artist">{s.date}</div>
                   <div className="log-title">
                     {s.start_time}{s.end_time ? ` → ${s.end_time}` : ""}
@@ -88,7 +88,7 @@ export default function HistoryView() {
                     {" · "}{s.track_count} track{s.track_count !== 1 ? "s" : ""}
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: 2, flexShrink: 0 }}>
+                <div className="history-item-actions">
                   <button
                     className="inline-btn"
                     disabled={exportingFile === s.filename || deletingFile === s.filename}

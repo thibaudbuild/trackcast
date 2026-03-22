@@ -263,7 +263,7 @@ export default function App() {
   const receiverCanConnect = softwareConfigured && !receiverReady && !receiverConnecting && !actionBusy;
   const receiverStatusClass = receiverReady ? "green" : receiverConnecting ? "amber" : "";
   const receiverDotClass = receiverReady ? "green" : receiverConnecting ? "loading" : "";
-  const receiverStatusLabel = receiverReady ? "Ready" : receiverConnecting ? "Connecting..." : "Connect";
+  const receiverStatusLabel = receiverReady ? "Linked" : receiverConnecting ? "Pending" : "Connect";
 
   return (
     <>
@@ -347,7 +347,7 @@ export default function App() {
         )}
 
         {activeTab === "display" && (
-          <div className="settings-view">
+          <div className="settings-view settings-view-display">
             <Settings
               config={config}
               onSave={handleSaveConfig}
