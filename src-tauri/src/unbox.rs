@@ -5,9 +5,15 @@ use chrono::Local;
 use futures_util::StreamExt;
 use serde::{Deserialize, Serialize};
 use std::fs;
+#[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
+use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::{Emitter, Manager};
+#[cfg(not(target_os = "macos"))]
+use tokio::io::AsyncWriteExt;
 use tokio::sync::Mutex;
 use tokio::time::{sleep, Duration};
 use tokio_tungstenite::connect_async;
@@ -39,14 +45,8 @@ impl TrackInfo {
     }
 
     pub fn is_empty(&self) -> bool {
-        let artist_empty = self
-            .artist
-            .as_ref()
-            .map_or(true, |a| a.trim().is_empty());
-        let title_empty = self
-            .title
-            .as_ref()
-            .map_or(true, |t| t.trim().is_empty());
+        let artist_empty = self.artist.as_ref().map_or(true, |a| a.trim().is_empty());
+        let title_empty = self.title.as_ref().map_or(true, |t| t.trim().is_empty());
         artist_empty && title_empty
     }
 }
@@ -77,73 +77,164 @@ pub async fn run_unbox_listener(app_handle: tauri::AppHandle, state: Arc<Mutex<A
 }
 
 pub async fn restart_unbox_for_software(app_handle: &tauri::AppHandle, software: String) {
-    // Resolve binary path
-    let binary_name = if cfg!(target_arch = "aarch64") {
-        "unbox-aarch64-apple-darwin"
-    } else {
-        "unbox-x86_64-apple-darwin"
-    };
-    let binary_path = if cfg!(debug_assertions) {
-        std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("binaries")
-            .join(binary_name)
-    } else {
-        let mut candidates: Vec<std::path::PathBuf> = Vec::new();
-        if let Ok(resource_dir) = app_handle.path().resource_dir() {
-            candidates.push(resource_dir.join(binary_name));
-            candidates.push(resource_dir.join("binaries").join(binary_name));
-            candidates.push(resource_dir.join("resources").join("binaries").join(binary_name));
-        }
-        if let Ok(exe) = std::env::current_exe() {
-            if let Some(exe_dir) = exe.parent() {
-                candidates.push(exe_dir.join(binary_name));
-                candidates.push(exe_dir.join("../Resources").join(binary_name));
-                candidates.push(exe_dir.join("../Resources").join("binaries").join(binary_name));
-                candidates.push(exe_dir.join("../Resources").join("resources").join("binaries").join(binary_name));
-            }
-        }
-
-        candidates
-            .into_iter()
-            .find(|p| p.exists())
-            .unwrap_or_else(|| std::path::PathBuf::from(binary_name))
-    };
+    let binary_name = unbox_binary_name();
+    let binary_path = resolve_unbox_binary_path(app_handle, binary_name);
 
     println!(
         "[TrackCast] Launching Unbox in background for software '{}': {:?}",
         software, binary_path
     );
     if !binary_path.exists() {
-        println!("[TrackCast] Unbox binary not found at expected path: {:?}", binary_path);
+        println!(
+            "[TrackCast] Unbox binary not found at expected path: {:?}",
+            binary_path
+        );
     } else if let Ok(meta) = fs::metadata(&binary_path) {
-        let mut perms = meta.permissions();
-        let mode = perms.mode();
-        if mode & 0o111 == 0 {
-            perms.set_mode(mode | 0o755);
-            let _ = fs::set_permissions(&binary_path, perms);
+        #[cfg(unix)]
+        {
+            let mut perms = meta.permissions();
+            let mode = perms.mode();
+            if mode & 0o111 == 0 {
+                perms.set_mode(mode | 0o755);
+                let _ = fs::set_permissions(&binary_path, perms);
+            }
         }
     }
 
     // Map DJ software to menu position in Unbox TUI
     let menu_index: usize = match software.as_str() {
         "rekordbox" => 0,
-        "serato"    => 1,
-        "traktor"   => 2,
+        "serato" => 1,
+        "traktor" => 2,
         "virtualdj" => 3,
-        "mixxx"     => 4,
-        "djuced"    => 5,
-        "djay"      => 6,
-        "denon"     => 7,
-        _           => 0,
+        "mixxx" => 4,
+        "djuced" => 5,
+        "djay" => 6,
+        "denon" => 7,
+        _ => 0,
     };
 
-    // Check if Unbox is already running on port 8080.
-    // If so, kill it first so we can relaunch with the correct software selection.
-    // (port conflict would cause the new instance to silently fail)
-    let port_in_use = tokio::net::TcpStream::connect("127.0.0.1:8080").await.is_ok();
+    let port_in_use = tokio::net::TcpStream::connect("127.0.0.1:8080")
+        .await
+        .is_ok();
     if port_in_use {
-        println!("[TrackCast] Port 8080 already in use — killing listener PID(s) on :8080");
+        println!("[TrackCast] Port 8080 already in use — stopping listener PID(s)");
+        kill_listener_on_port_8080().await;
+    }
 
+    // Start Unbox and auto-select the configured software entry.
+    // macOS uses `expect` to allocate a PTY for the TUI.
+    // Windows uses hidden process start + synthetic stdin keys.
+    launch_unbox(binary_path, menu_index).await;
+}
+
+#[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+fn unbox_binary_name() -> &'static str {
+    "unbox-aarch64-apple-darwin"
+}
+
+#[cfg(all(target_os = "macos", target_arch = "x86_64"))]
+fn unbox_binary_name() -> &'static str {
+    "unbox-x86_64-apple-darwin"
+}
+
+#[cfg(all(target_os = "windows", target_arch = "x86_64"))]
+fn unbox_binary_name() -> &'static str {
+    "unbox-x86_64-pc-windows-msvc.exe"
+}
+
+#[cfg(all(target_os = "windows", target_arch = "aarch64"))]
+fn unbox_binary_name() -> &'static str {
+    "unbox-aarch64-pc-windows-msvc.exe"
+}
+
+#[cfg(not(any(
+    all(target_os = "macos", target_arch = "aarch64"),
+    all(target_os = "macos", target_arch = "x86_64"),
+    all(target_os = "windows", target_arch = "x86_64"),
+    all(target_os = "windows", target_arch = "aarch64")
+)))]
+fn unbox_binary_name() -> &'static str {
+    "unbox"
+}
+
+fn resolve_unbox_binary_path(app_handle: &tauri::AppHandle, binary_name: &str) -> PathBuf {
+    if cfg!(debug_assertions) {
+        return PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("binaries")
+            .join(binary_name);
+    }
+
+    let mut candidates: Vec<PathBuf> = Vec::new();
+    if let Ok(resource_dir) = app_handle.path().resource_dir() {
+        candidates.push(resource_dir.join(binary_name));
+        candidates.push(resource_dir.join("binaries").join(binary_name));
+        candidates.push(
+            resource_dir
+                .join("resources")
+                .join("binaries")
+                .join(binary_name),
+        );
+    }
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(exe_dir) = exe.parent() {
+            candidates.push(exe_dir.join(binary_name));
+            candidates.push(exe_dir.join("resources").join(binary_name));
+            candidates.push(exe_dir.join("resources").join("binaries").join(binary_name));
+            candidates.push(exe_dir.join("../Resources").join(binary_name));
+            candidates.push(
+                exe_dir
+                    .join("../Resources")
+                    .join("binaries")
+                    .join(binary_name),
+            );
+            candidates.push(
+                exe_dir
+                    .join("../Resources")
+                    .join("resources")
+                    .join("binaries")
+                    .join(binary_name),
+            );
+        }
+    }
+
+    candidates
+        .into_iter()
+        .find(|p| p.exists())
+        .unwrap_or_else(|| PathBuf::from(binary_name))
+}
+
+async fn kill_listener_on_port_8080() {
+    #[cfg(windows)]
+    {
+        if let Ok(out) = tokio::process::Command::new("cmd")
+            .args(["/C", "netstat -ano -p tcp"])
+            .output()
+            .await
+        {
+            let txt = String::from_utf8_lossy(&out.stdout);
+            let mut pids: Vec<String> = txt
+                .lines()
+                .filter(|line| line.contains(":8080") && line.contains("LISTENING"))
+                .filter_map(|line| line.split_whitespace().last().map(|pid| pid.to_string()))
+                .filter(|pid| !pid.is_empty())
+                .collect();
+            pids.sort();
+            pids.dedup();
+
+            for pid in pids {
+                let _ = tokio::process::Command::new("taskkill")
+                    .args(["/PID", &pid, "/T", "/F"])
+                    .output()
+                    .await;
+            }
+        }
+        sleep(Duration::from_millis(500)).await;
+        return;
+    }
+
+    #[cfg(unix)]
+    {
         let pids_out = tokio::process::Command::new("lsof")
             .arg("-tiTCP:8080")
             .arg("-sTCP:LISTEN")
@@ -158,112 +249,124 @@ pub async fn restart_unbox_for_software(app_handle: &tauri::AppHandle, software:
                     .map(|l| l.trim().to_string())
                     .filter(|l| !l.is_empty())
                     .collect();
-                if pids.is_empty() {
-                    println!("[TrackCast][kill] No LISTEN PID found by lsof");
-                } else {
+                for pid in &pids {
+                    let _ = tokio::process::Command::new("kill")
+                        .arg("-TERM")
+                        .arg(pid)
+                        .output()
+                        .await;
+                }
+                sleep(Duration::from_millis(700)).await;
+                let still_in_use = tokio::net::TcpStream::connect("127.0.0.1:8080")
+                    .await
+                    .is_ok();
+                if still_in_use {
                     for pid in &pids {
-                        match tokio::process::Command::new("kill")
-                            .arg("-TERM")
+                        let _ = tokio::process::Command::new("kill")
+                            .arg("-KILL")
                             .arg(pid)
                             .output()
-                            .await
-                        {
-                            Ok(k) => {
-                                if k.status.success() {
-                                    println!("[TrackCast][kill] TERM sent to PID {}", pid);
-                                } else {
-                                    println!(
-                                        "[TrackCast][kill] TERM failed for PID {}: {}",
-                                        pid,
-                                        String::from_utf8_lossy(&k.stderr)
-                                    );
-                                }
-                            }
-                            Err(e) => println!("[TrackCast][kill] TERM exec failed for PID {}: {}", pid, e),
-                        }
-                    }
-                    sleep(Duration::from_millis(700)).await;
-
-                    // Escalate if still listening
-                    let still_in_use = tokio::net::TcpStream::connect("127.0.0.1:8080").await.is_ok();
-                    if still_in_use {
-                        for pid in &pids {
-                            match tokio::process::Command::new("kill")
-                                .arg("-KILL")
-                                .arg(pid)
-                                .output()
-                                .await
-                            {
-                                Ok(k) => {
-                                    if !k.status.success() {
-                                        println!(
-                                            "[TrackCast][kill] KILL failed for PID {}: {}",
-                                            pid,
-                                            String::from_utf8_lossy(&k.stderr)
-                                        );
-                                    }
-                                }
-                                Err(e) => println!("[TrackCast][kill] KILL exec failed for PID {}: {}", pid, e),
-                            }
-                        }
-                        sleep(Duration::from_millis(300)).await;
+                            .await;
                     }
                 }
             }
             Err(e) => {
-                println!("[TrackCast][kill] Failed to query PID on :8080 via lsof: {}", e);
+                println!(
+                    "[TrackCast][kill] Failed to query PID on :8080 via lsof: {}",
+                    e
+                );
             }
         }
     }
+}
 
-    // Use `expect` (/usr/bin/expect, pre-installed on macOS) to run Unbox in a hidden PTY.
-    // `expect` allocates a pseudo-terminal so Unbox thinks it has a real TTY,
-    // but no Terminal window ever opens — fully invisible to the user.
-    //
-    // Keep the launcher deterministic: wait for the TUI to initialize, then send keys.
-    // Relying on exact menu text matching is brittle because ANSI rendering can vary.
-    let mut script = String::from("log_user 0\n");
-    script.push_str("set timeout 20\n");
-    script.push_str(&format!("spawn {}\n", binary_path.display()));
-    script.push_str("expect -re \"Select DJ Software|Press h for help\"\n");
-    script.push_str("after 150\n");
-    for _ in 0..menu_index {
-        // ESC [ B = down arrow in ANSI escape sequences
-        // \[ must be escaped in Tcl double-quoted strings to avoid command substitution
-        script.push_str("send \"\\033\\[B\"\nafter 120\n");
-    }
-    script.push_str("send \"\\r\"\n");
-    script.push_str("set timeout 8\n");
-    script.push_str("expect {\n");
-    script.push_str("  -re \"monitoring started|Integration URLs\" {}\n");
-    script.push_str("  timeout {\n");
-    script.push_str("    send \" \"\n");
-    script.push_str("    set timeout 5\n");
-    script.push_str("    expect {\n");
-    script.push_str("      -re \"monitoring started|Integration URLs\" {}\n");
-    script.push_str("      timeout { puts stderr {[TrackCast][expect] monitoring start not confirmed} }\n");
-    script.push_str("    }\n");
-    script.push_str("  }\n");
-    script.push_str("}\n");
-    script.push_str("set timeout -1\n");
-    script.push_str("wait\n");
-
-    match tokio::process::Command::new("/usr/bin/expect")
-        .arg("-c")
-        .arg(&script)
-        .stdin(std::process::Stdio::null())
-        .stdout(std::process::Stdio::inherit())
-        .stderr(std::process::Stdio::inherit())
-        .spawn()
+async fn launch_unbox(binary_path: PathBuf, menu_index: usize) {
+    #[cfg(target_os = "macos")]
     {
-        Ok(_child) => {
-            println!("[TrackCast] Unbox launched in background via expect (software index: {})", menu_index);
+        let mut script = String::from("log_user 0\n");
+        script.push_str("set timeout 20\n");
+        script.push_str(&format!("spawn {}\n", binary_path.display()));
+        script.push_str("expect -re \"Select DJ Software|Press h for help\"\n");
+        script.push_str("after 150\n");
+        for _ in 0..menu_index {
+            // ESC [ B = down arrow in ANSI escape sequences
+            // \[ must be escaped in Tcl double-quoted strings to avoid command substitution
+            script.push_str("send \"\\033\\[B\"\nafter 120\n");
         }
-        Err(e) => {
-            println!("[TrackCast] Failed to launch Unbox via expect: {}", e);
+        script.push_str("send \"\\r\"\n");
+        script.push_str("set timeout 8\n");
+        script.push_str("expect {\n");
+        script.push_str("  -re \"monitoring started|Integration URLs\" {}\n");
+        script.push_str("  timeout {\n");
+        script.push_str("    send \" \"\n");
+        script.push_str("    set timeout 5\n");
+        script.push_str("    expect {\n");
+        script.push_str("      -re \"monitoring started|Integration URLs\" {}\n");
+        script.push_str(
+            "      timeout { puts stderr {[TrackCast][expect] monitoring start not confirmed} }\n",
+        );
+        script.push_str("    }\n");
+        script.push_str("  }\n");
+        script.push_str("}\n");
+        script.push_str("set timeout -1\n");
+        script.push_str("wait\n");
+
+        match tokio::process::Command::new("/usr/bin/expect")
+            .arg("-c")
+            .arg(&script)
+            .stdin(std::process::Stdio::null())
+            .stdout(std::process::Stdio::inherit())
+            .stderr(std::process::Stdio::inherit())
+            .spawn()
+        {
+            Ok(_child) => {
+                println!(
+                    "[TrackCast] Unbox launched in background via expect (software index: {})",
+                    menu_index
+                );
+            }
+            Err(e) => {
+                println!("[TrackCast] Failed to launch Unbox via expect: {}", e);
+            }
         }
+        return;
     }
 
+    #[cfg(not(target_os = "macos"))]
+    {
+        let mut cmd = tokio::process::Command::new(&binary_path);
+        #[cfg(windows)]
+        {
+            // CREATE_NO_WINDOW
+            cmd.creation_flags(0x0800_0000);
+        }
+        let child = cmd
+            .stdin(std::process::Stdio::piped())
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .spawn();
+
+        match child {
+            Ok(mut child) => {
+                if let Some(mut stdin) = child.stdin.take() {
+                    sleep(Duration::from_millis(300)).await;
+                    for _ in 0..menu_index {
+                        let _ = stdin.write_all(b"\x1b[B").await;
+                        sleep(Duration::from_millis(120)).await;
+                    }
+                    let _ = stdin.write_all(b"\r").await;
+                    let _ = stdin.flush().await;
+                }
+                println!(
+                    "[TrackCast] Unbox launched in background (software index: {})",
+                    menu_index
+                );
+            }
+            Err(e) => {
+                println!("[TrackCast] Failed to launch Unbox: {}", e);
+            }
+        }
+    }
 }
 
 async fn connect_to_unbox(
@@ -378,10 +481,7 @@ async fn handle_track_change(
     }
 
     // Send to Telegram with the immutable session snapshot (if available)
-    let runtime_config = s
-        .session_config
-        .clone()
-        .unwrap_or_else(|| s.config.clone());
+    let runtime_config = s.session_config.clone().unwrap_or_else(|| s.config.clone());
     let token = runtime_config.telegram_token.clone();
     let chat_id = runtime_config.telegram_chat_id.clone();
     let message = build_message(&track, &runtime_config);
@@ -411,11 +511,12 @@ async fn handle_track_change(
 /// Supported placeholders: {artist}, {title}, {bpm}, {key}, {set_name}
 pub fn build_message(track: &TrackInfo, config: &UserConfig) -> String {
     let artist = track.artist.as_deref().unwrap_or("Unknown Artist");
-    let title  = track.title.as_deref().unwrap_or("Unknown Track");
-    let bpm    = track.bpm.map(|b| format!("{:.0}", b)).unwrap_or_default();
-    let key    = track.key.as_deref().unwrap_or("");
+    let title = track.title.as_deref().unwrap_or("Unknown Track");
+    let bpm = track.bpm.map(|b| format!("{:.0}", b)).unwrap_or_default();
+    let key = track.key.as_deref().unwrap_or("");
 
-    let mut msg = config.message_template
+    let mut msg = config
+        .message_template
         .replace("{artist}", artist)
         .replace("{title}", title)
         .replace("{set_name}", &config.set_name)

@@ -21,12 +21,56 @@ pub struct TraktorSetupStatus {
     pub version_match: bool,
 }
 
-fn traktor_app_path() -> PathBuf {
-    PathBuf::from("/Applications/Native Instruments/Traktor Pro 3/Traktor.app")
+#[cfg(target_os = "macos")]
+fn traktor_app_candidates() -> Vec<PathBuf> {
+    vec![
+        PathBuf::from("/Applications/Native Instruments/Traktor Pro 4/Traktor.app"),
+        PathBuf::from("/Applications/Native Instruments/Traktor Pro 3/Traktor.app"),
+    ]
 }
 
+#[cfg(target_os = "windows")]
+fn traktor_app_candidates() -> Vec<PathBuf> {
+    let pf = std::env::var("ProgramFiles").unwrap_or_else(|_| "C:\\Program Files".to_string());
+    vec![
+        PathBuf::from(format!("{pf}\\Native Instruments\\Traktor Pro 4")),
+        PathBuf::from(format!("{pf}\\Native Instruments\\Traktor Pro 3")),
+    ]
+}
+
+#[cfg(not(any(target_os = "macos", target_os = "windows")))]
+fn traktor_app_candidates() -> Vec<PathBuf> {
+    vec![]
+}
+
+fn traktor_app_path() -> Option<PathBuf> {
+    traktor_app_candidates().into_iter().find(|p| p.exists())
+}
+
+#[cfg(target_os = "macos")]
 fn traktor_csi_dir() -> PathBuf {
-    traktor_app_path().join("Contents/Resources/qml/CSI")
+    if let Some(app_path) = traktor_app_path() {
+        return app_path.join("Contents/Resources/qml/CSI");
+    }
+    PathBuf::from(
+        "/Applications/Native Instruments/Traktor Pro 4/Traktor.app/Contents/Resources/qml/CSI",
+    )
+}
+
+#[cfg(target_os = "windows")]
+fn traktor_csi_dir() -> PathBuf {
+    if let Some(app_dir) = traktor_app_path() {
+        return app_dir.join("Resources64").join("qml").join("CSI");
+    }
+    let pf = std::env::var("ProgramFiles").unwrap_or_else(|_| "C:\\Program Files".to_string());
+    PathBuf::from(format!(
+        "{pf}\\Native Instruments\\Traktor Pro 4\\Resources64\\qml\\CSI"
+    ))
+}
+
+#[cfg(not(any(target_os = "macos", target_os = "windows")))]
+fn traktor_csi_dir() -> PathBuf {
+    PathBuf::from("unsupported-traktor-csi")
 }
 
 fn installed_helper_dir() -> PathBuf {
@@ -54,7 +98,11 @@ fn read_installed_version() -> Option<String> {
 
 async fn runtime_api_reachable() -> bool {
     matches!(
-        timeout(Duration::from_millis(700), TcpStream::connect("127.0.0.1:8081")).await,
+        timeout(
+            Duration::from_millis(700),
+            TcpStream::connect("127.0.0.1:8081")
+        )
+        .await,
         Ok(Ok(_))
     )
 }
@@ -74,8 +122,9 @@ fn copy_dir_recursive(src: &Path, dst: &Path) -> Result<(), String> {
         if file_type.is_dir() {
             copy_dir_recursive(&from, &to)?;
         } else if file_type.is_file() {
-            fs::copy(&from, &to)
-                .map_err(|e| format!("Copy failed {} -> {}: {}", from.display(), to.display(), e))?;
+            fs::copy(&from, &to).map_err(|e| {
+                format!("Copy failed {} -> {}: {}", from.display(), to.display(), e)
+            })?;
         }
     }
 
@@ -155,29 +204,40 @@ pub async fn verify_traktor_runtime() -> Result<TraktorSetupStatus, String> {
 pub fn open_traktor_csi_folder() -> Result<String, String> {
     let csi = traktor_csi_dir();
     if !csi.exists() {
-        return Err(format!(
-            "Traktor CSI folder not found: {}",
-            csi.display()
-        ));
+        return Err(format!("Traktor CSI folder not found: {}", csi.display()));
     }
 
-    println!("[TrackCast][traktor-setup] opening folder {}", csi.display());
+    println!(
+        "[TrackCast][traktor-setup] opening folder {}",
+        csi.display()
+    );
+    #[cfg(target_os = "macos")]
     Command::new("open")
         .arg(&csi)
         .spawn()
         .map_err(|e| format!("Failed to open folder: {}", e))?;
+    #[cfg(target_os = "windows")]
+    Command::new("explorer")
+        .arg(&csi)
+        .spawn()
+        .map_err(|e| format!("Failed to open folder: {}", e))?;
+    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+    return Err("Open folder is not supported on this platform.".to_string());
 
     Ok("Opened Traktor CSI folder".to_string())
 }
 
 pub fn install_traktor_helper(app_handle: &tauri::AppHandle) -> Result<String, String> {
-    let app_path = traktor_app_path();
-    if !app_path.exists() {
+    let Some(app_path) = traktor_app_path() else {
         return Err(format!(
-            "Traktor Pro 3 app not found at {}",
-            app_path.display()
+            "Traktor app not found. Checked: {}",
+            traktor_app_candidates()
+                .into_iter()
+                .map(|p| p.display().to_string())
+                .collect::<Vec<String>>()
+                .join(" | ")
         ));
-    }
+    };
 
     let source_dir = resolve_bundle_helper_dir(app_handle)?;
     let target_csi = traktor_csi_dir();
@@ -206,7 +266,10 @@ pub fn install_traktor_helper(app_handle: &tauri::AppHandle) -> Result<String, S
     fs::write(installed_version_file(), HELPER_VERSION)
         .map_err(|e| format!("Helper installed but version marker failed: {}", e))?;
 
-    Ok("Traktor helper installed. Open Traktor, select D2 in Controller Manager, then click Verify.".to_string())
+    Ok(format!(
+        "Traktor helper installed in {}. Open Traktor, select D2 in Controller Manager, then click Verify.",
+        app_path.display()
+    ))
 }
 
 pub async fn ensure_traktor_ready_or_err() -> Result<(), String> {

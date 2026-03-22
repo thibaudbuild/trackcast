@@ -4,7 +4,7 @@ import { invoke } from "@tauri-apps/api/core";
 const DJ_OPTIONS = [
   { value: "rekordbox", label: "Rekordbox" },
   { value: "serato",    label: "Serato DJ Pro" },
-  { value: "traktor",   label: "Traktor Pro 3" },
+  { value: "traktor",   label: "Traktor Pro (3/4)" },
   { value: "virtualdj", label: "VirtualDJ" },
   { value: "mixxx",     label: "Mixxx" },
   { value: "djuced",    label: "DJUCED" },

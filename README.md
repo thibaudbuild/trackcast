@@ -2,7 +2,7 @@
 
 Broadcast your DJ set live + save your tracklist automatically.
 
-## Setup on your Mac
+## Setup on macOS
 
 ### 1. Install prerequisites
 
@@ -49,6 +49,42 @@ cargo tauri build
 ```
 
 The `.dmg` will be in `src-tauri/target/release/bundle/dmg/`.
+
+## Setup on Windows (HP Victus)
+
+### 1. Install prerequisites
+
+- Install Node.js LTS
+- Install Rust (MSVC toolchain): https://rustup.rs
+- Install Visual Studio C++ Build Tools (Desktop development with C++)
+
+### 2. Download Unbox Windows binary
+
+Go to https://github.com/erikrichardlarson/unbox/releases and download:
+
+- `unbox-x86_64-pc-windows-msvc.exe` (Victus Intel/AMD)
+
+Place it in:
+
+- `src-tauri/binaries/unbox-x86_64-pc-windows-msvc.exe`
+
+### 3. Install dependencies and run
+
+```bash
+npm install
+npm run tauri dev
+```
+
+### 4. Build installer
+
+```bash
+npm run tauri build
+```
+
+Installers are generated in:
+
+- `src-tauri/target/release/bundle/msi/`
+- `src-tauri/target/release/bundle/nsis/`
 
 ## Project structure
 

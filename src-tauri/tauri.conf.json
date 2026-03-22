@@ -30,7 +30,7 @@
     "active": true,
     "targets": "all",
     "resources": [
-      "binaries/unbox-aarch64-apple-darwin",
+      "binaries/*",
       "resources/traktor-d2/**/*"
     ],
     "icon": [
