@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Step-by-step Telegram onboarding guide for TrackCast."
+    />
+    <title>TrackCast - Telegram setup guide</title>
+    <link
+      rel="icon"
+      href="../assets/brand/logo.svg"
+      type="image/svg+xml"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="tutorial-page">
+    <header class="site-header">
+      <a class="brand-link" href="./index.html" aria-label="TrackCast home">
+        <img
+          src="../assets/brand/logo.svg"
+          alt=""
+          width="28"
+          height="28"
+        />
+        <span>trackcast</span>
+      </a>
+      <nav class="main-nav" aria-label="Primary navigation">
+        <a href="./index.html#demo">Demo</a>
+        <a href="./index.html#builds">Builds</a>
+        <a href="./onboarding.html">Onboarding</a>
+        <a href="./index.html#contact">Contact</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="tutorial-hero" aria-labelledby="tutorial-title">
+        <p class="eyebrow">Telegram onboarding</p>
+        <h1 id="tutorial-title">Set up a channel, bot, and TrackCast in a few minutes.</h1>
+        <p>
+          This guide is written for testers who have never configured a Telegram
+          bot before. Follow it once, then TrackCast can reuse the same channel
+          for future sets.
+        </p>
+      </section>
+
+      <section class="tutorial-section" aria-label="Telegram setup steps">
+        <div class="guide-note">
+          <strong>Before you start</strong>
+          <p>
+            Decide whether your broadcast will be public or private. Public
+            channels can use an <code>@channelname</code>. Private channels
+            usually need a numeric <code>-100...</code> chat ID.
+          </p>
+        </div>
+
+        <div class="tutorial-list">
+          <article class="tutorial-card">
+            <div class="step-body">
+              <span class="tutorial-step">Step 01</span>
+              <h2>Create or choose a Telegram channel.</h2>
+              <p>
+                TrackCast posts into a channel, so create one for your live set
+                updates or reuse an existing test channel.
+              </p>
+              <ul class="step-detail">
+                <li>Open Telegram and create a new channel.</li>
+                <li>Give it a clear name, like <code>TrackCast Test</code>.</li>
+                <li>Make it public if you want a simple <code>@username</code>.</li>
+              </ul>
+            </div>
+            <div class="telegram-shot" aria-label="Telegram channel mock screenshot">
+              <div class="telegram-header">
+                <strong>TrackCast Test</strong>
+                <span>Channel</span>
+              </div>
+              <div class="chat">
+                <div class="bubble">
+                  This channel will receive set start, track updates, and set end messages.
+                </div>
+                <div class="bubble me">Channel created</div>
+              </div>
+            </div>
+          </article>
+
+          <article class="tutorial-card">
+            <div class="step-body">
+              <span class="tutorial-step">Step 02</span>
+              <h2>Create the bot with BotFather.</h2>
+              <p>
+                BotFather gives you the API token TrackCast needs to send
+                messages on your behalf.
+              </p>
+              <ul class="step-detail">
+                <li>Search Telegram for <code>@BotFather</code>.</li>
+                <li>Send <code>/newbot</code>.</li>
+                <li>Choose a name and a username ending in <code>bot</code>.</li>
+              </ul>
+            </div>
+            <div class="telegram-shot" aria-label="BotFather mock screenshot">
+              <div class="telegram-header">
+                <strong>BotFather</strong>
+                <span>Official bot</span>
+              </div>
+              <div class="chat">
+                <div class="bubble me">/newbot</div>
+                <div class="bubble">Alright, a new bot. How are we going to call it?</div>
+                <div class="bubble me">TrackCast Live</div>
+                <div class="bubble">Now choose a username for your bot.</div>
+                <div class="bubble me">trackcast_live_bot</div>
+              </div>
+            </div>
+          </article>
+
+          <article class="tutorial-card">
+            <div class="step-body">
+              <span class="tutorial-step">Step 03</span>
+              <h2>Copy the API token.</h2>
+              <p>
+                The token is the password for the bot. Keep it private and paste
+                it only into TrackCast.
+              </p>
+              <ul class="step-detail">
+                <li>BotFather returns a long token after the bot is created.</li>
+                <li>Copy the whole token, including the colon in the middle.</li>
+                <li>If it leaks later, regenerate it in BotFather.</li>
+              </ul>
+            </div>
+            <div class="telegram-shot" aria-label="API token mock screenshot">
+              <div class="telegram-header">
+                <strong>BotFather</strong>
+                <span>Token</span>
+              </div>
+              <div class="chat">
+                <div class="bubble">
+                  Done. Use this token to access the HTTP API:
+                  <span class="token">1234567890:AAExampleTokenForTrackCast</span>
+                </div>
+                <div class="bubble me">Copied</div>
+              </div>
+            </div>
+          </article>
+
+          <article class="tutorial-card">
+            <div class="step-body">
+              <span class="tutorial-step">Step 04</span>
+              <h2>Add the bot as a channel admin.</h2>
+              <p>
+                The bot cannot post to your channel until Telegram gives it
+                permission.
+              </p>
+              <ul class="step-detail">
+                <li>Open your channel settings.</li>
+                <li>Add the bot as an administrator.</li>
+                <li>Enable permission to post messages.</li>
+              </ul>
+            </div>
+            <div class="telegram-shot" aria-label="Telegram admin mock screenshot">
+              <div class="telegram-header">
+                <strong>Administrators</strong>
+                <span>Channel</span>
+              </div>
+              <div class="chat">
+                <div class="bubble">TrackCast Live Bot</div>
+                <div class="bubble">Permissions: post messages enabled.</div>
+                <div class="bubble me">Save</div>
+              </div>
+            </div>
+          </article>
+
+          <article class="tutorial-card">
+            <div class="step-body">
+              <span class="tutorial-step">Step 05</span>
+              <h2>Paste the token and channel into TrackCast.</h2>
+              <p>
+                Open TrackCast, go to Setup, paste the bot token, then enter the
+                channel destination.
+              </p>
+              <ul class="step-detail">
+                <li>Public channel: use <code>@channelusername</code>.</li>
+                <li>Private channel: use the numeric <code>-100...</code> chat ID.</li>
+                <li>Click the test action before going live.</li>
+              </ul>
+            </div>
+            <div class="trackcast-shot" aria-label="TrackCast setup mock screenshot">
+              <div class="trackcast-header">
+                <strong>TrackCast</strong>
+                <span>Setup</span>
+              </div>
+              <div class="settings-pane">
+                <div class="settings-row">
+                  <label>Bot token</label>
+                  <div class="settings-input">1234567890:AAExampleTokenForTrackCast</div>
+                </div>
+                <div class="settings-row">
+                  <label>Channel</label>
+                  <div class="settings-input">@trackcast_test</div>
+                </div>
+                <div class="test-result">Telegram verified</div>
+              </div>
+            </div>
+          </article>
+
+          <article class="tutorial-card">
+            <div class="step-body">
+              <span class="tutorial-step">Step 06</span>
+              <h2>Start a short test broadcast.</h2>
+              <p>
+                Play a track in your DJ software, connect TrackCast, then start
+                broadcasting. Your channel should receive the live messages.
+              </p>
+              <ul class="step-detail">
+                <li>Use a private test channel for the first run.</li>
+                <li>Confirm the first track is correct before inviting people.</li>
+                <li>Stop the broadcast when the test is done.</li>
+              </ul>
+            </div>
+            <div class="telegram-shot" aria-label="Live message mock screenshot">
+              <div class="telegram-header">
+                <strong>TrackCast Test</strong>
+                <span>Live</span>
+              </div>
+              <div class="chat">
+                <div class="bubble">Set started - live from the booth.</div>
+                <div class="bubble">Now playing: DJ Life - Inner Motion</div>
+                <div class="bubble">Now playing: Roza Terenzi - Drawn</div>
+                <div class="bubble">Set ended - thanks for listening.</div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>trackcast</span>
+      <span><a href="./index.html">Back to landing</a></span>
+    </footer>
+  </body>
+</html>

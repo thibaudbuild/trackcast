@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TrackCast — Hero</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; }
+
+  /* Conteneur du hero — adapter la hauteur selon ton intégration */
+  .hero {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    min-height: 480px;
+    background: #000;
+    overflow: hidden;
+  }
+
+  #trackcast-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<section class="hero" id="hero">
+  <canvas id="trackcast-canvas"></canvas>
+</section>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
+
+<script type="module">
+/**
+ * TrackCast Hero Animation
+ * ------------------------
+ * Signal audio ambre qui ondule en continu, traversé périodiquement par un
+ * paquet vert qui glisse de gauche à droite (broadcast metaphor).
+ *
+ * Stack : Three.js + GLSL fragment shader (full-screen quad).
+ *
+ * Performance : ~1 draw call par frame, calculs au pixel.
+ *               Désactiver requestAnimationFrame quand le hero n'est pas visible
+ *               via IntersectionObserver pour économiser la batterie mobile.
+ */
+
+import * as THREE from 'three';
+
+// ============================================================================
+// SETUP
+// ============================================================================
+const canvas = document.getElementById('trackcast-canvas');
+const hero = document.getElementById('hero');
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(hero.clientWidth, hero.clientHeight, false);
+
+const scene = new THREE.Scene();
+const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+// ============================================================================
+// SYSTÈMES D'IMPULSIONS
+// ============================================================================
+// 1) Hover pulses : déclenchées par mouvement souris, position fixe + decay
+// 2) Travelers   : paquets qui voyagent de gauche à droite (auto-spawn)
+// ============================================================================
+const MAX_PULSES = 8;
+const MAX_TRAVELERS = 4;
+const pulses = [];
+const travelers = [];
+
+const uniforms = {
+  uTime:           { value: 0 },
+  uResolution:     { value: new THREE.Vector2(hero.clientWidth, hero.clientHeight) },
+
+  // Hover pulses
+  uPulseX:         { value: new Float32Array(MAX_PULSES) },
+  uPulseT0:        { value: new Float32Array(MAX_PULSES) },
+  uPulseStrength:  { value: new Float32Array(MAX_PULSES) },
+  uPulseRadius:    { value: new Float32Array(MAX_PULSES) },
+  uPulseDecay:     { value: new Float32Array(MAX_PULSES) },
+  uPulseCount:     { value: 0 },
+
+  // Travelers (signal qui voyage)
+  uTravX:          { value: new Float32Array(MAX_TRAVELERS) },
+  uTravStrength:   { value: new Float32Array(MAX_TRAVELERS) },
+  uTravFlash:      { value: new Float32Array(MAX_TRAVELERS) },
+  uTravCount:      { value: 0 },
+
+  // Couleurs (palette TrackCast)
+  uColorCore:      { value: new THREE.Color(1.0, 1.0, 1.0)    }, // blanc (cœur lumineux)
+  uColorMain:      { value: new THREE.Color(0.96, 0.62, 0.04) }, // ambre #f59e0b (signal)
+  uColorGlow:      { value: new THREE.Color(0.96, 0.62, 0.04) }, // ambre (glow)
+  uColorFlash:     { value: new THREE.Color(0.20, 0.95, 0.30) }, // vert (delivered)
+
+  // Paramètres signaux
+  uFlashColorMix:  { value: 0.75 }, // intensité du vert au passage (0=ambre, 1=vert pur)
+  uTravRadius:     { value: 0.26 }, // largeur du paquet (% de l'écran)
+  uTravColorBoost: { value: 1.2 }   // multiplicateur de pureté de la couleur au cœur
+};
+
+// ============================================================================
+// SHADERS
+// ============================================================================
+const vertexShader = /* glsl */`
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = vec4(position, 1.0);
+  }
+`;
+
+const fragmentShader = /* glsl */`
+  precision highp float;
+  #define MAX_PULSES 8
+  #define MAX_TRAVELERS 4
+
+  varying vec2 vUv;
+  uniform float uTime;
+  uniform vec2  uResolution;
+
+  uniform float uPulseX[MAX_PULSES];
+  uniform float uPulseT0[MAX_PULSES];
+  uniform float uPulseStrength[MAX_PULSES];
+  uniform float uPulseRadius[MAX_PULSES];
+  uniform float uPulseDecay[MAX_PULSES];
+  uniform int   uPulseCount;
+
+  uniform float uTravX[MAX_TRAVELERS];
+  uniform float uTravStrength[MAX_TRAVELERS];
+  uniform float uTravFlash[MAX_TRAVELERS];
+  uniform int   uTravCount;
+
+  uniform vec3  uColorCore;
+  uniform vec3  uColorMain;
+  uniform vec3  uColorGlow;
+  uniform vec3  uColorFlash;
+
+  uniform float uFlashColorMix;
+  uniform float uTravRadius;
+  uniform float uTravColorBoost;
+
+  // ----- Noise helpers -----
+  float hash11(float n) { return fract(sin(n) * 43758.5453123); }
+  float hash21(vec2 p)  { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
+
+  float vnoise(float x, float seed) {
+    float i = floor(x);
+    float f = fract(x);
+    float u = f * f * (3.0 - 2.0 * f);
+    return mix(hash11(i + seed), hash11(i + 1.0 + seed), u);
+  }
+
+  // FBM 1D (5 octaves) — base du signal
+  // High freq boost à 0.4 : les détails fins réagissent peu à l'énergie
+  float fbm(float x, float t, float seed, float energyHi) {
+    float v = 0.0;
+    float amp = 0.5;
+    float freq = 1.0;
+    for (int i = 0; i < 5; i++) {
+      float octBoost = 1.0;
+      if (i >= 2) octBoost = 1.0 + energyHi * 0.4;
+      float speed = 0.6 + float(i) * 0.4;
+      v += (vnoise(x * freq - t * speed, seed + float(i) * 13.7) - 0.5) * 2.0 * amp * octBoost;
+      freq *= 2.0;
+      amp  *= 0.55;
+    }
+    return v;
+  }
+
+  // ----- Energy field -----
+  // Énergie locale = somme des hover pulses + travelers
+  float pulseEnergy(float xN, float t) {
+    float total = 0.0;
+
+    // Hover pulses (decay temporel)
+    for (int i = 0; i < MAX_PULSES; i++) {
+      if (i >= uPulseCount) break;
+      float age = t - uPulseT0[i];
+      if (age < 0.0) continue;
+      float decay = exp(-age * uPulseDecay[i]);
+      if (decay < 0.01) continue;
+      float radius = uPulseRadius[i] + age * 0.15;
+      float dx = xN - uPulseX[i];
+      float gauss = exp(-(dx * dx) / (radius * radius));
+      total += gauss * decay * uPulseStrength[i];
+    }
+
+    // Travelers (paquets qui voyagent)
+    for (int i = 0; i < MAX_TRAVELERS; i++) {
+      if (i >= uTravCount) break;
+      float dx = xN - uTravX[i];
+      float gauss = exp(-(dx * dx) / (uTravRadius * uTravRadius));
+      total += gauss * uTravStrength[i] * 1.4;
+    }
+
+    return clamp(total, 0.0, 2.5);
+  }
+
+  // ----- Travelers : couleur dominante locale (ambre/vert) -----
+  vec3 travelerColorAt(float xN) {
+    vec3 weightedColor = vec3(0.0);
+    float totalWeight = 0.0;
+    for (int i = 0; i < MAX_TRAVELERS; i++) {
+      if (i >= uTravCount) break;
+      float dx = xN - uTravX[i];
+      float gauss = exp(-(dx * dx) / (uTravRadius * uTravRadius));
+      float w = pow(gauss, 1.5) * uTravStrength[i];
+      float flashFactor = uTravFlash[i] * uFlashColorMix;
+      // Au cœur du paquet, on amplifie le vert pour qu'il ressorte pur
+      float coreFlashBoost = flashFactor * (0.6 + gauss * 0.6) * uTravColorBoost;
+      coreFlashBoost = clamp(coreFlashBoost, 0.0, 1.0);
+      vec3 col = mix(uColorMain, uColorFlash, coreFlashBoost);
+      weightedColor += col * w;
+      totalWeight += w;
+    }
+    if (totalWeight < 0.001) return uColorMain;
+    return weightedColor / totalWeight;
+  }
+
+  // ----- Boost additif de présence sur la spine -----
+  vec3 travelerColorBoost(float xN, float t) {
+    vec3 add = vec3(0.0);
+    for (int i = 0; i < MAX_TRAVELERS; i++) {
+      if (i >= uTravCount) break;
+      float dx = xN - uTravX[i];
+      float gauss = exp(-(dx * dx) / (uTravRadius * uTravRadius));
+      float flashFactor = uTravFlash[i] * uFlashColorMix;
+      vec3 col = mix(uColorMain, uColorFlash, flashFactor);
+      add += col * gauss * uTravStrength[i] * 1.1;
+    }
+    return add;
+  }
+
+  // ----- Signal : couches FBM superposées -----
+  // baseAmp à 0.038 = signal vivant au repos
+  // Low freq boost à 0.6 (energyAmp) = ne monte pas trop sous énergie
+  float layerIntensity(vec2 fragPx, float t, float seed, float ampMul, float energyHi) {
+    float xN = fragPx.x / uResolution.x;
+    float centerY = uResolution.y * 0.5;
+    float baseAmp = uResolution.y * 0.038;
+    float energyAmp = uResolution.y * 0.036;
+    float ampPx = (baseAmp + energyAmp * energyHi) * ampMul;
+    float fbmX = xN * 8.0;
+    float y = fbm(fbmX, t, seed, energyHi) * ampPx;
+    float curveY = centerY + y;
+    float dist = abs(fragPx.y - curveY);
+    return 1.0 / (1.0 + (dist * dist) / (0.7 * 0.7));
+  }
+
+  // ----- Filaments : fines lignes flux qui évoluent près de la spine -----
+  float filamentFlux(vec2 fragPx, float t, float energyHi) {
+    float centerY = uResolution.y * 0.5;
+    float xN = fragPx.x / uResolution.x;
+
+    // Wobble vertical des filaments quand énergie présente (vibration organique)
+    float vWobble = 0.0;
+    if (energyHi > 0.005) {
+      float wobbleAmp = uResolution.y * 0.005 * energyHi;
+      float n1 = (vnoise(xN * 12.0 + t * 1.5, 77.0) - 0.5);
+      float n2 = (vnoise(xN * 25.0 - t * 2.3, 109.0) - 0.5);
+      vWobble  = n1 * 0.8 * wobbleAmp;
+      vWobble += n2 * 0.5 * wobbleAmp;
+      vWobble += sin(xN * 18.0 - t * 3.5) * 0.25 * wobbleAmp;
+    }
+
+    float dy = abs(fragPx.y - centerY - vWobble);
+    float maxDist = uResolution.y * 0.015;
+    if (dy > maxDist) return 0.0;
+    float sigma = uResolution.y * 0.006;
+    float vEnv = exp(-(dy * dy) / (sigma * sigma));
+
+    // Filaments en bandes (1 sur 2 visible, hash-based)
+    float bandSize = 0.7;
+    float band = floor(dy / bandSize);
+    float bandSeed = hash11(band * 7.31 + 1.0);
+    if (bandSeed < 0.50) return 0.0;
+
+    float flowSpeed = 0.4 + bandSeed * 0.3;
+    float flowMod = energyHi * 0.6;
+    float xModNoise = vnoise(
+      xN * (8.0 + bandSeed * 6.0) - t * flowSpeed * (1.0 + flowMod),
+      bandSeed * 100.0
+    );
+    if (energyHi > 0.05) {
+      float perturbNoise = vnoise(xN * 30.0 - t * 3.0, bandSeed * 50.0) - 0.5;
+      xModNoise += perturbNoise * energyHi * 1.2;
+    }
+    float intensity = pow(clamp(xModNoise, 0.0, 1.0), 2.2) * vEnv;
+    float bandFlick = sin(t * (1.0 + bandSeed * 2.0) + bandSeed * 6.28) * 0.2 + 0.8;
+    intensity *= bandFlick;
+    intensity *= (1.0 + energyHi * 0.8);
+    return intensity;
+  }
+
+  // ----- Haze : nuages atmosphériques asymétriques autour de la spine -----
+  float hazeEnvelopeHeight(float xN, float t, float energyHi, float sideSeed) {
+    float baseAmp = uResolution.y * 0.030;
+    float energyAmp = uResolution.y * 0.020;
+    float amp = baseAmp + energyAmp * energyHi;
+    float fbmX = xN * 4.0;
+    float v = 0.0;
+    float a = 0.5;
+    float f = 1.0;
+    float seedBase = 99.0 + sideSeed * 173.0;
+    for (int i = 0; i < 3; i++) {
+      v += (vnoise(fbmX * f - t * (0.4 + float(i) * 0.2), seedBase + float(i) * 11.0) - 0.5) * 2.0 * a;
+      f *= 2.0;
+      a *= 0.55;
+    }
+    return (abs(v) + 0.10) * amp;
+  }
+
+  float signalHaze(vec2 fragPx, float t, float energyHi) {
+    float centerY = uResolution.y * 0.5;
+    float xN = fragPx.x / uResolution.x;
+    float pixelFromCenter = fragPx.y - centerY;
+    float sideSeed = (pixelFromCenter > 0.0) ? 0.0 : 1.0;
+    float envHeight = hazeEnvelopeHeight(xN, t, energyHi, sideSeed);
+    if (envHeight < 1.0) return 0.0;
+    float dy = abs(pixelFromCenter);
+    float t01 = dy / envHeight;
+
+    // Profil : remplissage doux au cœur, fade exponentiel au-delà
+    float fillProfile;
+    if (t01 < 1.0) {
+      fillProfile = 1.0 - smoothstep(0.0, 1.3, t01);
+    } else {
+      float overshoot = t01 - 1.0;
+      fillProfile = 0.30 * exp(-overshoot * 8.0);
+    }
+
+    // Texture brouillard : 2 passes de domain warping + FBM 2D isotrope
+    vec2 p = vec2(fragPx.x, fragPx.y) / uResolution.y;
+    vec2 warp1;
+    warp1.x = vnoise(p.x * 1.5 + t * 0.2, p.y * 7.3) - 0.5;
+    warp1.y = vnoise(p.x * 1.7 + 17.0, p.y * 5.1 - t * 0.15) - 0.5;
+    warp1 *= 0.4;
+    vec2 pWarped = p + warp1;
+    vec2 warp2;
+    warp2.x = vnoise(pWarped.x * 3.5 + t * 0.3, pWarped.y * 4.7 + 33.0) - 0.5;
+    warp2.y = vnoise(pWarped.x * 4.1 - t * 0.25, pWarped.y * 3.3 + 41.0) - 0.5;
+    warp2 *= 0.18;
+    vec2 q = p + warp1 + warp2;
+
+    float n1 = vnoise(q.x * 2.0 + t * 0.10, q.y * 2.0 * 7.3) * 0.55;
+    float n2 = vnoise(q.x * 4.5 - t * 0.08, q.y * 4.5 * 7.3 + 11.0) * 0.30;
+    float n3 = vnoise(q.x * 9.0 + t * 0.15, q.y * 9.0 * 7.3 + 23.0) * 0.15;
+    float clouds = n1 + n2 + n3;
+
+    float backgroundGrain = vnoise(p.x * 25.0 + t * 0.3, p.y * 25.0 * 7.3 + 99.0);
+    backgroundGrain = (backgroundGrain - 0.5) * 0.12;
+    float globalMod = 0.5 + 0.5 * vnoise(xN * 3.0 + t * 0.12, 200.0);
+    globalMod = pow(globalMod, 0.6);
+    float fogTex = 0.32 + clouds * 0.95 + backgroundGrain;
+    fogTex = clamp(fogTex, 0.0, 1.5);
+    fogTex *= globalMod;
+
+    float intensity = clamp(envHeight / (uResolution.y * 0.06), 0.0, 1.0);
+    return fillProfile * fogTex * intensity;
+  }
+
+  // ============================================================================
+  // MAIN
+  // ============================================================================
+  void main() {
+    vec2 fragPx = vUv * uResolution;
+    float centerY = uResolution.y * 0.5;
+    float xN = fragPx.x / uResolution.x;
+
+    float energyHi = pulseEnergy(xN, uTime);
+
+    // Couleur localisée : ambre par défaut, virant vers vert au passage du paquet
+    vec3 travCol = travelerColorAt(xN);
+    float travE = 0.0;
+    for (int i = 0; i < MAX_TRAVELERS; i++) {
+      if (i >= uTravCount) break;
+      float dx = xN - uTravX[i];
+      float gauss = exp(-(dx * dx) / (uTravRadius * uTravRadius));
+      travE += gauss * uTravStrength[i];
+    }
+    float colorMixWeight = clamp(travE * 0.9 * uTravColorBoost, 0.0, 0.95);
+    vec3 mainColor = mix(uColorMain, travCol, colorMixWeight);
+    vec3 glowColor = mix(uColorGlow, travCol, colorMixWeight);
+
+    vec3 col = vec3(0.0);
+
+    // Haze (en arrière-plan)
+    float h = signalHaze(fragPx, uTime, energyHi);
+    col += mainColor * h * 0.55;
+    col += glowColor * h * 0.22;
+
+    // Spine (ligne lumineuse centrale)
+    float d = abs(fragPx.y - centerY);
+    float spineCore = 1.0 / (1.0 + d * d * 1.4);
+    float spineMid  = 1.0 / (1.0 + d * 0.45);
+    float spineGlow = exp(-d * 0.13);
+    col += uColorCore * spineCore * 0.45;
+    col += mainColor  * spineMid  * 0.85;
+    col += glowColor  * spineGlow * 0.20;
+
+    // Boost additif du paquet (concentré près de la spine)
+    vec3 colorBoost = travelerColorBoost(xN, uTime);
+    float fadeFromCenter = exp(-d * 0.05);
+    col += colorBoost * (spineMid * 0.8 + spineGlow * 0.4) * fadeFromCenter;
+
+    // Couches FBM (signal qui ondule, 4 couches superposées)
+    float L1 = layerIntensity(fragPx, uTime,        17.3, 1.00, energyHi);
+    float L2 = layerIntensity(fragPx, uTime - 0.25, 41.8, 0.85, energyHi);
+    float L3 = layerIntensity(fragPx, uTime + 0.18, 73.2, 0.75, energyHi);
+    float L4 = layerIntensity(fragPx, uTime * 1.3,  91.5, 0.65, energyHi);
+    float layerIntens = 0.30 + energyHi * 0.35;
+    col += mainColor * L1 * 0.50 * layerIntens;
+    col += uColorCore * L1 * 0.12 * layerIntens;
+    col += mainColor * L2 * 0.32 * layerIntens;
+    col += mainColor * L3 * 0.28 * layerIntens;
+    col += mainColor * L4 * 0.22 * layerIntens;
+
+    // Filaments
+    float flux = filamentFlux(fragPx, uTime, energyHi);
+    col += mainColor * flux * 0.40;
+    col += uColorCore * flux * 0.10;
+
+    col = clamp(col, 0.0, 2.0);
+    gl_FragColor = vec4(col, 1.0);
+  }
+`;
+
+// ============================================================================
+// MESH
+// ============================================================================
+const geom = new THREE.PlaneGeometry(2, 2);
+const mat = new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader });
+scene.add(new THREE.Mesh(geom, mat));
+
+// ============================================================================
+// HOVER PULSES (réactivité subtile à la souris)
+// ============================================================================
+let lastMouseX = -9999;
+let lastMouseY = -9999;
+let lastEmitTime = 0;
+const MIN_EMIT_INTERVAL = 0.04;
+const clock = new THREE.Clock();
+
+function emitHoverPulse(xNorm, strength, radius = 0.08, decayRate = 1.5) {
+  if (pulses.length >= MAX_PULSES) {
+    let oldestIdx = 0;
+    for (let i = 1; i < pulses.length; i++) {
+      if (pulses[i].t0 < pulses[oldestIdx].t0) oldestIdx = i;
+    }
+    pulses[oldestIdx] = { x: xNorm, t0: uniforms.uTime.value, strength, radius, decayRate };
+  } else {
+    pulses.push({ x: xNorm, t0: uniforms.uTime.value, strength, radius, decayRate });
+  }
+}
+
+hero.addEventListener('mousemove', (e) => {
+  const rect = hero.getBoundingClientRect();
+  const px = e.clientX - rect.left;
+  const py = e.clientY - rect.top;
+
+  if (lastMouseX < -9000) {
+    lastMouseX = px;
+    lastMouseY = py;
+    return;
+  }
+
+  // Souris doit être proche de la spine (gaussienne verticale) pour que ça réagisse
+  const centerY = rect.height / 2;
+  const distY = Math.abs(py - centerY);
+  const verticalSigma = rect.height * 0.12;
+  const proximityFactor = Math.exp(-(distY * distY) / (verticalSigma * verticalSigma));
+
+  const dx = px - lastMouseX;
+  const dy = py - lastMouseY;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+
+  const now = uniforms.uTime.value;
+  if (dist > 3 && now - lastEmitTime > MIN_EMIT_INTERVAL && proximityFactor > 0.05) {
+    const xNorm = px / rect.width;
+    const speedNorm = Math.min(dist / 18, 1.5);
+    const strength = speedNorm * proximityFactor * 0.30; // discret
+    emitHoverPulse(xNorm, strength, 0.08, 1.5);
+    lastEmitTime = now;
+  }
+
+  lastMouseX = px;
+  lastMouseY = py;
+});
+
+hero.addEventListener('mouseleave', () => {
+  lastMouseX = -9999;
+  lastMouseY = -9999;
+});
+
+// ============================================================================
+// TRAVELERS (broadcast signal qui voyage)
+// ============================================================================
+// Phases : naissance hors-écran à gauche, voyage, mort hors-écran à droite
+// ============================================================================
+const TRAVEL_SPEED          = 0.28;  // fraction d'écran/seconde
+const TRAVEL_START_X        = -0.35; // hors écran à gauche
+const TRAVEL_FADE_IN_END_X  =  0.15; // fin du fade-in
+const TRAVEL_FADE_START_X   =  0.85; // début du fade-out
+const TRAVEL_END_X          =  1.35; // hors écran à droite
+
+function spawnTraveler() {
+  if (travelers.length >= MAX_TRAVELERS) return;
+  travelers.push({
+    startTime: uniforms.uTime.value,
+    speed: TRAVEL_SPEED * (0.85 + Math.random() * 0.3),
+    strength: 0.55 + Math.random() * 0.15
+  });
+}
+
+// Auto-spawn 7-13s aléatoire (rythme contemplatif)
+let nextAutoSpawnTime = 2.0; // premier spawn rapide après chargement
+function scheduleNextAuto() {
+  nextAutoSpawnTime = uniforms.uTime.value + (7 + Math.random() * 6);
+}
+
+function updateTravelers() {
+  const t = uniforms.uTime.value;
+
+  // Auto-spawn
+  if (t >= nextAutoSpawnTime) {
+    spawnTraveler();
+    scheduleNextAuto();
+  }
+
+  // Avance + cleanup
+  for (let i = travelers.length - 1; i >= 0; i--) {
+    const tr = travelers[i];
+    const age = t - tr.startTime;
+    tr.x = TRAVEL_START_X + tr.speed * age;
+    if (tr.x > TRAVEL_END_X) travelers.splice(i, 1);
+  }
+
+  // Sync uniforms
+  for (let i = 0; i < travelers.length; i++) {
+    const tr = travelers[i];
+    uniforms.uTravX.value[i] = tr.x;
+
+    // Fade-in/out de la strength
+    let strengthMul = 1.0;
+    if (tr.x < TRAVEL_FADE_IN_END_X) {
+      const p = (tr.x - TRAVEL_START_X) / (TRAVEL_FADE_IN_END_X - TRAVEL_START_X);
+      strengthMul = Math.max(0, Math.min(1, p));
+    } else if (tr.x > TRAVEL_FADE_START_X) {
+      const p = (tr.x - TRAVEL_FADE_START_X) / (TRAVEL_END_X - TRAVEL_FADE_START_X);
+      strengthMul = 1.0 - Math.min(1.0, p);
+    }
+    uniforms.uTravStrength.value[i] = tr.strength * strengthMul;
+
+    // Flash factor : vert présent dès le début, plus pur en fin de course
+    const flash = Math.max(0, Math.min(1, 0.5 + tr.x * 0.5));
+    uniforms.uTravFlash.value[i] = flash;
+  }
+  uniforms.uTravCount.value = travelers.length;
+}
+
+function syncPulses() {
+  const t = uniforms.uTime.value;
+  for (let i = pulses.length - 1; i >= 0; i--) {
+    const age = t - pulses[i].t0;
+    if (Math.exp(-age * pulses[i].decayRate) < 0.005) pulses.splice(i, 1);
+  }
+  for (let i = 0; i < pulses.length; i++) {
+    uniforms.uPulseX.value[i]        = pulses[i].x;
+    uniforms.uPulseT0.value[i]       = pulses[i].t0;
+    uniforms.uPulseStrength.value[i] = pulses[i].strength;
+    uniforms.uPulseRadius.value[i]   = pulses[i].radius;
+    uniforms.uPulseDecay.value[i]    = pulses[i].decayRate;
+  }
+  uniforms.uPulseCount.value = pulses.length;
+}
+
+// ============================================================================
+// RESIZE & ANIMATION LOOP
+// ============================================================================
+function onResize() {
+  const w = hero.clientWidth;
+  const h = hero.clientHeight;
+  renderer.setSize(w, h, false);
+  uniforms.uResolution.value.set(w, h);
+}
+window.addEventListener('resize', onResize);
+
+scheduleNextAuto();
+function animate() {
+  uniforms.uTime.value = clock.getElapsedTime();
+  syncPulses();
+  updateTravelers();
+  renderer.render(scene, camera);
+  requestAnimationFrame(animate);
+}
+animate();
+</script>
+
+</body>
+</html>

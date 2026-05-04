@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="TrackCast shares your DJ set tracklist live to Telegram and saves a clean set history."
+    />
+    <title>TrackCast - Share your set tracklist live</title>
+    <link
+      rel="icon"
+      href="../assets/brand/logo.svg"
+      type="image/svg+xml"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand-link" href="./index.html" aria-label="TrackCast home">
+        <img
+          src="../assets/brand/logo.svg"
+          alt=""
+          width="28"
+          height="28"
+        />
+        <span>trackcast</span>
+      </a>
+      <nav class="main-nav" aria-label="Primary navigation">
+        <a href="#demo">Demo</a>
+        <a href="#builds">Builds</a>
+        <a href="./onboarding.html">Onboarding</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <iframe
+          class="hero-field"
+          src="./hero-trackcast-final.html"
+          title="TrackCast signal animation"
+          aria-hidden="true"
+          tabindex="-1"
+        ></iframe>
+        <div class="hero-vignette" aria-hidden="true"></div>
+
+        <div class="hero-content">
+          <p class="eyebrow">Private test build / macOS now</p>
+          <div class="hero-lockup">
+            <img
+              src="../assets/brand/logo.svg"
+              alt=""
+              width="96"
+              height="96"
+            />
+            <h1 id="hero-title">trackcast</h1>
+          </div>
+          <p class="hero-line">Share your set tracklist live. Straight to Telegram.</p>
+          <p class="hero-copy">
+            A quiet desktop utility for DJs who want the room, the channel, and
+            the archive to stay in sync while the set is still moving.
+          </p>
+
+          <div class="hero-actions" aria-label="Primary actions">
+            <a
+              class="button button-primary"
+              href="https://github.com/thibaudbuild/trackcast/releases/latest"
+            >
+              Download macOS build
+            </a>
+            <a class="button button-secondary" href="./onboarding.html">Setup guide</a>
+          </div>
+
+          <dl class="hero-status" aria-label="Current product status">
+            <div>
+              <dt>Current build</dt>
+              <dd>0.1.0 / Apple Silicon</dd>
+            </div>
+            <div>
+              <dt>Live output</dt>
+              <dd>Telegram channel</dd>
+            </div>
+            <div>
+              <dt>Core promise</dt>
+              <dd>Tracklist, not audio recognition</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="intro-band" aria-labelledby="intro-title">
+        <div class="section-grid">
+          <div>
+            <p class="section-kicker">What it is</p>
+            <h2 id="intro-title">A live track broadcast tool, not a social platform.</h2>
+          </div>
+          <div class="intro-copy">
+            <p>
+              TrackCast reads the track currently playing in your DJ software,
+              posts clean updates to Telegram, and keeps a set history you can
+              export later.
+            </p>
+            <p>
+              The direction is deliberately restrained: real software first,
+              no fake dashboards, no inflated launch language, no extra layer
+              between the DJ and the listeners.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="demo-section" id="demo" aria-labelledby="demo-title">
+        <div class="section-grid section-grid-top">
+          <div>
+            <p class="section-kicker">Demo loop</p>
+            <h2 id="demo-title">From deck to channel while the set is running.</h2>
+          </div>
+          <p class="section-note">
+            Live updates leave TrackCast and land in Telegram without the DJ
+            touching another screen mid-set.
+          </p>
+        </div>
+
+        <div class="demo-stage" aria-label="TrackCast live demo mockup">
+          <div class="desktop-window">
+            <div class="window-bar">
+              <span></span>
+              <span></span>
+              <span></span>
+              <strong>TrackCast</strong>
+            </div>
+            <div class="app-topline">
+              <div class="mini-brand">
+                <img
+                  src="../assets/brand/logo.svg"
+                  alt=""
+                  width="34"
+                  height="34"
+                />
+                <span>trackcast</span>
+              </div>
+              <span class="live-chip"><i></i> live</span>
+            </div>
+            <div class="app-panel">
+              <div class="now-label">Now playing</div>
+              <div class="track-cycle">
+                <span>DJ Life - Inner Motion</span>
+                <span>Roza Terenzi - Drawn</span>
+                <span>Priori - Winged</span>
+              </div>
+              <div class="meter" aria-hidden="true">
+                <span style="--h: 42%"></span>
+                <span style="--h: 78%"></span>
+                <span style="--h: 52%"></span>
+                <span style="--h: 91%"></span>
+                <span style="--h: 46%"></span>
+                <span style="--h: 64%"></span>
+                <span style="--h: 38%"></span>
+              </div>
+            </div>
+            <ol class="set-list" aria-label="Live set list">
+              <li><span>00:00</span> Set started</li>
+              <li><span>00:03</span> DJ Life - Inner Motion</li>
+              <li><span>05:41</span> Roza Terenzi - Drawn</li>
+              <li><span>11:08</span> Priori - Winged</li>
+            </ol>
+          </div>
+
+          <div class="signal-lane" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+
+          <div class="phone-frame">
+            <div class="phone-top">
+              <span>Telegram</span>
+              <strong>@trackcast_live</strong>
+            </div>
+            <div class="message-feed">
+              <article class="message message-one">
+                <span>TrackCast</span>
+                <p>Set started - live from the booth.</p>
+              </article>
+              <article class="message message-two">
+                <span>Now playing</span>
+                <p>DJ Life - Inner Motion</p>
+              </article>
+              <article class="message message-three">
+                <span>Now playing</span>
+                <p>Roza Terenzi - Drawn</p>
+              </article>
+              <article class="message message-four">
+                <span>Now playing</span>
+                <p>Priori - Winged</p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="builds-section" id="builds" aria-labelledby="builds-title">
+        <div class="section-grid section-grid-top">
+          <div>
+            <p class="section-kicker">Current builds</p>
+            <h2 id="builds-title">Download the test build and read what changed.</h2>
+          </div>
+          <p class="section-note">
+            The site is honest about the state: macOS is the usable drop,
+            Windows is present in the codebase but still needs a packaged build.
+          </p>
+        </div>
+
+        <div class="build-list">
+          <article class="build-card build-card-live">
+            <div class="build-meta">
+              <span class="status-dot status-ready"></span>
+              <span>macOS</span>
+              <strong>0.1.0 Apple Silicon</strong>
+            </div>
+            <h3>Ready for private DJ testing</h3>
+            <p>
+              Live broadcast flow, Telegram verification, set history, export,
+              and guarded Stop/Delete actions are in place.
+            </p>
+            <a
+              class="button button-primary"
+              href="https://github.com/thibaudbuild/trackcast/releases/latest"
+            >
+              Download .dmg
+            </a>
+          </article>
+
+          <article class="build-card">
+            <div class="build-meta">
+              <span class="status-dot status-wip"></span>
+              <span>Windows</span>
+              <strong>0.1.0 packaging pending</strong>
+            </div>
+            <h3>Code path exists, installer not published yet</h3>
+            <p>
+              Windows has a dedicated app folder and Unbox sidecar path, but
+              the public installer should wait for one clean packaged build.
+            </p>
+            <span class="button button-disabled" aria-disabled="true">Build pending</span>
+          </article>
+        </div>
+
+        <aside class="release-note" aria-labelledby="release-title">
+          <p class="section-kicker">Last feature note</p>
+          <h3 id="release-title">Receiver and broadcast are now separate states.</h3>
+          <p>
+            TrackCast can keep listening to the DJ software outside a public
+            broadcast. Telegram sends and set logging only begin when live mode
+            starts, with a stale-first-track guard to avoid dirty first lines.
+          </p>
+        </aside>
+      </section>
+
+      <section class="contact-section" id="contact" aria-labelledby="contact-title">
+        <div class="contact-copy">
+          <p class="section-kicker">Feedback</p>
+          <h2 id="contact-title">Feature idea, bug report, setup friction.</h2>
+          <p>
+            Send the build version, your DJ software, what happened, and what
+            you expected. Weird edge cases are useful here.
+          </p>
+        </div>
+        <div class="contact-actions">
+          <a
+            class="button button-primary"
+            href="mailto:your@email.com?subject=TrackCast%20feedback"
+          >
+            Send feedback
+          </a>
+          <a class="button button-secondary" href="./onboarding.html">Open setup guide</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>trackcast</span>
+      <span>A quiet utility for live tracklists.</span>
+    </footer>
+  </body>
+</html>

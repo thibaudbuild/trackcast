@@ -1,77 +1,44 @@
 # TrackCast
 
-Broadcast your DJ set live + save your tracklist automatically.
+Broadcast your DJ set live to Telegram and save a clean set history.
 
-## Setup on your Mac
+## Repository Layout
 
-### 1. Install prerequisites
-
-```bash
-# Install Rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# Restart your terminal, then verify
-rustc --version
-
-# Install Node.js (if not already installed)
-# Download from https://nodejs.org or:
-brew install node
+```txt
+apps/
+  mac/        Tauri shell, macOS sidecars, icons, and build config
+  windows/    Tauri shell, Windows sidecars, icons, and build config
+packages/
+  app/        Shared React frontend used by both desktop apps
+site/         Static landing page and onboarding guide
+assets/
+  brand/      Logo, wordmark, and web fonts used by the site
+docs/         Product notes, setup notes, and archived explorations
 ```
 
-### 2. Download Unbox binary
+The daily app work happens in `packages/app`. Platform-specific build work
+happens in `apps/mac` or `apps/windows`.
 
-Go to https://github.com/erikrichardlarson/unbox/releases and download the macOS binary.
-
-Rename it based on your Mac's chip:
-- Apple Silicon (M1/M2/M3): `unbox-aarch64-apple-darwin`
-- Intel: `unbox-x86_64-apple-darwin`
-
-Place it in `src-tauri/binaries/` and make it executable:
+## Common Commands
 
 ```bash
-chmod +x src-tauri/binaries/unbox-*
-```
-
-### 3. Install dependencies and run
-
-```bash
-# Install Node dependencies
 npm install
-
-# Run in dev mode
-cargo tauri dev
+npm run dev:mac
+npm run build:mac
+npm run build:windows
+npm run site
 ```
 
-### 4. Build for distribution
+Use `npm run vite:mac` only when you want the frontend dev server without the
+Tauri shell.
 
-```bash
-cargo tauri build
+The site is served from the repository root at:
+
+```txt
+http://127.0.0.1:8787/site/
 ```
 
-The `.dmg` will be in `src-tauri/target/release/bundle/dmg/`.
+## Releases
 
-## Project structure
-
-```
-trackcast/
-├── src/                          # React frontend
-│   ├── App.jsx                   # Main app (routing, state)
-│   ├── styles.css                # Dark theme CSS
-│   └── components/
-│       ├── Onboarding.jsx        # First-launch setup flow
-│       ├── MainView.jsx          # Now playing + history + controls
-│       └── Settings.jsx          # Config editor
-├── src-tauri/                    # Rust backend (Tauri)
-│   ├── src/
-│   │   ├── lib.rs                # App setup + Tauri commands
-│   │   ├── main.rs               # Entry point
-│   │   ├── unbox.rs              # Unbox sidecar + WebSocket listener
-│   │   ├── telegram.rs           # Telegram Bot API client
-│   │   ├── history.rs            # Set history + export
-│   │   └── state.rs              # App state + config persistence
-│   ├── binaries/                 # Unbox sidecar binary (you add this)
-│   ├── tauri.conf.json           # Tauri config
-│   └── Cargo.toml                # Rust dependencies
-├── package.json
-└── vite.config.js
-```
+Generated installers and archives should not be committed to the repository.
+Publish macOS and Windows builds through GitHub Releases instead.

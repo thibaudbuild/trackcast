@@ -1,27 +1,24 @@
 {
-  "name": "trackcast",
+  "name": "trackcast-monorepo",
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "workspaces": [
+    "apps/mac",
+    "apps/windows",
+    "packages/app"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "tauri": "tauri"
-  },
-  "dependencies": {
-    "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-shell": "^2",
-    "@tauri-apps/plugin-dialog": "^2",
-    "@tauri-apps/plugin-fs": "^2",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
-  },
-  "devDependencies": {
-    "@tauri-apps/cli": "^2",
-    "@types/react": "^18.3.1",
-    "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.4",
-    "vite": "^6.0.0"
+    "dev:mac": "npm --workspace @trackcast/mac run tauri -- dev",
+    "vite:mac": "npm --workspace @trackcast/mac run dev",
+    "build:mac": "npm --workspace @trackcast/mac run build",
+    "tauri:mac": "npm --workspace @trackcast/mac run tauri",
+    "tauri:mac:build": "npm --workspace @trackcast/mac run tauri -- build",
+    "dev:windows": "npm --workspace @trackcast/windows run tauri -- dev",
+    "vite:windows": "npm --workspace @trackcast/windows run dev",
+    "build:windows": "npm --workspace @trackcast/windows run build",
+    "tauri:windows": "npm --workspace @trackcast/windows run tauri",
+    "tauri:windows:build": "npm --workspace @trackcast/windows run tauri -- build",
+    "site": "python3 -m http.server 8787"
   }
 }
