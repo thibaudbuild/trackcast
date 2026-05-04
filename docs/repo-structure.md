@@ -28,9 +28,9 @@ preview, and deploy without opening the desktop app folders.
 
 ## Why `docs`
 
-`docs` keeps product plans, setup notes, and old explorations out of the app
-source. Current docs should stay readable; old explorations belong under
-`docs/archive`.
+`docs` keeps repository documentation that is useful to anyone reading the
+project (structure notes, build guides, changelogs). Personal notes and
+working drafts stay local only and are not committed.
 
 ## Builds
 

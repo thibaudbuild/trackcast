@@ -19,3 +19,7 @@ target/
 
 .env
 .env.*
+
+# Private docs: product vision, roadmap, personal notes, conv context.
+# Stays local only. Never pushed to the public repo.
+docs/private/
