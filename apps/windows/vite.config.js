@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 import { existsSync } from "node:fs";
 import { fileURLToPath, URL } from "node:url";
 
-const host = process.env.TAURI_DEV_HOST;
+const host = process.env.TAURI_DEV_HOST || "127.0.0.1";
 const appRoot = fileURLToPath(new URL("../../packages/app", import.meta.url));
 const appDist = fileURLToPath(new URL("dist", import.meta.url));
 const localNodeModules = fileURLToPath(new URL("node_modules", import.meta.url));
@@ -33,7 +33,7 @@ export default defineConfig({
   server: {
     port: 1420,
     strictPort: true,
-    host: host || false,
+    host,
     hmr: host
       ? {
           protocol: "ws",
