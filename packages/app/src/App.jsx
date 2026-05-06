@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
+import logoMark from "@brand/logo-mark.png?inline";
 import MainView from "./components/MainView";
 import Settings from "./components/Settings";
 import HistoryView from "./components/HistoryView";
@@ -305,11 +306,16 @@ export default function App() {
     <>
       <div className="app">
         <div className="titlebar">
+          <div className="titlebar-brand" aria-label="TrackCast">
+            <img className="titlebar-mark" src={logoMark} alt="" />
+          </div>
           <div className="titlebar-spacer" />
           <div className="titlebar-right">
             <button
               className={`settings-btn icon-only history-btn ${activeTab === "history" ? "active" : ""}`}
               onClick={() => setActiveTab(activeTab === "history" ? "main" : "history")}
+              aria-label={activeTab === "history" ? "Close history" : "Open history"}
+              title={activeTab === "history" ? "Close history" : "Open history"}
             >
               <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">
                 <path d="M6 7.5h12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
@@ -317,7 +323,12 @@ export default function App() {
                 <path d="M6 16.5h12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
               </svg>
             </button>
-            <button className="settings-btn theme-btn" onClick={handleToggleTheme}>◐</button>
+            <button className="settings-btn theme-btn" onClick={handleToggleTheme} aria-label="Toggle theme" title="Toggle theme">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" strokeWidth="1.7" />
+                <path className="theme-disc-fill" d="M12 4a8 8 0 0 1 0 16Z" fill="currentColor" />
+              </svg>
+            </button>
           </div>
         </div>
 
