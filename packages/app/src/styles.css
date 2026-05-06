@@ -142,15 +142,6 @@ body {
   color: var(--text-dim);
 }
 
-.app-logo {
-  width: 24px;
-  height: 24px;
-  display: block;
-  border-radius: 6px;
-  object-fit: cover;
-  box-shadow: 0 0 10px rgba(232, 128, 16, 0.12);
-}
-
 .titlebar-spacer {
   flex: 1;
 }

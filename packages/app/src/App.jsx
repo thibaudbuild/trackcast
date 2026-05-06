@@ -6,7 +6,6 @@ import { writeTextFile } from "@tauri-apps/plugin-fs";
 import MainView from "./components/MainView";
 import Settings from "./components/Settings";
 import HistoryView from "./components/HistoryView";
-import appLogo from "@brand/logo.png";
 
 export default function App() {
   const NOW_PLAYING_FRESH_MS = 300000;
@@ -306,7 +305,6 @@ export default function App() {
     <>
       <div className="app">
         <div className="titlebar">
-          <img className="app-logo" src={appLogo} alt="" aria-hidden="true" />
           <div className="titlebar-spacer" />
           <div className="titlebar-right">
             <button

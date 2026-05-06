@@ -6,7 +6,6 @@ import { fileURLToPath, URL } from "node:url";
 const host = process.env.TAURI_DEV_HOST || "127.0.0.1";
 const appRoot = fileURLToPath(new URL("../../packages/app", import.meta.url));
 const appDist = fileURLToPath(new URL("dist", import.meta.url));
-const brandRoot = fileURLToPath(new URL("../../assets/brand", import.meta.url));
 const localNodeModules = fileURLToPath(new URL("node_modules", import.meta.url));
 const rootNodeModules = fileURLToPath(new URL("../../node_modules", import.meta.url));
 const dependencyRoot = existsSync(localNodeModules) ? localNodeModules : rootNodeModules;
@@ -25,7 +24,6 @@ export default defineConfig({
       { find: /^@tauri-apps\/plugin-dialog$/, replacement: `${dependencyRoot}/@tauri-apps/plugin-dialog` },
       { find: /^@tauri-apps\/plugin-fs$/, replacement: `${dependencyRoot}/@tauri-apps/plugin-fs` },
       { find: /^@tauri-apps\/plugin-shell$/, replacement: `${dependencyRoot}/@tauri-apps/plugin-shell` },
-      { find: /^@brand\/(.*)$/, replacement: `${brandRoot}/$1` },
     ],
   },
   build: {
@@ -44,7 +42,7 @@ export default defineConfig({
         }
       : undefined,
     fs: {
-      allow: [appRoot, brandRoot],
+      allow: [appRoot],
     },
     watch: {
       ignored: ["**/src-tauri/**"],
