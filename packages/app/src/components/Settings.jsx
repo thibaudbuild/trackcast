@@ -51,31 +51,60 @@ export default function Settings({
 
   // Connection fields
   const [token, setToken]           = useState(config?.telegram_token || "");
-  const [chatId, setChatId]         = useState(config?.telegram_chat_id || "");
   const [djSoftware, setDjSoftware] = useState(config?.dj_software || "");
-  const [testing, setTesting]       = useState(false);
-  const [testError, setTestError]   = useState("");
   const [editingSoftware, setEditingSoftware] = useState(!config?.dj_software);
   const [editingToken, setEditingToken] = useState(!config?.telegram_token);
-  const [editingChat, setEditingChat] = useState(!config?.telegram_chat_id);
   const [tokenCopied, setTokenCopied] = useState(false);
   const [lockCopyUntilMouseLeave, setLockCopyUntilMouseLeave] = useState(false);
-  const [testBtnHover, setTestBtnHover] = useState(false);
-  const [lockOkUntilMouseLeave, setLockOkUntilMouseLeave] = useState(false);
   const [traktorStatus, setTraktorStatus] = useState(traktorSetupStatus);
   const [traktorBusyAction, setTraktorBusyAction] = useState("");
   const [traktorInfo, setTraktorInfo] = useState("");
   const [traktorError, setTraktorError] = useState("");
 
-  const initialToken = config?.telegram_token || "";
-  const initialChatId = config?.telegram_chat_id || "";
-  const initialFp = config?.telegram_verified_fingerprint || "";
-  const initialVerified = Boolean(
-    config?.telegram_verified &&
-    initialFp &&
-    initialFp === telegramFingerprint(initialToken, initialChatId)
+  // Public channel slot
+  const [publicChatId, setPublicChatId] = useState(config?.public_chat_id || "");
+  const [publicChatTitle, setPublicChatTitle] = useState(config?.public_chat_title || "");
+  const [editingPublicChat, setEditingPublicChat] = useState(!config?.public_chat_id);
+  const [testingPublic, setTestingPublic] = useState(false);
+  const [testPublicError, setTestPublicError] = useState("");
+  const [testPublicBtnHover, setTestPublicBtnHover] = useState(false);
+  const [lockPublicOkUntilMouseLeave, setLockPublicOkUntilMouseLeave] = useState(false);
+
+  const initialPublicChatId = config?.public_chat_id || "";
+  const initialPublicFp = config?.public_verified_fingerprint || "";
+  const initialPublicVerified = Boolean(
+    config?.public_verified &&
+    initialPublicFp &&
+    initialPublicFp === telegramFingerprint(config?.telegram_token || "", initialPublicChatId)
   );
-  const [testOk, setTestOk] = useState(initialVerified);
+  const [testPublicOk, setTestPublicOk] = useState(initialPublicVerified);
+
+  // Private channel slot
+  const [privateChatId, setPrivateChatId] = useState(config?.private_chat_id || "");
+  const [privateChatTitle, setPrivateChatTitle] = useState(config?.private_chat_title || "");
+  const [editingPrivateChat, setEditingPrivateChat] = useState(!config?.private_chat_id);
+  const [testingPrivate, setTestingPrivate] = useState(false);
+  const [testPrivateError, setTestPrivateError] = useState("");
+  const [testPrivateBtnHover, setTestPrivateBtnHover] = useState(false);
+  const [lockPrivateOkUntilMouseLeave, setLockPrivateOkUntilMouseLeave] = useState(false);
+
+  const initialPrivateChatId = config?.private_chat_id || "";
+  const initialPrivateFp = config?.private_verified_fingerprint || "";
+  const initialPrivateVerified = Boolean(
+    config?.private_verified &&
+    initialPrivateFp &&
+    initialPrivateFp === telegramFingerprint(config?.telegram_token || "", initialPrivateChatId)
+  );
+  const [testPrivateOk, setTestPrivateOk] = useState(initialPrivateVerified);
+
+  // Channel detection
+  const [detecting, setDetecting] = useState(false);
+  const [detectedChannels, setDetectedChannels] = useState([]);
+  const [detectSlot, setDetectSlot] = useState(null); // "public" | "private"
+  const [detectError, setDetectError] = useState("");
+
+  // Which slot is being viewed/edited in the single Channel row
+  const [channelSlot, setChannelSlot] = useState("private");
 
   const refreshTraktorStatus = async () => {
     if (djSoftware !== "traktor") return;
@@ -131,13 +160,20 @@ export default function Settings({
   const displayScrollRef = useRef(null);
   const [displayHasOverflow, setDisplayHasOverflow] = useState(false);
 
-  const tokenChatChanged = token !== initialToken || chatId !== initialChatId;
-  const tokenChatFilled = token.trim() !== "" && chatId.trim() !== "";
+  const initialToken = config?.telegram_token || "";
+  const tokenChanged = token !== initialToken;
+  const publicChatChanged = publicChatId !== initialPublicChatId;
+  const privateChatChanged = privateChatId !== initialPrivateChatId;
+  const publicFilled = token.trim() !== "" && publicChatId.trim() !== "";
+  const privateFilled = token.trim() !== "" && privateChatId.trim() !== "";
   const softwareChanged = djSoftware !== (config?.dj_software || "");
-  const connectionUiEditing = editingSoftware || editingToken || editingChat;
-  const connectionChanged = softwareChanged || tokenChatChanged || connectionUiEditing;
+  const connectionUiEditing = editingSoftware || editingToken || editingPublicChat || editingPrivateChat;
+  const connectionChanged = softwareChanged || tokenChanged || publicChatChanged || privateChatChanged || connectionUiEditing;
+  // Per-slot: if the slot changed AND has values, require test before save
+  const publicNeedsTest = (tokenChanged || publicChatChanged) && publicFilled && !testPublicOk;
+  const privateNeedsTest = (tokenChanged || privateChatChanged) && privateFilled && !testPrivateOk;
   const connectionSaveEnabled =
-    connectionChanged && (!tokenChatChanged || !tokenChatFilled || testOk);
+    connectionChanged && !publicNeedsTest && !privateNeedsTest;
   const displayChanged =
     setName !== (config?.set_name || "") ||
     template !== (config?.message_template || "🎵 {artist} — {title}") ||
@@ -200,23 +236,63 @@ export default function Settings({
     setTraktorBusyAction("");
   };
 
-  const handleTest = async () => {
+  const handleTestSlot = async (slot) => {
+    const chatId = slot === "public" ? publicChatId : privateChatId;
+    const setTestingFn = slot === "public" ? setTestingPublic : setTestingPrivate;
+    const setErrorFn = slot === "public" ? setTestPublicError : setTestPrivateError;
+    const setOkFn = slot === "public" ? setTestPublicOk : setTestPrivateOk;
+    const setLockFn = slot === "public" ? setLockPublicOkUntilMouseLeave : setLockPrivateOkUntilMouseLeave;
     const startedAt = Date.now();
-    setTesting(true);
-    setTestError("");
+    setTestingFn(true);
+    setErrorFn("");
     try {
       await invoke("test_telegram", { token, chatId });
       const elapsed = Date.now() - startedAt;
       if (elapsed < 1500) {
         await new Promise((resolve) => setTimeout(resolve, 1500 - elapsed));
       }
-      setTestOk(true);
-      setLockOkUntilMouseLeave(true);
+      setOkFn(true);
+      setLockFn(true);
     } catch (_) {
-      setTestOk(false);
-      setTestError("Test failed. Check token / chat ID.");
+      setOkFn(false);
+      setErrorFn("Test failed. Check token / chat ID.");
     }
-    setTesting(false);
+    setTestingFn(false);
+  };
+
+  const handleDetectChannels = async (slot) => {
+    setDetecting(true);
+    setDetectSlot(slot);
+    setDetectError("");
+    setDetectedChannels([]);
+    try {
+      const channels = await invoke("detect_channels", { token });
+      setDetectedChannels(channels || []);
+      if (!channels || channels.length === 0) {
+        setDetectError("No channels found. Add the bot to a channel/group first.");
+      }
+    } catch (e) {
+      setDetectError(String(e));
+    }
+    setDetecting(false);
+  };
+
+  const handleSelectDetectedChannel = (channel) => {
+    if (detectSlot === "public") {
+      setPublicChatId(channel.chat_id);
+      setPublicChatTitle(channel.title);
+      setTestPublicOk(false);
+      setTestPublicError("");
+      setEditingPublicChat(false);
+    } else {
+      setPrivateChatId(channel.chat_id);
+      setPrivateChatTitle(channel.title);
+      setTestPrivateOk(false);
+      setTestPrivateError("");
+      setEditingPrivateChat(false);
+    }
+    setDetectedChannels([]);
+    setDetectSlot(null);
   };
 
   const handleCopyToken = async () => {
@@ -228,17 +304,31 @@ export default function Settings({
   };
 
   const handleSave = async () => {
-    const fp = telegramFingerprint(token, chatId);
-    const verifiedForCurrentValues = tokenChatFilled && (testOk || (!tokenChatChanged && initialVerified));
+    const pubFp = telegramFingerprint(token, publicChatId);
+    const privFp = telegramFingerprint(token, privateChatId);
+    const pubVerified = publicFilled && (testPublicOk || (!publicChatChanged && !tokenChanged && initialPublicVerified));
+    const privVerified = privateFilled && (testPrivateOk || (!privateChatChanged && !tokenChanged && initialPrivateVerified));
     await onSave({
       dj_software: djSoftware,
       telegram_token: token,
-      telegram_chat_id: chatId,
-      telegram_verified: verifiedForCurrentValues,
-      telegram_verified_at: verifiedForCurrentValues
-        ? (testOk ? new Date().toISOString() : (config?.telegram_verified_at || new Date().toISOString()))
+      telegram_chat_id: "",
+      telegram_verified: false,
+      telegram_verified_at: null,
+      telegram_verified_fingerprint: null,
+      public_chat_id: publicChatId,
+      public_chat_title: publicChatTitle || null,
+      public_verified: pubVerified,
+      public_verified_at: pubVerified
+        ? (testPublicOk ? new Date().toISOString() : (config?.public_verified_at || new Date().toISOString()))
         : null,
-      telegram_verified_fingerprint: verifiedForCurrentValues ? fp : null,
+      public_verified_fingerprint: pubVerified ? pubFp : null,
+      private_chat_id: privateChatId,
+      private_chat_title: privateChatTitle || null,
+      private_verified: privVerified,
+      private_verified_at: privVerified
+        ? (testPrivateOk ? new Date().toISOString() : (config?.private_verified_at || new Date().toISOString()))
+        : null,
+      private_verified_fingerprint: privVerified ? privFp : null,
       set_name: setName,
       message_template: template,
       show_bpm: showBpm,
@@ -251,7 +341,8 @@ export default function Settings({
     // Relock fields after successful save so UI reflects persisted state.
     setEditingSoftware(false);
     if (token.trim() !== "") setEditingToken(false);
-    if (chatId.trim() !== "") setEditingChat(false);
+    if (publicChatId.trim() !== "") setEditingPublicChat(false);
+    if (privateChatId.trim() !== "") setEditingPrivateChat(false);
   };
 
   // Live preview of the message
@@ -450,8 +541,10 @@ export default function Settings({
                 value={token}
                 onChange={(e) => {
                   setToken(e.target.value);
-                  setTestOk(false);
-                  setTestError("");
+                  setTestPublicOk(false);
+                  setTestPublicError("");
+                  setTestPrivateOk(false);
+                  setTestPrivateError("");
                 }}
                 disabled={isTracking}
                 placeholder="123456:ABC-DEF1234..."
@@ -463,62 +556,180 @@ export default function Settings({
           <div className="row active">
             <div className="row-label">
               <span className="row-num">—</span>
-              Channel / Group ID
-            </div>
-            <div className="input-row">
-              {chatId && !editingChat ? (
-                <div className="select-locked" style={{ flex: 1 }}>
-                  <span className="select-check">✓</span>
-                  <span>{chatId}</span>
-                </div>
-              ) : (
-                <input
-                  className="tc-input"
-                  type="text"
-                  value={chatId}
-                  onChange={(e) => {
-                    setChatId(e.target.value);
-                    setTestOk(false);
-                    setTestError("");
-                  }}
-                  disabled={isTracking}
-                  placeholder="@yourchannel or -1001234567890"
-                  spellCheck={false}
-                />
-              )}
-              {chatId && !editingChat && (
+              Channel
+              <div className="channel-pill" style={{ marginLeft: "auto" }}>
                 <button
-                  className="inline-btn"
+                  className={`channel-pill-opt ${channelSlot === "private" ? "active" : ""}`}
+                  onClick={() => { setChannelSlot("private"); setDetectedChannels([]); setDetectSlot(null); setDetectError(""); }}
                   disabled={isTracking}
-                  onClick={() => setEditingChat(true)}
                 >
-                  edit
+                  {testPrivateOk && <span className="channel-pill-dot green" />}
+                  Priv
                 </button>
-              )}
-              <button
-                className={`inline-btn test-state-btn ${testing ? "testing" : ""} ${testOk ? "ok" : ""} ${testOk && lockOkUntilMouseLeave ? "ok-locked" : ""} ${!testOk && testError ? "tc-danger-btn test-retry-btn" : ""}`}
-                onClick={handleTest}
-                disabled={isTracking || !token || !chatId || testing}
-                onMouseEnter={() => setTestBtnHover(true)}
-                onMouseLeave={() => {
-                  setTestBtnHover(false);
-                  if (testOk) setLockOkUntilMouseLeave(false);
-                }}
-              >
-                {testing ? (
-                  <span className="btn-spinner" aria-hidden="true" />
-                ) : testOk ? (
-                  (testBtnHover && !lockOkUntilMouseLeave) ? "test" : <span className="test-ok-label">ok</span>
-                ) : testError ? (
-                  "retry"
-                ) : (
-                  "test"
-                )}
-              </button>
+                <button
+                  className={`channel-pill-opt ${channelSlot === "public" ? "active" : ""}`}
+                  onClick={() => { setChannelSlot("public"); setDetectedChannels([]); setDetectSlot(null); setDetectError(""); }}
+                  disabled={isTracking}
+                >
+                  {testPublicOk && <span className="channel-pill-dot green" />}
+                  Pub
+                </button>
+              </div>
             </div>
-            {testError && <div className="input-error">{testError}</div>}
-            {tokenChatChanged && tokenChatFilled && !testOk && !testError && (
-              <div className="input-error">Re-test required before save.</div>
+            {channelSlot === "private" ? (
+              <>
+                <div className="input-row">
+                  {privateChatId && !editingPrivateChat ? (
+                    <div className="select-locked" style={{ flex: 1 }}>
+                      <span className="select-check">✓</span>
+                      <span>{privateChatTitle || privateChatId}</span>
+                    </div>
+                  ) : (
+                    <input
+                      className="tc-input"
+                      type="text"
+                      value={privateChatId}
+                      onChange={(e) => {
+                        setPrivateChatId(e.target.value);
+                        setPrivateChatTitle("");
+                        setTestPrivateOk(false);
+                        setTestPrivateError("");
+                      }}
+                      disabled={isTracking}
+                      placeholder="@yourchannel or -1001234567890"
+                      spellCheck={false}
+                    />
+                  )}
+                  {privateChatId && !editingPrivateChat && (
+                    <button
+                      className="inline-btn"
+                      disabled={isTracking}
+                      onClick={() => setEditingPrivateChat(true)}
+                    >
+                      edit
+                    </button>
+                  )}
+                  <button
+                    className="inline-btn"
+                    disabled={isTracking || !token || detecting}
+                    onClick={() => handleDetectChannels("private")}
+                  >
+                    {detecting && detectSlot === "private" ? <span className="btn-spinner" aria-hidden="true" /> : "detect"}
+                  </button>
+                  <button
+                    className={`inline-btn test-state-btn ${testingPrivate ? "testing" : ""} ${testPrivateOk ? "ok" : ""} ${testPrivateOk && lockPrivateOkUntilMouseLeave ? "ok-locked" : ""} ${!testPrivateOk && testPrivateError ? "tc-danger-btn test-retry-btn" : ""}`}
+                    onClick={() => handleTestSlot("private")}
+                    disabled={isTracking || !token || !privateChatId || testingPrivate}
+                    onMouseEnter={() => setTestPrivateBtnHover(true)}
+                    onMouseLeave={() => {
+                      setTestPrivateBtnHover(false);
+                      if (testPrivateOk) setLockPrivateOkUntilMouseLeave(false);
+                    }}
+                  >
+                    {testingPrivate ? (
+                      <span className="btn-spinner" aria-hidden="true" />
+                    ) : testPrivateOk ? (
+                      (testPrivateBtnHover && !lockPrivateOkUntilMouseLeave) ? "test" : <span className="test-ok-label">ok</span>
+                    ) : testPrivateError ? (
+                      "retry"
+                    ) : (
+                      "test"
+                    )}
+                  </button>
+                </div>
+                {detectSlot === "private" && detectedChannels.length > 0 && (
+                  <div className="channel-detect-list">
+                    {detectedChannels.map((ch) => (
+                      <button key={ch.chat_id} className="channel-detect-item" onClick={() => handleSelectDetectedChannel(ch)}>
+                        <span className="channel-detect-title">{ch.title}</span>
+                        <span className="channel-detect-id">{ch.chat_id}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {detectSlot === "private" && detectError && <div className="input-error">{detectError}</div>}
+                {testPrivateError && <div className="input-error">{testPrivateError}</div>}
+                {privateNeedsTest && !testPrivateError && (
+                  <div className="input-error">Re-test required before save.</div>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="input-row">
+                  {publicChatId && !editingPublicChat ? (
+                    <div className="select-locked" style={{ flex: 1 }}>
+                      <span className="select-check">✓</span>
+                      <span>{publicChatTitle || publicChatId}</span>
+                    </div>
+                  ) : (
+                    <input
+                      className="tc-input"
+                      type="text"
+                      value={publicChatId}
+                      onChange={(e) => {
+                        setPublicChatId(e.target.value);
+                        setPublicChatTitle("");
+                        setTestPublicOk(false);
+                        setTestPublicError("");
+                      }}
+                      disabled={isTracking}
+                      placeholder="@yourchannel or -1001234567890"
+                      spellCheck={false}
+                    />
+                  )}
+                  {publicChatId && !editingPublicChat && (
+                    <button
+                      className="inline-btn"
+                      disabled={isTracking}
+                      onClick={() => setEditingPublicChat(true)}
+                    >
+                      edit
+                    </button>
+                  )}
+                  <button
+                    className="inline-btn"
+                    disabled={isTracking || !token || detecting}
+                    onClick={() => handleDetectChannels("public")}
+                  >
+                    {detecting && detectSlot === "public" ? <span className="btn-spinner" aria-hidden="true" /> : "detect"}
+                  </button>
+                  <button
+                    className={`inline-btn test-state-btn ${testingPublic ? "testing" : ""} ${testPublicOk ? "ok" : ""} ${testPublicOk && lockPublicOkUntilMouseLeave ? "ok-locked" : ""} ${!testPublicOk && testPublicError ? "tc-danger-btn test-retry-btn" : ""}`}
+                    onClick={() => handleTestSlot("public")}
+                    disabled={isTracking || !token || !publicChatId || testingPublic}
+                    onMouseEnter={() => setTestPublicBtnHover(true)}
+                    onMouseLeave={() => {
+                      setTestPublicBtnHover(false);
+                      if (testPublicOk) setLockPublicOkUntilMouseLeave(false);
+                    }}
+                  >
+                    {testingPublic ? (
+                      <span className="btn-spinner" aria-hidden="true" />
+                    ) : testPublicOk ? (
+                      (testPublicBtnHover && !lockPublicOkUntilMouseLeave) ? "test" : <span className="test-ok-label">ok</span>
+                    ) : testPublicError ? (
+                      "retry"
+                    ) : (
+                      "test"
+                    )}
+                  </button>
+                </div>
+                {detectSlot === "public" && detectedChannels.length > 0 && (
+                  <div className="channel-detect-list">
+                    {detectedChannels.map((ch) => (
+                      <button key={ch.chat_id} className="channel-detect-item" onClick={() => handleSelectDetectedChannel(ch)}>
+                        <span className="channel-detect-title">{ch.title}</span>
+                        <span className="channel-detect-id">{ch.chat_id}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {detectSlot === "public" && detectError && <div className="input-error">{detectError}</div>}
+                {testPublicError && <div className="input-error">{testPublicError}</div>}
+                {publicNeedsTest && !testPublicError && (
+                  <div className="input-error">Re-test required before save.</div>
+                )}
+              </>
             )}
           </div>
         </>

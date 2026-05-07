@@ -13,6 +13,18 @@ pub struct UserConfig {
     pub telegram_verified: bool,
     pub telegram_verified_at: Option<String>,
     pub telegram_verified_fingerprint: Option<String>,
+    // Public channel
+    pub public_chat_id: String,
+    pub public_chat_title: Option<String>,
+    pub public_verified: bool,
+    pub public_verified_at: Option<String>,
+    pub public_verified_fingerprint: Option<String>,
+    // Private channel
+    pub private_chat_id: String,
+    pub private_chat_title: Option<String>,
+    pub private_verified: bool,
+    pub private_verified_at: Option<String>,
+    pub private_verified_fingerprint: Option<String>,
     pub dj_software: String,
     pub onboarding_done: bool,
     // Display / message format
@@ -33,6 +45,16 @@ impl Default for UserConfig {
             telegram_verified: false,
             telegram_verified_at: None,
             telegram_verified_fingerprint: None,
+            public_chat_id: String::new(),
+            public_chat_title: None,
+            public_verified: false,
+            public_verified_at: None,
+            public_verified_fingerprint: None,
+            private_chat_id: String::new(),
+            private_chat_title: None,
+            private_verified: false,
+            private_verified_at: None,
+            private_verified_fingerprint: None,
             dj_software: String::new(),
             onboarding_done: false,
             set_name: String::new(),
@@ -57,6 +79,7 @@ pub struct AppState {
     pub unbox_listener_started: bool,
     pub session_config: Option<UserConfig>,
     pub config: UserConfig,
+    pub active_channel_mode: String, // "private" | "public", runtime-only
 }
 
 fn config_dir() -> PathBuf {
@@ -76,6 +99,20 @@ pub fn save_config(config: &UserConfig) -> Result<(), Box<dyn std::error::Error>
 pub fn load_config() -> Result<UserConfig, Box<dyn std::error::Error>> {
     let path = config_dir().join("config.json");
     let content = fs::read_to_string(path)?;
-    let config: UserConfig = serde_json::from_str(&content)?;
+    let mut config: UserConfig = serde_json::from_str(&content)?;
+
+    // One-time migration: copy legacy single-channel fields to private slot
+    if !config.telegram_chat_id.trim().is_empty() && config.private_chat_id.trim().is_empty() {
+        config.private_chat_id = config.telegram_chat_id.clone();
+        config.private_verified = config.telegram_verified;
+        config.private_verified_at = config.telegram_verified_at.clone();
+        config.private_verified_fingerprint = config.telegram_verified_fingerprint.clone();
+        config.telegram_chat_id = String::new();
+        config.telegram_verified = false;
+        config.telegram_verified_at = None;
+        config.telegram_verified_fingerprint = None;
+        let _ = save_config(&config);
+    }
+
     Ok(config)
 }

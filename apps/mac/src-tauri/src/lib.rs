@@ -46,10 +46,17 @@ async fn start_tracking(
                 s.config.clone(),
             )
         } else {
-            let snapshot = s.config.clone();
+            let mut snapshot = s.config.clone();
             if snapshot.dj_software.trim().is_empty() {
                 return Err("DJ software is not configured".to_string());
             }
+            // Resolve active channel's chat_id into the legacy field for send logic
+            let resolved_chat_id = if s.active_channel_mode == "public" {
+                snapshot.public_chat_id.clone()
+            } else {
+                snapshot.private_chat_id.clone()
+            };
+            snapshot.telegram_chat_id = resolved_chat_id;
             let baseline = s.current_track.clone();
             s.is_tracking = true;
             // Gate only the immediate post-start snapshot. If the first track arrives later,
@@ -200,6 +207,7 @@ async fn stop_tracking(state: tauri::State<'_, Arc<Mutex<AppState>>>) -> Result<
     }
 
     s.session_config = None;
+    s.active_channel_mode = "private".to_string();
     Ok("Tracking stopped".to_string())
 }
 
@@ -389,6 +397,37 @@ async fn retry_connection(
 }
 
 
+#[tauri::command]
+async fn detect_channels(token: String) -> Result<Vec<telegram::DetectedChannel>, String> {
+    telegram::get_updates(&token)
+        .await
+        .map_err(|e| format!("{}", e))
+}
+
+#[tauri::command]
+async fn set_active_channel_mode(
+    mode: String,
+    state: tauri::State<'_, Arc<Mutex<AppState>>>,
+) -> Result<(), String> {
+    let mut s = state.lock().await;
+    if s.is_tracking {
+        return Err("Cannot change channel mode while broadcasting".to_string());
+    }
+    if mode != "public" && mode != "private" {
+        return Err("Invalid mode".to_string());
+    }
+    s.active_channel_mode = mode;
+    Ok(())
+}
+
+#[tauri::command]
+async fn get_active_channel_mode(
+    state: tauri::State<'_, Arc<Mutex<AppState>>>,
+) -> Result<String, String> {
+    let s = state.lock().await;
+    Ok(s.active_channel_mode.clone())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -410,6 +449,7 @@ pub fn run() {
                 unbox_listener_started: false,
                 session_config: None,
                 config,
+                active_channel_mode: "private".to_string(),
             }));
 
             app.manage(app_state.clone());
@@ -436,6 +476,9 @@ pub fn run() {
             export_set_by_filename,
             get_set_by_filename,
             delete_set_by_filename,
+            detect_channels,
+            set_active_channel_mode,
+            get_active_channel_mode,
         ])
         .run(tauri::generate_context!())
         .expect("error while running TrackCast");

@@ -12,6 +12,18 @@ export default function MainView({
   canStart,
   softwareConfigured,
   startDisabledReason,
+  activeChannelMode = "private",
+  onSetChannelMode,
+  publicConfigured = false,
+  privateConfigured = false,
+  publicVerified = false,
+  privateVerified = false,
+  receiverStatusClass = "",
+  receiverDotClass = "",
+  receiverStatusLabel = "Connect",
+  receiverCanConnect = false,
+  onRetryConnection,
+  receiverHint = "",
 }) {
   const demoTrack = {
     artist: "Martin Roth",
@@ -122,8 +134,43 @@ export default function MainView({
     ? (nowPlayingActive ? "is-playing" : "is-last-known")
     : "is-fallback";
 
+  const anyChannelConfigured = publicConfigured || privateConfigured;
+
   return (
     <div className={`main-view ${isFallbackMode ? "is-fallback" : ""}`}>
+      {/* ── Sub-bar: channel pill + connect status ── */}
+      <div className="channel-pill-bar">
+        {anyChannelConfigured ? (
+          <div className={`channel-pill ${isTracking ? "locked" : ""}`}>
+            <button
+              className={`channel-pill-opt ${activeChannelMode === "private" ? "active" : ""} ${!privateConfigured ? "unconfigured" : ""}`}
+              disabled={isTracking || !privateConfigured}
+              onClick={() => onSetChannelMode?.("private")}
+            >
+              {privateVerified && <span className="channel-pill-dot green" />}
+              Private
+            </button>
+            <button
+              className={`channel-pill-opt ${activeChannelMode === "public" ? "active" : ""} ${!publicConfigured ? "unconfigured" : ""}`}
+              disabled={isTracking || !publicConfigured}
+              onClick={() => onSetChannelMode?.("public")}
+            >
+              {publicVerified && <span className="channel-pill-dot green" />}
+              Public
+            </button>
+          </div>
+        ) : <div />}
+        <button
+          className={`sb-item sb-item-action ${receiverStatusClass} ${receiverCanConnect ? "clickable" : ""}`}
+          onClick={receiverCanConnect ? onRetryConnection : undefined}
+          disabled={!receiverCanConnect}
+          title={!receiverCanConnect && receiverHint ? receiverHint : undefined}
+        >
+          <div className={`sb-dot ${receiverDotClass}`} />
+          <span>{receiverStatusLabel}</span>
+        </button>
+      </div>
+
       {/* ── Now Playing ───────────────────────── */}
       <div className={`now-playing ${nowPlayingStateClass}`}>
         <div className={`np-eyebrow ${nowPlayingActive ? "live" : ""}`}>

@@ -23,6 +23,8 @@ export default function App() {
   const [liveStartedAt, setLiveStartedAt] = useState(null);
   const [liveElapsedLabel, setLiveElapsedLabel] = useState("00:00");
   const [showStopConfirm, setShowStopConfirm] = useState(false);
+  const [activeChannelMode, setActiveChannelMode] = useState("private");
+  const [showPublicConfirm, setShowPublicConfirm] = useState(false);
   const [lastTrackEventAt, setLastTrackEventAt] = useState(null);
   const [trackFreshTick, setTrackFreshTick] = useState(Date.now());
   const [traktorSetupStatus, setTraktorSetupStatus] = useState(null);
@@ -53,6 +55,16 @@ export default function App() {
           telegram_verified: false,
           telegram_verified_at: null,
           telegram_verified_fingerprint: null,
+          public_chat_id: "",
+          public_chat_title: null,
+          public_verified: false,
+          public_verified_at: null,
+          public_verified_fingerprint: null,
+          private_chat_id: "",
+          private_chat_title: null,
+          private_verified: false,
+          private_verified_at: null,
+          private_verified_fingerprint: null,
           dj_software: "",
           onboarding_done: false,
           set_name: "",
@@ -64,6 +76,9 @@ export default function App() {
           session_end_template: "just finished playing {set_name}",
         })
       );
+    invoke("get_active_channel_mode")
+      .then((mode) => setActiveChannelMode(mode))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -235,10 +250,30 @@ export default function App() {
       setLiveElapsedLabel("00:00");
       const tracks = await invoke("get_track_history");
       setCanExportCurrentSet(Array.isArray(tracks) && tracks.length > 0);
+      setActiveChannelMode("private");
     } finally {
       setActionBusy(false);
       setShowStopConfirm(false);
     }
+  };
+
+  const handleSetChannelMode = async (mode) => {
+    if (mode === "public") {
+      setShowPublicConfirm(true);
+      return;
+    }
+    try {
+      await invoke("set_active_channel_mode", { mode });
+      setActiveChannelMode(mode);
+    } catch (_) {}
+  };
+
+  const handleConfirmPublicMode = async () => {
+    try {
+      await invoke("set_active_channel_mode", { mode: "public" });
+      setActiveChannelMode("public");
+    } catch (_) {}
+    setShowPublicConfirm(false);
   };
 
   const handleExport = async () => {
@@ -289,6 +324,10 @@ export default function App() {
   const traktorSelected = (config.dj_software || "").trim() === "traktor";
   const traktorSetupReady = !traktorSelected || Boolean(traktorSetupStatus?.overall_ready);
   const canStart = softwareConfigured && traktorSetupReady && !actionBusy;
+  const publicConfigured = Boolean(config?.public_chat_id?.trim());
+  const privateConfigured = Boolean(config?.private_chat_id?.trim());
+  const publicVerified = Boolean(config?.public_verified);
+  const privateVerified = Boolean(config?.private_verified);
   const hasFreshTrackEvent =
     lastTrackEventAt != null && (trackFreshTick - lastTrackEventAt) < NOW_PLAYING_FRESH_MS;
 
@@ -297,7 +336,12 @@ export default function App() {
   const receiverCanConnect = softwareConfigured && traktorSetupReady && !receiverReady && !receiverConnecting && !actionBusy;
   const receiverStatusClass = receiverReady ? "green" : receiverConnecting ? "amber" : "";
   const receiverDotClass = receiverReady ? "green" : receiverConnecting ? "loading" : "";
-  const receiverStatusLabel = receiverReady ? "Linked" : receiverConnecting ? "Pending" : "Connect";
+  const softwareDisplayName = {
+    traktor: "Traktor", rekordbox: "Rekordbox", serato: "Serato",
+    virtualdj: "VirtualDJ", mixxx: "Mixxx", djuced: "DJUCED",
+    djay: "djay", denon: "Denon DJ",
+  }[(config.dj_software || "").trim()] || "Linked";
+  const receiverStatusLabel = receiverReady ? softwareDisplayName : receiverConnecting ? "Pending" : "Connect";
   const traktorSetupHint = traktorSelected && !traktorSetupReady
     ? "Traktor setup incomplete — install helper + verify."
     : "";
@@ -308,6 +352,26 @@ export default function App() {
         <div className="titlebar">
           <div className="titlebar-brand" aria-label="TrackCast">
             <img className="titlebar-mark" src={logoMark} alt="" />
+          </div>
+          <div className="titlebar-tabs">
+            <button
+              className={`shell-tab ${activeTab === "main" ? "active" : ""}`}
+              onClick={() => setActiveTab("main")}
+            >
+              Live
+            </button>
+            <button
+              className={`shell-tab ${activeTab === "connection" ? "active" : ""}`}
+              onClick={() => setActiveTab("connection")}
+            >
+              Setup
+            </button>
+            <button
+              className={`shell-tab ${activeTab === "display" ? "active" : ""}`}
+              onClick={() => setActiveTab("display")}
+            >
+              Display
+            </button>
           </div>
           <div className="titlebar-spacer" />
           <div className="titlebar-right">
@@ -332,38 +396,6 @@ export default function App() {
           </div>
         </div>
 
-        <div className="shell-tabs">
-          <button
-            className={`shell-tab ${activeTab === "main" ? "active" : ""}`}
-            onClick={() => setActiveTab("main")}
-          >
-            Live
-          </button>
-          <button
-            className={`shell-tab ${activeTab === "connection" ? "active" : ""}`}
-            onClick={() => setActiveTab("connection")}
-          >
-            Setup
-          </button>
-          <button
-            className={`shell-tab ${activeTab === "display" ? "active" : ""}`}
-            onClick={() => setActiveTab("display")}
-          >
-            Display
-          </button>
-          <div className="tabs-status-single">
-            <button
-              className={`sb-item sb-item-action ${receiverStatusClass} ${receiverCanConnect ? "clickable" : ""}`}
-              onClick={receiverCanConnect ? handleRetryConnection : undefined}
-              disabled={!receiverCanConnect}
-              title={!receiverCanConnect && traktorSetupHint ? traktorSetupHint : undefined}
-            >
-              <div className={`sb-dot ${receiverDotClass}`} />
-              <span>{receiverStatusLabel}</span>
-            </button>
-          </div>
-        </div>
-
         {activeTab === "main" && (
           <MainView
             currentTrack={currentTrack}
@@ -379,6 +411,18 @@ export default function App() {
             canStart={canStart}
             softwareConfigured={softwareConfigured}
             startDisabledReason={traktorSetupHint}
+            activeChannelMode={activeChannelMode}
+            onSetChannelMode={handleSetChannelMode}
+            publicConfigured={publicConfigured}
+            privateConfigured={privateConfigured}
+            publicVerified={publicVerified}
+            privateVerified={privateVerified}
+            receiverStatusClass={receiverStatusClass}
+            receiverDotClass={receiverDotClass}
+            receiverStatusLabel={receiverStatusLabel}
+            receiverCanConnect={receiverCanConnect}
+            onRetryConnection={handleRetryConnection}
+            receiverHint={traktorSetupHint}
           />
         )}
 
@@ -426,6 +470,23 @@ export default function App() {
               </button>
               <button className="inline-btn tc-danger-btn" onClick={handleConfirmStop} disabled={actionBusy}>
                 {actionBusy ? "···" : "Stop"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPublicConfirm && (
+        <div className="tc-modal-backdrop">
+          <div className="tc-modal">
+            <div className="tc-modal-header" />
+            <div className="tc-modal-text">Switch to Public channel? Track messages will be sent to your public audience.</div>
+            <div className="tc-modal-actions">
+              <button className="inline-btn" onClick={() => setShowPublicConfirm(false)}>
+                Cancel
+              </button>
+              <button className="inline-btn" style={{ borderColor: "var(--amber)", color: "var(--amber)" }} onClick={handleConfirmPublicMode}>
+                Switch to Public
               </button>
             </div>
           </div>
