@@ -20,7 +20,7 @@ const BADGE_LABELS = {
 
 export default function OnboardingWizard({ config, onComplete }) {
   const [step, setStep] = useState(0);
-  const [token, setToken] = useState(config?.telegram_token || "");
+  const [token, setToken] = useState("");
   const [botName, setBotName] = useState("");
   const [verifyState, setVerifyState] = useState("idle"); // idle | busy | ok | error
   const [verifyError, setVerifyError] = useState("");
@@ -28,21 +28,27 @@ export default function OnboardingWizard({ config, onComplete }) {
   const [channels, setChannels] = useState([]);
   const [detectState, setDetectState] = useState("idle"); // idle | busy | error
   const [detectError, setDetectError] = useState("");
-  const [chatId, setChatId] = useState(config?.private_chat_id || "");
-  const [chatTitle, setChatTitle] = useState(config?.private_chat_title || "");
+  const [chatId, setChatId] = useState("");
+  const [chatTitle, setChatTitle] = useState("");
   const [testState, setTestState] = useState("idle"); // idle | busy | ok | error
   const [testError, setTestError] = useState("");
   const [manualEntry, setManualEntry] = useState(false);
 
-  const [djSoftware, setDjSoftware] = useState(config?.dj_software || "");
+  const [djSoftware, setDjSoftware] = useState("");
 
   // Step 1: Verify token
   const handleVerifyToken = async () => {
     if (!token.trim()) return;
+    const startedAt = Date.now();
     setVerifyState("busy");
     setVerifyError("");
     try {
       const result = await invoke("verify_token", { token: token.trim() });
+      // Minimum 1.2s spinner so it doesn't feel instant/glitchy
+      const elapsed = Date.now() - startedAt;
+      if (elapsed < 1200) {
+        await new Promise((r) => setTimeout(r, 1200 - elapsed));
+      }
       setBotName(result?.bot_name || result?.username || "Your bot");
       setVerifyState("ok");
       // Save token immediately
@@ -134,6 +140,10 @@ export default function OnboardingWizard({ config, onComplete }) {
 
   const selectedDj = DJ_OPTIONS.find((o) => o.value === djSoftware);
 
+  const handleSkip = async () => {
+    onComplete({ ...config, onboarding_done: true });
+  };
+
   return (
     <div className="wizard-backdrop">
       <div className="wizard-card">
@@ -187,22 +197,19 @@ export default function OnboardingWizard({ config, onComplete }) {
             </div>
             <div className="wizard-actions">
               <button
-                className={`inline-btn ${verifyState === "ok" ? "ok" : ""}`}
+                className={`wizard-action-btn ${verifyState === "busy" ? "busy" : ""} ${verifyState === "ok" ? "ok" : ""}`}
                 onClick={handleVerifyToken}
                 disabled={!token.trim() || verifyState === "busy" || verifyState === "ok"}
               >
-                {verifyState === "busy" ? (
-                  <span className="btn-spinner" aria-hidden="true" />
-                ) : verifyState === "ok" ? (
-                  <span className="test-ok-label">Verified</span>
-                ) : (
-                  "Verify token"
-                )}
+                <span className="wizard-btn-label" style={{ opacity: verifyState === "idle" || verifyState === "error" ? 1 : 0 }}>
+                  Verify token
+                </span>
+                <span className="wizard-btn-spinner" style={{ opacity: verifyState === "busy" ? 1 : 0 }} />
+                <span className="wizard-btn-ok" style={{ opacity: verifyState === "ok" ? 1 : 0 }}>
+                  Verified
+                </span>
               </button>
             </div>
-            {verifyState === "ok" && (
-              <div className="wizard-success-flash" />
-            )}
           </div>
         )}
 
@@ -299,22 +306,19 @@ export default function OnboardingWizard({ config, onComplete }) {
                 Back
               </button>
               <button
-                className={`inline-btn ${testState === "ok" ? "ok" : ""}`}
+                className={`wizard-action-btn ${testState === "busy" ? "busy" : ""} ${testState === "ok" ? "ok" : ""}`}
                 onClick={handleTestChannel}
                 disabled={!chatId.trim() || testState === "busy" || testState === "ok"}
               >
-                {testState === "busy" ? (
-                  <span className="btn-spinner" aria-hidden="true" />
-                ) : testState === "ok" ? (
-                  <span className="test-ok-label">Connected</span>
-                ) : (
-                  "Test connection"
-                )}
+                <span className="wizard-btn-label" style={{ opacity: testState === "idle" || testState === "error" ? 1 : 0 }}>
+                  Test connection
+                </span>
+                <span className="wizard-btn-spinner" style={{ opacity: testState === "busy" ? 1 : 0 }} />
+                <span className="wizard-btn-ok" style={{ opacity: testState === "ok" ? 1 : 0 }}>
+                  Connected
+                </span>
               </button>
             </div>
-            {testState === "ok" && (
-              <div className="wizard-success-flash" />
-            )}
           </div>
         )}
 
@@ -397,6 +401,13 @@ export default function OnboardingWizard({ config, onComplete }) {
               </button>
             </div>
           </div>
+        )}
+
+        {/* Skip link */}
+        {step < 3 && (
+          <button className="wizard-skip" onClick={handleSkip}>
+            Skip setup, I'll configure later
+          </button>
         )}
       </div>
     </div>

@@ -7,7 +7,7 @@ import logoMark from "@brand/logo-mark.png?inline";
 import MainView from "./components/MainView";
 import Settings from "./components/Settings";
 import HistoryView from "./components/HistoryView";
-import OnboardingWizard from "./components/OnboardingWizard";
+// import OnboardingWizard from "./components/OnboardingWizard"; // paused — re-enable later
 
 export default function App() {
   const NOW_PLAYING_FRESH_MS = 300000;
@@ -319,17 +319,14 @@ export default function App() {
     });
   };
 
-  const handleOnboardingComplete = async (finalConfig) => {
-    const full = { ...finalConfig, onboarding_done: true };
-    await invoke("save_config", { config: full });
-    setConfig(full);
-  };
+  // Wizard paused — re-enable later
+  // const handleOnboardingComplete = async (finalConfig) => {
+  //   const full = { ...finalConfig, onboarding_done: true };
+  //   await invoke("save_config", { config: full });
+  //   setConfig(full);
+  // };
 
   if (!config) return null;
-
-  if (!config.onboarding_done) {
-    return <OnboardingWizard config={config} onComplete={handleOnboardingComplete} />;
-  }
 
   const softwareConfigured = Boolean((config.dj_software || "").trim());
   const traktorSelected = (config.dj_software || "").trim() === "traktor";

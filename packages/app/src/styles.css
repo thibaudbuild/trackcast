@@ -2222,17 +2222,99 @@ body::before {
   justify-content: flex-end;
 }
 
-.wizard-success-flash {
-  position: absolute;
-  inset: 0;
-  background: rgba(34, 197, 94, 0.06);
-  pointer-events: none;
-  animation: wizard-flash 1s ease-out forwards;
+/* Wizard action button — fixed size, crossfade between states */
+
+.wizard-action-btn {
+  position: relative;
+  min-height: 32px;
+  min-width: 120px;
+  padding: 0 16px;
+  background: transparent;
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  color: var(--text-mid);
+  font-size: 11px;
+  font-family: var(--mono);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+  transition: border-color 0.3s ease, color 0.3s ease, background 0.3s ease;
 }
 
-@keyframes wizard-flash {
-  0% { opacity: 1; }
-  100% { opacity: 0; }
+.wizard-action-btn:not(:disabled):hover {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
+.wizard-action-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.wizard-action-btn.busy {
+  border-color: var(--amber-border);
+  color: var(--amber);
+}
+
+.wizard-action-btn.busy:disabled {
+  opacity: 1;
+}
+
+.wizard-action-btn.ok {
+  border-color: rgba(34, 197, 94, 0.4);
+  color: var(--green);
+  background: var(--green-dim);
+}
+
+.wizard-action-btn.ok:disabled {
+  opacity: 1;
+}
+
+.wizard-btn-label,
+.wizard-btn-spinner,
+.wizard-btn-ok {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.wizard-btn-spinner::after {
+  content: "";
+  width: 12px;
+  height: 12px;
+  border: 1.4px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 999px;
+  animation: tc-spin 0.7s linear infinite;
+}
+
+/* Skip link */
+
+.wizard-skip {
+  display: block;
+  width: 100%;
+  margin-top: var(--space-4);
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 10px;
+  text-align: center;
+  cursor: pointer;
+  letter-spacing: 0.2px;
+  transition: color 0.15s;
+}
+
+.wizard-skip:hover {
+  color: var(--amber);
 }
 
 .wizard-beta-note {
