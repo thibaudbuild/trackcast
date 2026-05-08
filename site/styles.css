@@ -1638,16 +1638,21 @@ h3 {
 
 @media (max-width: 720px) {
   .site-header {
-    position: absolute;
-    align-items: flex-start;
-    padding: 16px 18px;
+    padding: 8px 16px;
+    gap: 16px;
+  }
+
+  .brand-link img {
+    width: 22px;
+    height: 22px;
+  }
+
+  .brand-link span {
+    display: none;
   }
 
   .main-nav {
-    max-width: 180px;
-    justify-content: flex-end;
-    flex-wrap: wrap;
-    row-gap: 8px;
+    gap: 12px;
     font-size: 10px;
   }
 
