@@ -648,10 +648,10 @@ body::before {
   transform: translateY(1px);
 }
 
-.history-delete-btn {
-  min-width: 24px;
+.history-action-btn {
+  min-width: 26px;
   height: 28px;
-  padding: 0 4px;
+  padding: 0 6px;
   border: none;
   outline: none;
   box-shadow: none;
@@ -661,20 +661,41 @@ body::before {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: color 0.15s ease;
+  transition: color 0.15s ease, background 0.15s ease;
+  border-radius: 4px;
 }
-.history-delete-btn:hover {
+.history-action-btn:not(:disabled):hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+}
+.history-action-btn.danger:not(:disabled):hover {
   color: var(--red);
-  background: transparent;
+  background: rgba(239, 68, 68, 0.08);
 }
-.history-delete-btn:disabled:hover {
-  color: var(--text-dim);
-  background: transparent;
-}
-.history-delete-btn:disabled {
+.history-action-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+.history-item-caret {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  margin-left: 4px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+.history-item-caret.open {
+  transform: rotate(180deg);
+  color: var(--text);
+}
+.history-item:hover .history-item-caret {
+  color: var(--text);
+}
+
+/* legacy class kept for the SVG sizing in case anything still uses it */
 .history-delete-icon {
   width: 15px;
   height: 15px;
@@ -1188,56 +1209,59 @@ body::before {
   border-bottom: 1px solid var(--border-2);
 }
 
-.history-list-grouped {
-  padding-bottom: 8px;
-}
-
-.history-group {
-  padding-top: 4px;
-}
-
-.history-group-label {
-  width: calc(100% - 16px);
-  margin: 0 8px;
-  padding: 5px 10px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg-1);
+.history-day-header {
   display: flex;
   align-items: center;
   gap: 8px;
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  width: 100%;
+  padding: 12px var(--space-5) 4px;
+  background: transparent;
+  border: none;
   font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 0.5px;
-  color: var(--text-mid);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.15s ease;
 }
 
-.history-group-label:hover {
-  border-color: var(--border-2);
-  background: var(--bg-2);
+.history-day-header:first-child {
+  padding-top: 8px;
 }
 
-.history-group-date {
-  color: var(--white);
+.history-day-header:hover {
+  color: var(--text);
 }
 
-.history-group-meta {
+.history-day-caret {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  color: var(--text-dim);
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.history-day-header:hover .history-day-caret {
+  color: var(--text);
+}
+
+.history-day-header.collapsed .history-day-caret {
+  transform: rotate(-90deg);
+}
+
+.history-day-label {
+  flex: 0 0 auto;
+}
+
+.history-day-count {
   margin-left: auto;
   color: var(--text-dim);
-}
-
-.history-group-caret {
-  width: 10px;
-  text-align: center;
-  color: var(--text-dim);
-  transition: transform 0.15s;
-}
-
-.history-group-caret.open {
-  transform: rotate(180deg);
+  letter-spacing: 0.4px;
+  text-transform: none;
+  font-size: 9px;
 }
 
 .history-empty {
@@ -1272,22 +1296,8 @@ body::before {
   font-size: 12px;
 }
 
-.history-name-row {
-  display: flex;
-  align-items: center;
+.history-name {
   min-width: 0;
-}
-
-.history-name-trigger {
-  padding: 0;
-  border: none;
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-}
-
-.history-name-trigger:hover {
-  color: var(--amber);
 }
 
 .history-name-input {
@@ -1299,18 +1309,12 @@ body::before {
 
 .history-item-actions {
   display: flex;
-  gap: 4px;
+  gap: 2px;
   flex-shrink: 0;
   opacity: 0;
   pointer-events: none;
   transform: translateX(3px);
   transition: opacity 0.12s, transform 0.12s;
-}
-
-.history-item-actions .inline-btn {
-  min-height: 30px;
-  padding: 0 10px;
-  font-size: 11px;
 }
 
 .history-item:hover .history-item-actions,
@@ -1985,65 +1989,79 @@ body::before {
   flex-shrink: 0;
 }
 
-.channel-pill {
-  display: inline-flex;
-  border: 1px solid var(--border-2);
-  border-radius: var(--radius-pill);
-  overflow: hidden;
-  background: var(--bg-2);
-}
-
-.channel-pill.locked {
-  opacity: 0.55;
-}
-
-.channel-pill-opt {
+/* Ambient destination label in the sub-bar */
+.destination-label {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  min-height: 22px;
-  padding: 0 10px;
+  gap: 6px;
   background: transparent;
   border: none;
+  padding: 0;
   font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.2px;
   color: var(--text-dim);
-  cursor: pointer;
-  transition: color 0.15s, background 0.15s;
+  cursor: default;
+  transition: color 0.15s;
   line-height: 1;
 }
-
-.channel-pill-opt:hover:not(:disabled) {
-  color: var(--text-mid);
+.destination-label:not(:disabled) {
+  cursor: pointer;
 }
-
-.channel-pill-opt.active {
-  background: var(--amber-dim);
+.destination-label:not(:disabled):hover {
+  color: var(--text);
+}
+.destination-label.armed {
   color: var(--amber);
 }
-
-.channel-pill-opt:disabled {
-  cursor: not-allowed;
+.destination-label.armed:not(:disabled):hover {
+  color: var(--amber-hi);
 }
-
-.channel-pill-opt.unconfigured {
-  opacity: 0.35;
+.destination-arrow {
+  opacity: 0.7;
 }
-
-.channel-pill-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  flex-shrink: 0;
+.destination-name {
+  font-weight: 500;
 }
-
-.channel-pill-dot.green {
-  background: var(--green);
+.destination-meta {
+  font-size: 9px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  opacity: 0.85;
 }
 
 /* ─── Channel detect list ───────────────── */
+
+/* ─── Channel section (Setup tab) ────────── */
+
+.channel-section-tip {
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1.45;
+  color: var(--text-dim);
+  opacity: 0.78;
+  letter-spacing: 0.1px;
+  margin-top: 6px;
+  margin-bottom: 10px;
+}
+
+.channel-slot {
+  margin-top: 6px;
+}
+
+.channel-slot:first-of-type {
+  margin-top: 2px;
+}
+
+.channel-slot-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  min-width: 56px;
+  flex-shrink: 0;
+}
 
 .channel-detect-list {
   display: flex;

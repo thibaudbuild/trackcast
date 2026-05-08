@@ -7,8 +7,6 @@ export default function MainView({
   hasFreshTrackEvent,
   unboxConnected,
   onStartStop,
-  onExport,
-  canExportCurrentSet,
   liveElapsedLabel,
   actionBusy,
   canStart,
@@ -18,8 +16,6 @@ export default function MainView({
   onSetChannelMode,
   publicConfigured = false,
   privateConfigured = false,
-  publicVerified = false,
-  privateVerified = false,
   receiverStatusClass = "",
   receiverDotClass = "",
   receiverStatusLabel = "Connect",
@@ -27,6 +23,8 @@ export default function MainView({
   onRetryConnection,
   receiverHint = "",
   publicChatId = "",
+  publicChatTitle = "",
+  privateChatTitle = "",
 }) {
   const demoTrack = {
     artist: "Martin Roth",
@@ -138,6 +136,21 @@ export default function MainView({
     : "is-fallback";
 
   const anyChannelConfigured = publicConfigured || privateConfigured;
+  const bothConfigured = publicConfigured && privateConfigured;
+
+  const fullDestinationLabel = (mode) => {
+    const title = mode === "public" ? publicChatTitle : privateChatTitle;
+    const trimmed = (title || "").trim();
+    const fallback = mode === "public" ? "Public" : "Private";
+    return trimmed ? `${fallback} — ${trimmed}` : fallback;
+  };
+  const isArmedPublic = bothConfigured && activeChannelMode === "public";
+
+  const toggleDestination = () => {
+    if (!bothConfigured || isTracking) return;
+    const next = activeChannelMode === "private" ? "public" : "private";
+    onSetChannelMode?.(next);
+  };
 
   const shareUsername = (() => {
     const trimmed = (publicChatId || "").trim();
@@ -153,27 +166,21 @@ export default function MainView({
 
   return (
     <div className={`main-view ${isFallbackMode ? "is-fallback" : ""}`}>
-      {/* ── Sub-bar: channel pill + connect status ── */}
+      {/* ── Sub-bar: destination + connect status ── */}
       <div className="channel-pill-bar">
         {anyChannelConfigured ? (
-          <div className={`channel-pill ${isTracking ? "locked" : ""}`}>
-            <button
-              className={`channel-pill-opt ${activeChannelMode === "private" ? "active" : ""} ${!privateConfigured ? "unconfigured" : ""}`}
-              disabled={isTracking || !privateConfigured}
-              onClick={() => onSetChannelMode?.("private")}
-            >
-              {privateVerified && <span className="channel-pill-dot green" />}
-              Private
-            </button>
-            <button
-              className={`channel-pill-opt ${activeChannelMode === "public" ? "active" : ""} ${!publicConfigured ? "unconfigured" : ""}`}
-              disabled={isTracking || !publicConfigured}
-              onClick={() => onSetChannelMode?.("public")}
-            >
-              {publicVerified && <span className="channel-pill-dot green" />}
-              Public
-            </button>
-          </div>
+          <button
+            className={`destination-label ${isArmedPublic ? "armed" : ""}`}
+            onClick={toggleDestination}
+            disabled={!bothConfigured || isTracking}
+            title={bothConfigured && !isTracking ? "Click to switch destination" : undefined}
+          >
+            <span className="destination-arrow">→</span>
+            <span className="destination-name">{fullDestinationLabel(activeChannelMode)}</span>
+            {isArmedPublic && !isTracking && (
+              <span className="destination-meta">· next broadcast</span>
+            )}
+          </button>
         ) : <div />}
         <button
           className={`sb-item sb-item-action ${receiverStatusClass} ${receiverCanConnect ? "clickable" : ""}`}
@@ -224,10 +231,10 @@ export default function MainView({
       <div className={`controls-bar ${isTracking ? "is-live" : ""}`}>
         {isTracking ? (
           <>
-            <div className="controls-left">
-              <button className="btn-broadcast stop" onClick={onStartStop} disabled={actionBusy}>
-                ■ &nbsp;Stop
-              </button>
+            <button className="btn-broadcast stop" onClick={onStartStop} disabled={actionBusy}>
+              ■ &nbsp;Stop
+            </button>
+            <div className="controls-icons">
               <button
                 className="controls-icon-btn"
                 onClick={handleShare}
@@ -237,10 +244,10 @@ export default function MainView({
               >
                 <ShareQrIcon />
               </button>
-            </div>
-            <div className="live-runtime">
-              <div className="live-dot" />
-              <span className="live-time">{liveElapsedLabel}</span>
+              <div className="live-runtime">
+                <div className="live-dot" />
+                <span className="live-time">{liveElapsedLabel}</span>
+              </div>
             </div>
           </>
         ) : (
@@ -262,19 +269,6 @@ export default function MainView({
                 aria-label="Share channel"
               >
                 <ShareQrIcon />
-              </button>
-              <button
-                className="controls-icon-btn"
-                onClick={onExport}
-                disabled={!canExportCurrentSet}
-                title={!canExportCurrentSet ? "No active set to export" : "Export set"}
-                aria-label="Export set"
-              >
-                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                  <path d="M12 3v11" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                  <path d="M7.5 10.5 12 15l4.5-4.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M5 17.5v1.8c0 1.5 1.2 2.7 2.7 2.7h8.6c1.5 0 2.7-1.2 2.7-2.7v-1.8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                </svg>
               </button>
             </div>
           </>

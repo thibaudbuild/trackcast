@@ -24,18 +24,20 @@ export default function HistoryView() {
       return {};
     }
   });
-  const [expandedGroups, setExpandedGroups] = useState({});
   const [sortOpen, setSortOpen] = useState(false);
   const sortRef = useRef(null);
+  const [collapsedDays, setCollapsedDays] = useState(() => new Set());
   const [sortMode, setSortMode] = useState(() => {
     try {
       const saved =
         localStorage.getItem(HISTORY_SORT_KEY) ||
         localStorage.getItem("trackcast-history-filter-mode");
-      if (saved === "date" || saved === "name" || saved === "newest") return saved;
-      return "newest";
+      // Two modes now: "date" (newest first, deduplicated day headers) and "name" (A–Z).
+      // "newest" was the old flat mode — fold into "date".
+      if (saved === "name") return "name";
+      return "date";
     } catch (_) {
-      return "newest";
+      return "date";
     }
   });
 
@@ -128,6 +130,23 @@ export default function HistoryView() {
     setDeleteCandidate(null);
   };
 
+  const formatDateLabel = (dateStr) => {
+    if (!dateStr) return "";
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr);
+    if (!m) return dateStr;
+    const [, y, mo, d] = m;
+    const setDate = new Date(Number(y), Number(mo) - 1, Number(d));
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const diffDays = Math.round((today - setDate) / (1000 * 60 * 60 * 24));
+    if (diffDays === 0) return "Today";
+    if (diffDays === 1) return "Yesterday";
+    const sameYear = setDate.getFullYear() === today.getFullYear();
+    return setDate.toLocaleDateString(undefined, sameYear
+      ? { month: "long", day: "numeric" }
+      : { month: "long", day: "numeric", year: "numeric" });
+  };
+
   const formatDuration = (start, end) => {
     if (!start || !end) return null;
     const [sh, sm] = start.split(":").map(Number);
@@ -139,15 +158,15 @@ export default function HistoryView() {
     return h > 0 ? `${h}h${m.toString().padStart(2, "0")}` : `${m} min`;
   };
 
-  const getPrimaryLabel = (s, grouped) => {
+  const getPrimaryLabel = (s) => {
     const customName = (setNames[s.filename] || "").trim();
     if (customName) return customName;
-    return grouped ? s.start_time : s.date;
+    return formatDateLabel(s.date);
   };
 
-  const startRename = (s, grouped) => {
+  const startRename = (s) => {
     setEditingNameId(s.filename);
-    setEditingNameValue(getPrimaryLabel(s, grouped));
+    setEditingNameValue(getPrimaryLabel(s));
   };
 
   const cancelRename = () => {
@@ -187,26 +206,23 @@ export default function HistoryView() {
     setLoadingSetFilename((current) => (current === filename ? null : current));
   };
 
-  const renderSetRow = (s, grouped = false) => {
+  const renderSetRow = (s) => {
     const duration = formatDuration(s.start_time, s.end_time);
     const durationLabel = duration || "duration n/a";
-    const timeLabel = s.start_time;
     const tracksLabel = `${s.track_count} track${s.track_count !== 1 ? "s" : ""}`;
-    const meta = grouped
-      ? `${durationLabel} · ${tracksLabel}`
-      : `${durationLabel} · ${tracksLabel} · ${timeLabel}`;
+    const meta = `${s.start_time} · ${durationLabel} · ${tracksLabel}`;
     const isRenaming = editingNameId === s.filename;
     const isOpen = openSetFilename === s.filename;
     const setDetails = setDetailsByFilename[s.filename];
     const isLoadingDetails = isOpen && loadingSetFilename === s.filename && !setDetails;
     const tracks = setDetails?.tracks || [];
+    const displayName = getPrimaryLabel(s);
+
     return (
       <div key={s.filename} className="history-item-block">
         <div
           className={`log-item history-item ${isRenaming ? "is-editing" : ""} ${isOpen ? "is-open" : ""}`}
-          onClick={() => {
-            if (!isRenaming) void toggleSetOpen(s);
-          }}
+          onClick={() => { if (!isRenaming) void toggleSetOpen(s); }}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
@@ -239,51 +255,54 @@ export default function HistoryView() {
                 spellCheck={false}
               />
             ) : (
-              <div className="history-name-row">
-                <button
-                  className="log-artist history-name-trigger"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    startRename(s, grouped);
-                  }}
-                  title="Rename set"
-                >
-                  {getPrimaryLabel(s, grouped)}
-                </button>
-              </div>
+              <div className="log-artist history-name">{displayName}</div>
             )}
             <div className="log-title">{meta}</div>
           </div>
           <div className="history-item-actions">
             <button
-              className="inline-btn"
-              disabled={exportingFile === s.filename || deletingFile === s.filename}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleExportFile(s.filename, s.date);
-              }}
+              className="history-action-btn"
+              onClick={(e) => { e.stopPropagation(); startRename(s); }}
+              title="Rename set"
+              aria-label="Rename set"
             >
-              {exportingFile === s.filename ? "···" : "export"}
+              <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                <path d="M14 4l6 6-10 10H4v-6L14 4z" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </button>
             <button
-              className="history-delete-btn"
+              className="history-action-btn"
+              disabled={exportingFile === s.filename || deletingFile === s.filename}
+              onClick={(e) => { e.stopPropagation(); handleExportFile(s.filename, s.date); }}
+              title="Export tracklist"
+              aria-label="Export tracklist"
+            >
+              {exportingFile === s.filename ? (
+                <span className="btn-spinner" aria-hidden="true" />
+              ) : (
+                <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                  <path d="M12 3v11" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+                  <path d="M7.5 10.5 12 15l4.5-4.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M5 17.5v1.8c0 1.5 1.2 2.7 2.7 2.7h8.6c1.5 0 2.7-1.2 2.7-2.7v-1.8" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+                </svg>
+              )}
+            </button>
+            <button
+              className="history-action-btn danger"
               disabled={deletingFile === s.filename || exportingFile === s.filename}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDeleteFile(s);
-              }}
+              onClick={(e) => { e.stopPropagation(); handleDeleteFile(s); }}
               title="Delete set"
               aria-label="Delete set"
             >
               {deletingFile === s.filename ? (
-                "···"
+                <span className="btn-spinner" aria-hidden="true" />
               ) : (
-                <svg viewBox="0 0 24 24" className="history-delete-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
                   <path
                     d="M9 3h6m-9 4h12M10 10v7m4-7v7M7 7l1 12a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2l1-12"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="1.8"
+                    strokeWidth="1.7"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
@@ -291,6 +310,11 @@ export default function HistoryView() {
               )}
             </button>
           </div>
+          <span className={`history-item-caret ${isOpen ? "open" : ""}`} aria-hidden="true">
+            <svg viewBox="0 0 12 8" width="9" height="6">
+              <path d="M1 1l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
         </div>
         {isOpen && (
           <div className="history-item-detail">
@@ -316,16 +340,6 @@ export default function HistoryView() {
     );
   };
 
-  const groupedHistory = setHistory.reduce((acc, s) => {
-    if (!acc[s.date]) acc[s.date] = [];
-    acc[s.date].push(s);
-    return acc;
-  }, {});
-
-  const toggleGroup = (date) => {
-    setExpandedGroups((prev) => ({ ...prev, [date]: !prev[date] }));
-  };
-
   const byNameHistory = [...setHistory].sort((a, b) => {
     const aLabel = ((setNames[a.filename] || "").trim() || `${a.date} ${a.start_time}`).toLowerCase();
     const bLabel = ((setNames[b.filename] || "").trim() || `${b.date} ${b.start_time}`).toLowerCase();
@@ -333,12 +347,56 @@ export default function HistoryView() {
   });
 
   const sortOptions = [
-    { value: "newest", label: "Latest" },
-    { value: "date", label: "Grouped" },
-    { value: "name", label: "Name" },
+    { value: "date", label: "By date" },
+    { value: "name", label: "A–Z" },
   ];
-  const currentSortLabel = sortOptions.find((o) => o.value === sortMode)?.label || "Latest";
-  const sortTriggerWidth = Math.max(56, Math.round(currentSortLabel.length * 6.6 + 22));
+  const currentSortLabel = sortOptions.find((o) => o.value === sortMode)?.label || "By date";
+  const sortTriggerWidth = Math.max(64, Math.round(currentSortLabel.length * 6.6 + 22));
+
+  const toggleDay = (date) => {
+    setCollapsedDays((prev) => {
+      const next = new Set(prev);
+      if (next.has(date)) next.delete(date);
+      else next.add(date);
+      return next;
+    });
+  };
+
+  const renderByDate = () => {
+    const dayCounts = {};
+    for (const s of setHistory) {
+      dayCounts[s.date] = (dayCounts[s.date] || 0) + 1;
+    }
+    const result = [];
+    let lastDate = null;
+    for (const s of setHistory) {
+      if (s.date !== lastDate) {
+        const isCollapsed = collapsedDays.has(s.date);
+        const count = dayCounts[s.date];
+        result.push(
+          <button
+            key={`day-${s.date}`}
+            className={`history-day-header ${isCollapsed ? "collapsed" : ""}`}
+            onClick={() => toggleDay(s.date)}
+            aria-expanded={!isCollapsed}
+          >
+            <span className="history-day-caret" aria-hidden="true">
+              <svg viewBox="0 0 12 8" width="9" height="6">
+                <path d="M1 1l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+            <span className="history-day-label">{formatDateLabel(s.date)}</span>
+            <span className="history-day-count">{count} set{count !== 1 ? "s" : ""}</span>
+          </button>
+        );
+        lastDate = s.date;
+      }
+      if (!collapsedDays.has(s.date)) {
+        result.push(renderSetRow(s));
+      }
+    }
+    return result;
+  };
 
   return (
     <>
@@ -383,31 +441,15 @@ export default function HistoryView() {
           </div>
         </div>
       </div>
-      <div className={`log-list history-list ${sortMode === "date" ? "history-list-grouped" : ""}`}>
+      <div className="log-list history-list">
         {setHistory.length === 0 ? (
-          <div className="log-empty history-empty">No saved sets yet</div>
-        ) : sortMode === "date" ? (
-          Object.entries(groupedHistory).map(([date, sets]) => (
-            <div className="history-group" key={date}>
-              <button
-                className="history-group-label"
-                onClick={() => toggleGroup(date)}
-              >
-                <span className="history-group-date">{date}</span>
-                <span className="history-group-meta">
-                  {sets.length} set{sets.length !== 1 ? "s" : ""}
-                </span>
-                <span className={`history-group-caret ${expandedGroups[date] ? "open" : ""}`}>
-                  ▾
-                </span>
-              </button>
-              {expandedGroups[date] ? sets.map((s) => renderSetRow(s, true)) : null}
-            </div>
-          ))
+          <div className="log-empty history-empty">
+            No sets yet — start broadcasting from the Live tab to save your first set.
+          </div>
         ) : sortMode === "name" ? (
-          byNameHistory.map((s) => renderSetRow(s, false))
+          byNameHistory.map((s) => renderSetRow(s))
         ) : (
-          setHistory.map((s) => renderSetRow(s, false))
+          renderByDate()
         )}
       </div>
       {deleteCandidate && (

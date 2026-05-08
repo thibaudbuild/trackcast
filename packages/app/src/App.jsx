@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { save } from "@tauri-apps/plugin-dialog";
-import { writeTextFile } from "@tauri-apps/plugin-fs";
 import logoMark from "@brand/logo-mark.png?inline";
 import MainView from "./components/MainView";
 import Settings from "./components/Settings";
@@ -20,12 +18,10 @@ export default function App() {
   const [actionBusy, setActionBusy] = useState(false);
   const [unboxConnected, setUnboxConnected] = useState(false);
   const [retryingConnection, setRetryingConnection] = useState(false);
-  const [canExportCurrentSet, setCanExportCurrentSet] = useState(false);
   const [liveStartedAt, setLiveStartedAt] = useState(null);
   const [liveElapsedLabel, setLiveElapsedLabel] = useState("00:00");
   const [showStopConfirm, setShowStopConfirm] = useState(false);
   const [activeChannelMode, setActiveChannelMode] = useState("private");
-  const [showPublicConfirm, setShowPublicConfirm] = useState(false);
   const [lastTrackEventAt, setLastTrackEventAt] = useState(null);
   const [trackFreshTick, setTrackFreshTick] = useState(Date.now());
   const [traktorSetupStatus, setTraktorSetupStatus] = useState(null);
@@ -117,12 +113,6 @@ export default function App() {
   }, [config]);
 
   useEffect(() => {
-    invoke("get_track_history")
-      .then((tracks) => setCanExportCurrentSet(Array.isArray(tracks) && tracks.length > 0))
-      .catch(() => setCanExportCurrentSet(false));
-  }, []);
-
-  useEffect(() => {
     isTrackingRef.current = isTracking;
   }, [isTracking]);
 
@@ -170,7 +160,6 @@ export default function App() {
         .then((tracks) => {
           const safeTracks = Array.isArray(tracks) ? tracks : [];
           setTrackHistory(safeTracks);
-          setCanExportCurrentSet(safeTracks.length > 0);
         })
         .catch(() => {});
     });
@@ -232,7 +221,6 @@ export default function App() {
         setLiveStartedAt(Date.now());
         setLiveElapsedLabel("00:00");
         setTrackHistory([]);
-        setCanExportCurrentSet(false);
       } catch (e) {
         alert(`Start failed: ${e}`);
       } finally {
@@ -249,9 +237,15 @@ export default function App() {
       setIsTracking(false);
       setLiveStartedAt(null);
       setLiveElapsedLabel("00:00");
-      const tracks = await invoke("get_track_history");
-      setCanExportCurrentSet(Array.isArray(tracks) && tracks.length > 0);
-      setActiveChannelMode("private");
+      const defaultMode = config?.private_chat_id?.trim()
+        ? "private"
+        : config?.public_chat_id?.trim()
+        ? "public"
+        : "private";
+      try {
+        await invoke("set_active_channel_mode", { mode: defaultMode });
+      } catch (_) {}
+      setActiveChannelMode(defaultMode);
     } finally {
       setActionBusy(false);
       setShowStopConfirm(false);
@@ -259,41 +253,10 @@ export default function App() {
   };
 
   const handleSetChannelMode = async (mode) => {
-    if (mode === "public") {
-      setShowPublicConfirm(true);
-      return;
-    }
     try {
       await invoke("set_active_channel_mode", { mode });
       setActiveChannelMode(mode);
     } catch (_) {}
-  };
-
-  const handleConfirmPublicMode = async () => {
-    try {
-      await invoke("set_active_channel_mode", { mode: "public" });
-      setActiveChannelMode("public");
-    } catch (_) {}
-    setShowPublicConfirm(false);
-  };
-
-  const handleExport = async () => {
-    try {
-      const txt = await invoke("export_set");
-      const date = new Date().toISOString().split("T")[0];
-      const filePath = await save({
-        defaultPath: `TrackCast_Set_${date}.txt`,
-        filters: [{ name: "Text", extensions: ["txt"] }],
-      });
-      if (filePath) {
-        await writeTextFile(filePath, txt);
-      }
-    } catch (_) {
-      try {
-        const txt = await invoke("export_set");
-        await navigator.clipboard.writeText(txt);
-      } catch (__) {}
-    }
   };
 
   const handleSaveConfig = async (newConfig) => {
@@ -334,8 +297,6 @@ export default function App() {
   const canStart = softwareConfigured && traktorSetupReady && !actionBusy;
   const publicConfigured = Boolean(config?.public_chat_id?.trim());
   const privateConfigured = Boolean(config?.private_chat_id?.trim());
-  const publicVerified = Boolean(config?.public_verified);
-  const privateVerified = Boolean(config?.private_verified);
   const hasFreshTrackEvent =
     lastTrackEventAt != null && (trackFreshTick - lastTrackEventAt) < NOW_PLAYING_FRESH_MS;
 
@@ -412,8 +373,6 @@ export default function App() {
             hasFreshTrackEvent={hasFreshTrackEvent}
             unboxConnected={unboxConnected}
             onStartStop={handleStartStop}
-            onExport={handleExport}
-            canExportCurrentSet={canExportCurrentSet}
             liveElapsedLabel={liveElapsedLabel}
             actionBusy={actionBusy}
             canStart={canStart}
@@ -423,8 +382,6 @@ export default function App() {
             onSetChannelMode={handleSetChannelMode}
             publicConfigured={publicConfigured}
             privateConfigured={privateConfigured}
-            publicVerified={publicVerified}
-            privateVerified={privateVerified}
             receiverStatusClass={receiverStatusClass}
             receiverDotClass={receiverDotClass}
             receiverStatusLabel={receiverStatusLabel}
@@ -432,6 +389,8 @@ export default function App() {
             onRetryConnection={handleRetryConnection}
             receiverHint={traktorSetupHint}
             publicChatId={config?.public_chat_id || ""}
+            publicChatTitle={config?.public_chat_title || ""}
+            privateChatTitle={config?.private_chat_title || ""}
           />
         )}
 
@@ -485,22 +444,6 @@ export default function App() {
         </div>
       )}
 
-      {showPublicConfirm && (
-        <div className="tc-modal-backdrop">
-          <div className="tc-modal">
-            <div className="tc-modal-header" />
-            <div className="tc-modal-text">Switch to Public channel? Track messages will be sent to your public audience.</div>
-            <div className="tc-modal-actions">
-              <button className="inline-btn" onClick={() => setShowPublicConfirm(false)}>
-                Cancel
-              </button>
-              <button className="inline-btn" style={{ borderColor: "var(--amber)", color: "var(--amber)" }} onClick={handleConfirmPublicMode}>
-                Switch to Public
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

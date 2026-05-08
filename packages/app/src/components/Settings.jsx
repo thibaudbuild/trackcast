@@ -110,7 +110,6 @@ export default function Settings({
   const [detectError, setDetectError] = useState("");
 
   // Which slot is being viewed/edited in the single Channel row
-  const [channelSlot, setChannelSlot] = useState("private");
 
   const refreshTraktorStatus = async () => {
     if (djSoftware !== "traktor") return;
@@ -568,58 +567,45 @@ export default function Settings({
             <div className="row-label">
               <span className="row-num">—</span>
               Channel
-              <div className="channel-pill" style={{ marginLeft: "auto" }}>
-                <button
-                  className={`channel-pill-opt ${channelSlot === "private" ? "active" : ""}`}
-                  onClick={() => { setChannelSlot("private"); setDetectedChannels([]); setDetectSlot(null); setDetectError(""); }}
-                  disabled={isTracking}
-                >
-                  {testPrivateOk && <span className="channel-pill-dot green" />}
-                  Priv
-                </button>
-                <button
-                  className={`channel-pill-opt ${channelSlot === "public" ? "active" : ""}`}
-                  onClick={() => { setChannelSlot("public"); setDetectedChannels([]); setDetectSlot(null); setDetectError(""); }}
-                  disabled={isTracking}
-                >
-                  {testPublicOk && <span className="channel-pill-dot green" />}
-                  Pub
-                </button>
-              </div>
             </div>
-            {channelSlot === "private" ? (
-              <>
-                <div className="input-row">
-                  {privateChatId && !editingPrivateChat ? (
-                    <div className="select-locked" style={{ flex: 1 }}>
-                      <span className="select-check">✓</span>
-                      <span>{privateChatTitle || privateChatId}</span>
-                    </div>
-                  ) : (
-                    <input
-                      className="tc-input"
-                      type="text"
-                      value={privateChatId}
-                      onChange={(e) => {
-                        setPrivateChatId(e.target.value);
-                        setPrivateChatTitle("");
-                        setTestPrivateOk(false);
-                        setTestPrivateError("");
-                      }}
-                      disabled={isTracking}
-                      placeholder="@yourchannel or -1001234567890"
-                      spellCheck={false}
-                    />
-                  )}
-                  {privateChatId && !editingPrivateChat && (
-                    <button
-                      className="inline-btn"
-                      disabled={isTracking}
-                      onClick={() => setEditingPrivateChat(true)}
-                    >
-                      edit
-                    </button>
-                  )}
+            <div className="channel-section-tip">
+              Private goes to your trusted listeners — and it's the safe place to test. Public is what the crowd sees.
+            </div>
+
+            <div className="channel-slot">
+              <div className="input-row">
+                <span className="channel-slot-label">Private</span>
+                {privateChatId && !editingPrivateChat ? (
+                  <div className="select-locked" style={{ flex: 1 }}>
+                    <span className="select-check">✓</span>
+                    <span>{privateChatTitle || privateChatId}</span>
+                  </div>
+                ) : (
+                  <input
+                    className="tc-input"
+                    type="text"
+                    value={privateChatId}
+                    onChange={(e) => {
+                      setPrivateChatId(e.target.value);
+                      setPrivateChatTitle("");
+                      setTestPrivateOk(false);
+                      setTestPrivateError("");
+                    }}
+                    disabled={isTracking}
+                    placeholder="@yourchannel or -1001234567890"
+                    spellCheck={false}
+                  />
+                )}
+                {privateChatId && !editingPrivateChat && (
+                  <button
+                    className="inline-btn"
+                    disabled={isTracking}
+                    onClick={() => setEditingPrivateChat(true)}
+                  >
+                    edit
+                  </button>
+                )}
+                {!privateChatId && (
                   <button
                     className="inline-btn"
                     disabled={isTracking || !token || detecting}
@@ -627,6 +613,8 @@ export default function Settings({
                   >
                     {detecting && detectSlot === "private" ? <span className="btn-spinner" aria-hidden="true" /> : "detect"}
                   </button>
+                )}
+                {(!privateChatId || editingPrivateChat) && (
                   <button
                     className={`inline-btn test-state-btn ${testingPrivate ? "testing" : ""} ${testPrivateOk ? "ok" : ""} ${testPrivateOk && lockPrivateOkUntilMouseLeave ? "ok-locked" : ""} ${!testPrivateOk && testPrivateError ? "tc-danger-btn test-retry-btn" : ""}`}
                     onClick={() => handleTestSlot("private")}
@@ -647,56 +635,59 @@ export default function Settings({
                       "test"
                     )}
                   </button>
-                </div>
-                {detectSlot === "private" && detectedChannels.length > 0 && (
-                  <div className="channel-detect-list">
-                    {detectedChannels.map((ch) => (
-                      <button key={ch.chat_id} className="channel-detect-item" onClick={() => handleSelectDetectedChannel(ch)}>
-                        <span className="channel-detect-title">{ch.title}</span>
-                        <span className="channel-detect-id">{ch.chat_id}</span>
-                      </button>
-                    ))}
-                  </div>
                 )}
-                {detectSlot === "private" && detectError && <div className="input-error">{detectError}</div>}
-                {testPrivateError && <div className="input-error">{testPrivateError}</div>}
-                {privateNeedsTest && !testPrivateError && (
-                  <div className="input-error">Re-test required before save.</div>
-                )}
-              </>
-            ) : (
-              <>
-                <div className="input-row">
-                  {publicChatId && !editingPublicChat ? (
-                    <div className="select-locked" style={{ flex: 1 }}>
-                      <span className="select-check">✓</span>
-                      <span>{publicChatTitle || publicChatId}</span>
-                    </div>
-                  ) : (
-                    <input
-                      className="tc-input"
-                      type="text"
-                      value={publicChatId}
-                      onChange={(e) => {
-                        setPublicChatId(e.target.value);
-                        setPublicChatTitle("");
-                        setTestPublicOk(false);
-                        setTestPublicError("");
-                      }}
-                      disabled={isTracking}
-                      placeholder="@yourchannel or -1001234567890"
-                      spellCheck={false}
-                    />
-                  )}
-                  {publicChatId && !editingPublicChat && (
-                    <button
-                      className="inline-btn"
-                      disabled={isTracking}
-                      onClick={() => setEditingPublicChat(true)}
-                    >
-                      edit
+              </div>
+              {detectSlot === "private" && detectedChannels.length > 0 && (
+                <div className="channel-detect-list">
+                  {detectedChannels.map((ch) => (
+                    <button key={ch.chat_id} className="channel-detect-item" onClick={() => handleSelectDetectedChannel(ch)}>
+                      <span className="channel-detect-title">{ch.title}</span>
+                      <span className="channel-detect-id">{ch.chat_id}</span>
                     </button>
-                  )}
+                  ))}
+                </div>
+              )}
+              {detectSlot === "private" && detectError && <div className="input-error">{detectError}</div>}
+              {testPrivateError && <div className="input-error">{testPrivateError}</div>}
+              {privateNeedsTest && !testPrivateError && (
+                <div className="input-error">Re-test required before save.</div>
+              )}
+            </div>
+
+            <div className="channel-slot">
+              <div className="input-row">
+                <span className="channel-slot-label">Public</span>
+                {publicChatId && !editingPublicChat ? (
+                  <div className="select-locked" style={{ flex: 1 }}>
+                    <span className="select-check">✓</span>
+                    <span>{publicChatTitle || publicChatId}</span>
+                  </div>
+                ) : (
+                  <input
+                    className="tc-input"
+                    type="text"
+                    value={publicChatId}
+                    onChange={(e) => {
+                      setPublicChatId(e.target.value);
+                      setPublicChatTitle("");
+                      setTestPublicOk(false);
+                      setTestPublicError("");
+                    }}
+                    disabled={isTracking}
+                    placeholder="@yourchannel or -1001234567890"
+                    spellCheck={false}
+                  />
+                )}
+                {publicChatId && !editingPublicChat && (
+                  <button
+                    className="inline-btn"
+                    disabled={isTracking}
+                    onClick={() => setEditingPublicChat(true)}
+                  >
+                    edit
+                  </button>
+                )}
+                {!publicChatId && (
                   <button
                     className="inline-btn"
                     disabled={isTracking || !token || detecting}
@@ -704,6 +695,8 @@ export default function Settings({
                   >
                     {detecting && detectSlot === "public" ? <span className="btn-spinner" aria-hidden="true" /> : "detect"}
                   </button>
+                )}
+                {(!publicChatId || editingPublicChat) && (
                   <button
                     className={`inline-btn test-state-btn ${testingPublic ? "testing" : ""} ${testPublicOk ? "ok" : ""} ${testPublicOk && lockPublicOkUntilMouseLeave ? "ok-locked" : ""} ${!testPublicOk && testPublicError ? "tc-danger-btn test-retry-btn" : ""}`}
                     onClick={() => handleTestSlot("public")}
@@ -724,24 +717,24 @@ export default function Settings({
                       "test"
                     )}
                   </button>
+                )}
+              </div>
+              {detectSlot === "public" && detectedChannels.length > 0 && (
+                <div className="channel-detect-list">
+                  {detectedChannels.map((ch) => (
+                    <button key={ch.chat_id} className="channel-detect-item" onClick={() => handleSelectDetectedChannel(ch)}>
+                      <span className="channel-detect-title">{ch.title}</span>
+                      <span className="channel-detect-id">{ch.chat_id}</span>
+                    </button>
+                  ))}
                 </div>
-                {detectSlot === "public" && detectedChannels.length > 0 && (
-                  <div className="channel-detect-list">
-                    {detectedChannels.map((ch) => (
-                      <button key={ch.chat_id} className="channel-detect-item" onClick={() => handleSelectDetectedChannel(ch)}>
-                        <span className="channel-detect-title">{ch.title}</span>
-                        <span className="channel-detect-id">{ch.chat_id}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {detectSlot === "public" && detectError && <div className="input-error">{detectError}</div>}
-                {testPublicError && <div className="input-error">{testPublicError}</div>}
-                {publicNeedsTest && !testPublicError && (
-                  <div className="input-error">Re-test required before save.</div>
-                )}
-              </>
-            )}
+              )}
+              {detectSlot === "public" && detectError && <div className="input-error">{detectError}</div>}
+              {testPublicError && <div className="input-error">{testPublicError}</div>}
+              {publicNeedsTest && !testPublicError && (
+                <div className="input-error">Re-test required before save.</div>
+              )}
+            </div>
           </div>
         </>
       )}
