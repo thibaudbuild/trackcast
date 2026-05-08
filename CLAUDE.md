@@ -7,7 +7,8 @@ Broadcast your DJ set live to Telegram and save a clean set history.
 - `apps/mac` - Tauri shell, macOS sidecars, icons, and build config
 - `apps/windows` - Tauri shell, Windows sidecars, icons, and build config
 - `packages/app` - Shared React frontend used by both desktop apps
-- `site/` - Static landing page and onboarding guide (includes `site/assets/brand/` — logo, wordmark, web fonts)
+- `site/` - Static landing page and onboarding guide
+- `assets/brand/` - Shared brand assets (logo, wordmark, web fonts) used by both the desktop app (via Vite alias `@brand`) and the site (deployed alongside `site/` by `.github/workflows/deploy-site.yml`)
 
 ## Common Commands
 
