@@ -11,6 +11,7 @@ Branch: feat/telegram-public-private (merged to main 2026-05-08)
 - [x] Landing page refresh with "How it works" section
 - [x] README with install instructions + supported software table
 - [x] GitHub issue template for DJ software compatibility reports
+- [x] Landing page live at https://trackcast.xyz (GitHub Pages, auto-deploy from `site/` on push to main)
 
 ---
 

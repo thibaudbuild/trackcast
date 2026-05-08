@@ -26,6 +26,11 @@ platforms.
 The landing page is its own product surface. It should be easy to work on,
 preview, and deploy without opening the desktop app folders.
 
+The site is fully self-contained: HTML, CSS, and brand assets all live under
+`site/`. It deploys to https://trackcast.xyz automatically on every push to
+`main` that touches `site/`, via `.github/workflows/deploy-site.yml` (GitHub
+Pages). The custom domain is pinned by `site/CNAME`.
+
 ## Why `docs`
 
 `docs` keeps repository documentation that is useful to anyone reading the
