@@ -90,7 +90,7 @@
             <div class="app-controls">
               <button class="app-btn-start" aria-label="Start the demo broadcast">▶ Start broadcasting</button>
               <span class="app-btn-stop">■ Stop</span>
-              <span class="app-live-runtime"><i class="app-live-dot"></i> <span class="app-timer">00:00</span></span>
+              <span class="app-live-runtime"><i class="app-live-dot"></i> 00:42</span>
             </div>
             <div class="app-log-header">
               <span>Set list</span>
@@ -385,17 +385,7 @@
         var stopBtn = document.querySelector('.app-btn-stop');
 
         var countEl = document.querySelector('.app-log-count');
-        var timerEl = document.querySelector('.app-timer');
-        var trackInterval, timerInterval, timerSeconds;
-
-        function pad(n) { return n < 10 ? '0' + n : n; }
-
-        function updateTimer() {
-          timerSeconds += 3;
-          var m = Math.floor(timerSeconds / 60);
-          var s = timerSeconds % 60;
-          if (timerEl) timerEl.textContent = pad(m) + ':' + pad(s);
-        }
+        var trackInterval;
 
         function updateTrackCount() {
           if (!countEl || !stage) return;
@@ -411,10 +401,7 @@
           startBtn.addEventListener('click', function () {
             stage.classList.add('is-live');
             if (countEl) countEl.textContent = '0 tracks';
-            if (timerEl) timerEl.textContent = '00:00';
-            timerSeconds = 0;
             trackInterval = setInterval(updateTrackCount, 500);
-            timerInterval = setInterval(updateTimer, 1000);
           });
         }
         if (stage && stopBtn) {
@@ -424,9 +411,7 @@
             stage.offsetHeight;
             stage.style.display = '';
             clearInterval(trackInterval);
-            clearInterval(timerInterval);
             if (countEl) countEl.textContent = '0 tracks';
-            if (timerEl) timerEl.textContent = '00:00';
           });
         }
       })();
