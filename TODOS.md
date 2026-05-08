@@ -16,12 +16,12 @@ Branch: feat/telegram-public-private (merged to main 2026-05-08)
 - [x] Live-view QR replaced with share-icon launcher → `https://trackcast.xyz/@<username>` in OS browser
 - [x] Onboarding wizard paused (gated off in `App.jsx`, files preserved for re-enable later)
 
-## Shipped (branch: feat/start-button-destination)
+## Shipped (2026-05-09)
 
-- [x] **Live-view destination redesign** — pill toggle replaced with a single ambient label ("→ Private" / "→ Public · next broadcast"). Click flips between the two; auto-reverts to Private on Stop. No green dots, no dropdown, no confirmation modal. Verification dot moved out of the live view.
-- [x] **Settings channel section unified** — Priv/Pub pill toggle replaced with a single "Channel" section containing Private and Public sub-rows side-by-side (vertically stacked, both visible at all times). Includes a dim tip line: "Private goes to your trusted listeners — and it's the safe place to test. Public is what the crowd sees."
-- [x] Dead `.channel-pill*` CSS removed.
-- [x] `showPublicConfirm` modal flow removed (was interrupting Start).
+- [x] **Live-view destination redesign** — pill toggle replaced with a single ambient label ("→ Private" / "→ Public · next broadcast"). Click flips between the two; auto-reverts to Private on Stop. No green dots, no dropdown, no confirmation modal.
+- [x] **Settings channel section unified** — Priv/Pub pill toggle replaced with a single "Channel" section containing Private and Public sub-rows, both always visible, with a dim tip line explaining the asymmetry. Detect/test buttons hidden in the locked/verified state.
+- [x] **MainView export removed** — redundant with History tab. Share icon moved to the right side in live state, sitting alongside the runtime.
+- [x] **History page polish** — three sort modes collapsed to two ("By date" / "A–Z"); deduplicated day headers; per-day fold/unfold with set count; expand caret on each row; rename moved from name-click to dedicated pencil icon (resolves click conflict); humanized dates (Today/Yesterday/...); icon-consistent action buttons; better empty state copy.
 
 ---
 
@@ -164,36 +164,10 @@ Branch: feat/telegram-public-private (merged to main 2026-05-08)
 
 ---
 
-## 8. History page polish (in progress, branch: feat/start-button-destination)
+## 8. History page — deferred polish
 
-Design review of `HistoryView.jsx` identified seven legibility/discoverability issues. Implementing in order. Each is a small, isolated change.
+Three items left over from the 2026-05-09 History pass that didn't make sense to ship until the data argues for them.
 
-### 1. Deduplicated date headers in flat sort
-**What:** In `newest` (Latest) mode, the primary label is the date — so 4 sets played the same evening repeat the date 4 times. Show the date once at the top of each day's group, then implicit for following sets. Mac Messages-style implicit grouping.
-
-**Knock-on:** This collapses `Latest` and `Grouped` into the same display, just always-expanded. So the three sort modes (`Latest` / `Grouped` / `Name`) reduce to two: **By date** (deduplicated headers, newest first) and **A–Z** (alphabetical by custom name).
-
-### 2. Expand caret on each row
-**What:** Whole row is clickable to expand the track list, but there's no visual cue. Add a small ▾ caret on the right side of the row (next to the action buttons), rotated 180° when open. Resolves discoverability.
-
-### 3. Rename: pencil icon + fix click conflict
-**What:** The set name is a button with `title="Rename set"` — invisible affordance. Two changes:
-- Pencil icon ✎ next to the name, visible on row hover
-- Clicking the name should NOT enter rename mode (footgun against expand). Instead: rename triggered by the pencil icon. Name click does the same as row click (expand).
-
-### 4. Humanize date format
-**What:** Replace ISO `2026-05-08` with human strings: "Today" / "Yesterday" / "May 8, 2026". Times stay in HH:MM mono.
-
-### 5. Sort label clarity
-**What:** With #1 collapsing to two modes, the labels become **By date** and **A–Z**. The custom dropdown UI stays (no need to change).
-
-### 6. Trash vs export visual consistency
-**What:** `export` is a text button, delete is an icon. Make both icons (with tooltips), or both labels. Going with both as text labels — clearer, especially for the destructive delete.
-
-### 7. Empty state copy
-**What:** "No saved sets yet" → "No sets yet — start broadcasting from the Live tab to save your first set." Gives a next step.
-
-### Deferred (not now)
-- Search (matters at 50+ sets)
-- Total stats footer ("12 sets · 247 tracks")
-- Inline-expand vs side-panel for very long sets
+- **Search** — matters once a DJ has 50+ saved sets. Premature to add now.
+- **Total stats footer** — e.g. "12 sets · 247 tracks". Cute, not load-bearing.
+- **Inline-expand vs side-panel** — current inline-expand pushes content down for long sets. Switch to a side panel only if real users complain about a 100-track set being unwieldy.
