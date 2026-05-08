@@ -1623,13 +1623,12 @@ h3 {
     grid-template-columns: 1fr;
   }
 
-  /* Hero: horizontal swipe between app and Telegram */
+  /* Hero: horizontal free-scroll panorama (same layout as desktop) */
   .hero-stage {
     display: flex;
     overflow-x: auto;
-    scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
-    gap: 16px;
+    gap: 0;
     scrollbar-width: none;
   }
 
@@ -1637,16 +1636,15 @@ h3 {
     display: none;
   }
 
-  .hero-signal {
-    display: none;
-  }
-
   .desktop-window,
   .phone-frame {
-    flex: 0 0 85vw;
-    max-width: 420px;
+    flex: 0 0 280px;
     height: 420px;
-    scroll-snap-align: start;
+  }
+
+  .hero-signal {
+    flex: 0 0 400px;
+    min-height: 420px;
   }
 
   .contact-actions {
@@ -1710,8 +1708,13 @@ h3 {
 
   .desktop-window,
   .phone-frame {
-    flex-basis: 90vw;
-    height: 400px;
+    flex: 0 0 260px;
+    height: 380px;
+  }
+
+  .hero-signal {
+    flex: 0 0 340px;
+    min-height: 380px;
   }
 
   .desktop-window {
