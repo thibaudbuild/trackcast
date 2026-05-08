@@ -431,8 +431,8 @@ h2 {
 }
 
 .window-bar span {
-  width: 12px;
-  height: 12px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
 }
 
@@ -573,10 +573,11 @@ h2 {
 /* App now-playing panel */
 
 .app-panel {
-  min-height: 120px;
+  height: 150px;
   padding: 20px 14px 16px;
   background: var(--bg-1);
   border-bottom: 1px solid var(--border);
+  overflow: hidden;
 }
 
 .np-eyebrow {
@@ -1719,7 +1720,7 @@ h3 {
 
   .app-panel {
     padding: 14px 10px 12px;
-    min-height: 90px;
+    height: 120px;
   }
 
   .np-eyebrow {
