@@ -384,19 +384,34 @@
         var startBtn = document.querySelector('.app-btn-start');
         var stopBtn = document.querySelector('.app-btn-stop');
 
+        var countEl = document.querySelector('.app-log-count');
+        var trackInterval;
+
+        function updateTrackCount() {
+          if (!countEl || !stage) return;
+          var rows = stage.querySelectorAll('.app-log-row');
+          var visible = 0;
+          rows.forEach(function (r) {
+            if (r.offsetHeight > 0 && getComputedStyle(r).opacity !== '0') visible++;
+          });
+          countEl.textContent = visible + (visible === 1 ? ' track' : ' tracks');
+        }
+
         if (stage && startBtn) {
           startBtn.addEventListener('click', function () {
             stage.classList.add('is-live');
+            if (countEl) countEl.textContent = '0 tracks';
+            trackInterval = setInterval(updateTrackCount, 500);
           });
         }
         if (stage && stopBtn) {
           stopBtn.addEventListener('click', function () {
             stage.classList.remove('is-live');
-            /* Force animation reset: briefly remove all animated elements
-               from the render tree so CSS animations rewind to 0% */
             stage.style.display = 'none';
-            stage.offsetHeight; /* trigger reflow */
+            stage.offsetHeight;
             stage.style.display = '';
+            clearInterval(trackInterval);
+            if (countEl) countEl.textContent = '0 tracks';
           });
         }
       })();
