@@ -13,6 +13,7 @@
       href="../assets/brand/logo.png"
       type="image/png"
     />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -27,7 +28,6 @@
         <span>trackcast</span>
       </a>
       <nav class="main-nav" aria-label="Primary navigation">
-        <a href="#demo">Demo</a>
         <a href="#builds">Builds</a>
         <a href="./onboarding.html">Onboarding</a>
         <a href="#contact">Contact</a>
@@ -36,87 +36,12 @@
 
     <main>
       <section class="hero" aria-labelledby="hero-title">
-        <div class="hero-stage">
-          <iframe
-            class="hero-field"
-            src="./hero-trackcast-final.html"
-            title="TrackCast signal animation"
-            aria-hidden="true"
-            tabindex="-1"
-          ></iframe>
-          <div class="hero-stage-overlay">
-            <p class="eyebrow">Private test build / macOS now</p>
-            <h1 class="hero-line" id="hero-title">Share your set tracklist live. Straight to Telegram.</h1>
-          </div>
+        <div class="hero-header">
+          <p class="eyebrow">Real-time DJ broadcasting</p>
+          <h1 class="hero-line" id="hero-title">Broadcast your set live. Straight to Telegram.</h1>
         </div>
 
-        <div class="hero-meta">
-          <p class="hero-copy">
-            A quiet desktop utility for DJs who want the room, the channel, and
-            the archive to stay in sync while the set is still moving.
-          </p>
-
-          <div class="hero-actions" aria-label="Primary actions">
-            <a
-              class="button button-primary"
-              href="https://github.com/thibaudbuild/trackcast/releases/latest"
-            >
-              Download macOS build
-            </a>
-            <a class="button button-secondary" href="./onboarding.html">Setup guide</a>
-          </div>
-
-          <dl class="hero-status" aria-label="Current product status">
-            <div>
-              <dt>Current build</dt>
-              <dd>0.1.0 / Apple Silicon</dd>
-            </div>
-            <div>
-              <dt>Live output</dt>
-              <dd>Telegram channel</dd>
-            </div>
-            <div>
-              <dt>Core promise</dt>
-              <dd>Tracklist, not audio recognition</dd>
-            </div>
-          </dl>
-        </div>
-      </section>
-
-      <section class="intro-band" aria-labelledby="intro-title">
-        <div class="section-grid">
-          <div>
-            <p class="section-kicker">What it is</p>
-            <h2 id="intro-title">A live track broadcast tool, not a social platform.</h2>
-          </div>
-          <div class="intro-copy">
-            <p>
-              TrackCast reads the track currently playing in your DJ software,
-              posts clean updates to Telegram, and keeps a set history you can
-              export later.
-            </p>
-            <p>
-              The direction is deliberately restrained: real software first,
-              no fake dashboards, no inflated launch language, no extra layer
-              between the DJ and the listeners.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section class="demo-section" id="demo" aria-labelledby="demo-title">
-        <div class="section-grid section-grid-top">
-          <div>
-            <p class="section-kicker">Demo loop</p>
-            <h2 id="demo-title">From deck to channel while the set is running.</h2>
-          </div>
-          <p class="section-note">
-            Live updates leave TrackCast and land in Telegram without the DJ
-            touching another screen mid-set.
-          </p>
-        </div>
-
-        <div class="demo-stage" aria-label="TrackCast live demo mockup">
+        <div class="hero-stage" aria-label="TrackCast live demo mockup">
           <div class="desktop-window">
             <div class="window-bar">
               <span></span>
@@ -161,10 +86,12 @@
             </ol>
           </div>
 
-          <div class="signal-lane" aria-hidden="true">
-            <span></span>
-            <span></span>
-            <span></span>
+          <div class="hero-signal" aria-hidden="true">
+            <iframe
+              src="./hero-trackcast-final.html"
+              title="TrackCast signal animation"
+              tabindex="-1"
+            ></iframe>
           </div>
 
           <div class="phone-frame">
@@ -190,6 +117,86 @@
                 <p>Priori - Winged</p>
               </article>
             </div>
+          </div>
+        </div>
+
+        <div class="hero-meta">
+          <p class="hero-copy">
+            TrackCast reads the track playing in your DJ software and posts
+            real-time updates to Telegram. Your audience follows along live.
+            Your set history stays clean.
+          </p>
+
+          <div class="hero-actions" aria-label="Primary actions">
+            <a
+              class="button button-primary"
+              href="https://github.com/thibaudbuild/trackcast/releases/latest"
+            >
+              Download for macOS
+            </a>
+            <a class="button button-secondary" href="./onboarding.html">Setup guide</a>
+          </div>
+
+          <p class="hero-platform-note">
+            macOS (Apple Silicon) ready. Windows coming soon.
+          </p>
+
+          <dl class="hero-status" aria-label="Current product status">
+            <div>
+              <dt>Current build</dt>
+              <dd>0.1.0 / Apple Silicon</dd>
+            </div>
+            <div>
+              <dt>Live output</dt>
+              <dd>Telegram channel</dd>
+            </div>
+            <div>
+              <dt>Core promise</dt>
+              <dd>Tracklist, not audio recognition</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="flow-section" aria-labelledby="flow-title">
+        <p class="section-kicker">How it works</p>
+        <h2 id="flow-title">Three steps to live.</h2>
+        <div class="flow-steps">
+          <div class="flow-step">
+            <span class="flow-num">1</span>
+            <h3>Download</h3>
+            <p>Install TrackCast on your Mac. One .dmg, no dependencies.</p>
+          </div>
+          <div class="flow-step">
+            <span class="flow-num">2</span>
+            <h3>Connect</h3>
+            <p>Create a Telegram bot, add it to your channel, verify in-app.</p>
+          </div>
+          <div class="flow-step">
+            <span class="flow-num">3</span>
+            <h3>Play</h3>
+            <p>Hit Start. Every track change goes live to your audience automatically.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="intro-band" aria-labelledby="intro-title">
+        <div class="section-grid">
+          <div>
+            <p class="section-kicker">What it is</p>
+            <h2 id="intro-title">A live track broadcast tool, not a social platform.</h2>
+          </div>
+          <div class="intro-copy">
+            <p>
+              TrackCast reads the track currently playing in your DJ software,
+              posts clean updates to Telegram, and keeps a set history you can
+              export later.
+            </p>
+            <p>
+              The direction is deliberately restrained: real software first,
+              no fake dashboards, no inflated launch language, no extra layer
+              between the DJ and the listeners.
+            </p>
           </div>
         </div>
       </section>
@@ -264,7 +271,7 @@
         <div class="contact-actions">
           <a
             class="button button-primary"
-            href="mailto:your@email.com?subject=TrackCast%20feedback"
+            href="https://github.com/thibaudbuild/trackcast/issues"
           >
             Send feedback
           </a>

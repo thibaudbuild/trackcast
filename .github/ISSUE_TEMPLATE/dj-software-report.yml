@@ -1,0 +1,67 @@
+name: DJ Software Compatibility Report
+description: Report how TrackCast works (or doesn't) with your DJ software
+title: "[DJ Software] "
+labels: ["compatibility"]
+body:
+  - type: dropdown
+    id: software
+    attributes:
+      label: DJ Software
+      options:
+        - Rekordbox
+        - Traktor Pro 3
+        - Traktor Pro 4
+        - Serato DJ Pro
+        - VirtualDJ
+        - Mixxx
+        - DJUCED
+        - djay Pro
+        - Denon DJ
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Software Version
+      placeholder: "e.g. 7.1.0, 4.2.1"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: status
+    attributes:
+      label: How well does it work?
+      options:
+        - Works perfectly
+        - Works with issues
+        - Broken / not detected
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: What works, what doesn't, any error messages or unexpected behavior.
+      placeholder: "Tracks are detected but BPM is always 0..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+        - Windows
+    validations:
+      required: true
+
+  - type: input
+    id: trackcast-version
+    attributes:
+      label: TrackCast Version
+      placeholder: "e.g. 0.1.0"

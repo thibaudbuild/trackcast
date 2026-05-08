@@ -2,15 +2,21 @@ import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 
 const DJ_OPTIONS = [
-  { value: "rekordbox", label: "Rekordbox" },
-  { value: "serato",    label: "Serato DJ Pro" },
-  { value: "traktor",   label: "Traktor Pro (3/4)" },
-  { value: "virtualdj", label: "VirtualDJ" },
-  { value: "mixxx",     label: "Mixxx" },
-  { value: "djuced",    label: "DJUCED" },
-  { value: "djay",      label: "djay Pro" },
-  { value: "denon",     label: "Denon DJ" },
+  { value: "rekordbox", label: "Rekordbox", badge: "verified" },
+  { value: "serato",    label: "Serato DJ Pro", badge: "supported" },
+  { value: "traktor",   label: "Traktor Pro (3/4)", badge: "supported" },
+  { value: "virtualdj", label: "VirtualDJ", badge: "beta" },
+  { value: "mixxx",     label: "Mixxx", badge: "beta" },
+  { value: "djuced",    label: "DJUCED", badge: "beta" },
+  { value: "djay",      label: "djay Pro", badge: "beta" },
+  { value: "denon",     label: "Denon DJ", badge: "beta" },
 ];
+
+const BADGE_LABELS = {
+  verified: "Verified",
+  supported: "Supported",
+  beta: "Beta",
+};
 
 const TABS = ["connection", "display"];
 
@@ -434,6 +440,11 @@ export default function Settings({
                 <div className="select-locked" style={{ flex: 1 }}>
                   <span className="select-check">✓</span>
                   <span>{DJ_OPTIONS.find((o) => o.value === djSoftware)?.label || djSoftware}</span>
+                  {DJ_OPTIONS.find((o) => o.value === djSoftware)?.badge && (
+                    <span className={`dj-badge ${DJ_OPTIONS.find((o) => o.value === djSoftware).badge}`} style={{ marginLeft: 8 }}>
+                      {BADGE_LABELS[DJ_OPTIONS.find((o) => o.value === djSoftware).badge]}
+                    </span>
+                  )}
                 </div>
                 <button
                   className="inline-btn"

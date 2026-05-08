@@ -1,3 +1,5 @@
+import QRCodeSection from "./QRCode";
+
 export default function MainView({
   currentTrack,
   trackHistory,
@@ -24,6 +26,7 @@ export default function MainView({
   receiverCanConnect = false,
   onRetryConnection,
   receiverHint = "",
+  publicChatId = "",
 }) {
   const demoTrack = {
     artist: "Martin Roth",
@@ -245,6 +248,9 @@ export default function MainView({
           </>
         )}
       </div>
+
+      {/* ── QR code ──────────────────────────── */}
+      <QRCodeSection publicChatId={publicChatId} />
 
       {/* ── Set list ─────────────────────────── */}
       <div className="log-header">
