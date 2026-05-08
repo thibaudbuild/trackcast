@@ -1617,14 +1617,28 @@ h3 {
     grid-template-columns: 1fr;
   }
 
-  /* Hero: same grid as desktop, tighter signal */
+  /* Hero: horizontal free scroll, same proportions as desktop */
   .hero-stage {
-    grid-template-columns: 1fr 1fr 1fr;
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 0;
+    scrollbar-width: none;
   }
 
-  .hero-signal iframe {
-    top: -20%;
-    height: 140%;
+  .hero-stage::-webkit-scrollbar {
+    display: none;
+  }
+
+  .desktop-window,
+  .phone-frame {
+    flex: 0 0 320px;
+    height: 480px;
+  }
+
+  .hero-signal {
+    flex: 0 0 500px;
+    min-height: 480px;
   }
 
   .contact-actions {
@@ -1691,13 +1705,15 @@ h3 {
     width: min(100% - 28px, 1180px);
   }
 
-  .hero-stage {
-    grid-template-columns: 1fr 0.6fr 1fr;
+  .desktop-window,
+  .phone-frame {
+    flex: 0 0 300px;
+    height: 480px;
   }
 
-  .hero-signal iframe {
-    top: -30%;
-    height: 160%;
+  .hero-signal {
+    flex: 0 0 420px;
+    min-height: 480px;
   }
 
   .desktop-window {
