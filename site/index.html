@@ -49,41 +49,88 @@
               <span></span>
               <strong>TrackCast</strong>
             </div>
-            <div class="app-topline">
-              <div class="mini-brand">
-                <img
-                  src="../assets/brand/logo.png"
-                  alt=""
-                  width="34"
-                  height="34"
-                />
-                <span>trackcast</span>
+            <div class="app-titlebar">
+              <img
+                src="../assets/brand/logo-mark.png"
+                alt=""
+                class="app-titlebar-mark"
+              />
+              <div class="app-titlebar-tabs">
+                <span class="app-tab active">Live</span>
+                <span class="app-tab">Setup</span>
+                <span class="app-tab">Display</span>
               </div>
-              <span class="live-chip"><i></i> live</span>
+              <div class="app-titlebar-right">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32 1.41-1.41"/></svg>
+              </div>
+            </div>
+            <div class="app-pill-bar">
+              <div class="app-channel-pill">
+                <span class="app-pill-opt">Private</span>
+                <span class="app-pill-opt active"><i class="app-pill-dot"></i> Public</span>
+              </div>
+              <span class="app-receiver"><i class="app-receiver-dot"></i> Traktor</span>
             </div>
             <div class="app-panel">
-              <div class="now-label">Now playing</div>
+              <div class="np-eyebrow"><i class="np-dot live"></i> Now playing</div>
               <div class="track-cycle">
-                <span>DJ Life - Inner Motion</span>
-                <span>Roza Terenzi - Drawn</span>
-                <span>Priori - Winged</span>
+                <span class="np-artist-line">Roza Terenzi</span>
+                <span class="np-artist-line">DJ Life</span>
+                <span class="np-artist-line">Priori</span>
               </div>
-              <div class="meter" aria-hidden="true">
-                <span style="--h: 42%"></span>
-                <span style="--h: 78%"></span>
-                <span style="--h: 52%"></span>
-                <span style="--h: 91%"></span>
-                <span style="--h: 46%"></span>
-                <span style="--h: 64%"></span>
-                <span style="--h: 38%"></span>
+              <div class="np-title-cycle">
+                <span>Drawn</span>
+                <span>Inner Motion</span>
+                <span>Winged</span>
+              </div>
+              <div class="np-tags">
+                <span class="np-tag amber">124 BPM</span>
+                <span class="np-tag">A min</span>
               </div>
             </div>
-            <ol class="set-list" aria-label="Live set list">
-              <li><span>00:00</span> Set started</li>
-              <li><span>00:03</span> DJ Life - Inner Motion</li>
-              <li><span>05:41</span> Roza Terenzi - Drawn</li>
-              <li><span>11:08</span> Priori - Winged</li>
-            </ol>
+            <div class="app-controls">
+              <span class="app-btn-stop">■ Stop</span>
+              <span class="app-live-runtime"><i class="app-live-dot"></i> 00:42</span>
+            </div>
+            <div class="app-log-header">
+              <span>Set list</span>
+              <span>4 tracks</span>
+            </div>
+            <div class="app-setlist" aria-label="Live set list">
+              <div class="app-log-row current">
+                <span class="app-log-time">23:15</span>
+                <div class="app-log-track">
+                  <span class="app-log-artist">Priori</span>
+                  <span class="app-log-title">Winged</span>
+                </div>
+                <span class="app-log-bpm">122</span>
+              </div>
+              <div class="app-log-row">
+                <span class="app-log-time">23:09</span>
+                <div class="app-log-track">
+                  <span class="app-log-artist">Roza Terenzi</span>
+                  <span class="app-log-title">Drawn</span>
+                </div>
+                <span class="app-log-bpm">124</span>
+              </div>
+              <div class="app-log-row">
+                <span class="app-log-time">23:04</span>
+                <div class="app-log-track">
+                  <span class="app-log-artist">DJ Life</span>
+                  <span class="app-log-title">Inner Motion</span>
+                </div>
+                <span class="app-log-bpm">121</span>
+              </div>
+              <div class="app-log-row">
+                <span class="app-log-time">22:57</span>
+                <div class="app-log-track">
+                  <span class="app-log-artist">Bicep</span>
+                  <span class="app-log-title">Glue</span>
+                </div>
+                <span class="app-log-bpm">124</span>
+              </div>
+            </div>
           </div>
 
           <div class="hero-signal" aria-hidden="true">
