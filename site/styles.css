@@ -1613,7 +1613,6 @@ h3 {
 
 @media (max-width: 980px) {
   .section-grid,
-  .hero-stage,
   .build-list,
   .contact-section,
   .tutorial-card,
@@ -1621,14 +1620,30 @@ h3 {
     grid-template-columns: 1fr;
   }
 
+  /* Hero: horizontal swipe between app and Telegram */
+  .hero-stage {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 16px;
+    scrollbar-width: none;
+  }
+
+  .hero-stage::-webkit-scrollbar {
+    display: none;
+  }
+
   .hero-signal {
-    min-height: 140px;
-    max-height: 180px;
+    display: none;
   }
 
   .desktop-window,
   .phone-frame {
+    flex: 0 0 85vw;
+    max-width: 420px;
     height: 420px;
+    scroll-snap-align: start;
   }
 
   .contact-actions {
@@ -1688,6 +1703,12 @@ h3 {
   .tutorial-section,
   .site-footer {
     width: min(100% - 28px, 1180px);
+  }
+
+  .desktop-window,
+  .phone-frame {
+    flex-basis: 90vw;
+    height: 400px;
   }
 
   .desktop-window {
