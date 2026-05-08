@@ -6,7 +6,7 @@
 <title>TrackCast — Hero</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #000; }
+  body { background: #0A0908; }
 
   /* Conteneur du hero — adapter la hauteur selon ton intégration */
   .hero {
@@ -14,7 +14,7 @@
     width: 100%;
     height: 100vh;
     min-height: 480px;
-    background: #000;
+    background: #0A0908;
     overflow: hidden;
   }
 
@@ -503,6 +503,46 @@ hero.addEventListener('mousemove', (e) => {
 hero.addEventListener('mouseleave', () => {
   lastMouseX = -9999;
   lastMouseY = -9999;
+});
+
+// Accept mouse coordinates forwarded from parent page (iframe has pointer-events: none)
+window.addEventListener('message', (e) => {
+  if (!e.data || !e.data.type) return;
+  if (e.data.type === 'mousemove') {
+    const rect = hero.getBoundingClientRect();
+    const px = e.data.x * rect.width;
+    const py = e.data.y * rect.height;
+
+    if (lastMouseX < -9000) {
+      lastMouseX = px;
+      lastMouseY = py;
+      return;
+    }
+
+    const centerY = rect.height / 2;
+    const distY = Math.abs(py - centerY);
+    const verticalSigma = rect.height * 0.12;
+    const proximityFactor = Math.exp(-(distY * distY) / (verticalSigma * verticalSigma));
+
+    const dx = px - lastMouseX;
+    const dy = py - lastMouseY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    const now = uniforms.uTime.value;
+    if (dist > 3 && now - lastEmitTime > MIN_EMIT_INTERVAL && proximityFactor > 0.05) {
+      const xNorm = px / rect.width;
+      const speedNorm = Math.min(dist / 18, 1.5);
+      const strength = speedNorm * proximityFactor * 0.30;
+      emitHoverPulse(xNorm, strength, 0.08, 1.5);
+      lastEmitTime = now;
+    }
+
+    lastMouseX = px;
+    lastMouseY = py;
+  } else if (e.data.type === 'mouseleave') {
+    lastMouseX = -9999;
+    lastMouseY = -9999;
+  }
 });
 
 // ============================================================================

@@ -280,6 +280,25 @@
       </section>
     </main>
 
+    <script>
+      (function () {
+        var s = document.querySelector('.hero-signal');
+        var f = s && s.querySelector('iframe');
+        if (!s || !f) return;
+        s.addEventListener('mousemove', function (e) {
+          var r = s.getBoundingClientRect();
+          f.contentWindow.postMessage({
+            type: 'mousemove',
+            x: (e.clientX - r.left) / r.width,
+            y: (e.clientY - r.top) / r.height
+          }, '*');
+        });
+        s.addEventListener('mouseleave', function () {
+          f.contentWindow.postMessage({ type: 'mouseleave' }, '*');
+        });
+      })();
+    </script>
+
     <footer class="site-footer">
       <span>trackcast</span>
       <span>A quiet utility for live tracklists.</span>
