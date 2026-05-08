@@ -73,48 +73,35 @@
               <span class="app-receiver"><i class="app-receiver-dot"></i> Traktor</span>
             </div>
             <div class="app-panel">
-              <div class="np-eyebrow"><i class="np-dot live"></i> Now playing</div>
+              <div class="np-eyebrow"><i class="np-dot live"></i> <span class="np-eyebrow-idle">Now playing</span><span class="np-eyebrow-live">Now playing</span></div>
+              <div class="np-idle-text">Waiting for first track…</div>
               <div class="track-cycle">
-                <span class="np-artist-line">Roza Terenzi</span>
                 <span class="np-artist-line">DJ Life</span>
+                <span class="np-artist-line">Roza Terenzi</span>
                 <span class="np-artist-line">Priori</span>
               </div>
               <div class="np-title-cycle">
-                <span>Drawn</span>
                 <span>Inner Motion</span>
+                <span>Drawn</span>
                 <span>Winged</span>
               </div>
-              <div class="np-tags">
-                <span class="np-tag amber">124 BPM</span>
-                <span class="np-tag">A min</span>
+              <div class="np-tags-cycle">
+                <div class="np-tags"><span class="np-tag amber">121 BPM</span></div>
+                <div class="np-tags"><span class="np-tag amber">124 BPM</span><span class="np-tag">A min</span></div>
+                <div class="np-tags"><span class="np-tag amber">122 BPM</span></div>
               </div>
             </div>
             <div class="app-controls">
+              <button class="app-btn-start" aria-label="Start the demo broadcast">▶ Start broadcasting</button>
               <span class="app-btn-stop">■ Stop</span>
               <span class="app-live-runtime"><i class="app-live-dot"></i> 00:42</span>
             </div>
             <div class="app-log-header">
               <span>Set list</span>
-              <span>4 tracks</span>
+              <span class="app-log-count">0 tracks</span>
             </div>
             <div class="app-setlist" aria-label="Live set list">
-              <div class="app-log-row current">
-                <span class="app-log-time">23:15</span>
-                <div class="app-log-track">
-                  <span class="app-log-artist">Priori</span>
-                  <span class="app-log-title">Winged</span>
-                </div>
-                <span class="app-log-bpm">122</span>
-              </div>
-              <div class="app-log-row">
-                <span class="app-log-time">23:09</span>
-                <div class="app-log-track">
-                  <span class="app-log-artist">Roza Terenzi</span>
-                  <span class="app-log-title">Drawn</span>
-                </div>
-                <span class="app-log-bpm">124</span>
-              </div>
-              <div class="app-log-row">
+              <div class="app-log-row app-log-r1">
                 <span class="app-log-time">23:04</span>
                 <div class="app-log-track">
                   <span class="app-log-artist">DJ Life</span>
@@ -122,7 +109,23 @@
                 </div>
                 <span class="app-log-bpm">121</span>
               </div>
-              <div class="app-log-row">
+              <div class="app-log-row app-log-r2">
+                <span class="app-log-time">23:09</span>
+                <div class="app-log-track">
+                  <span class="app-log-artist">Roza Terenzi</span>
+                  <span class="app-log-title">Drawn</span>
+                </div>
+                <span class="app-log-bpm">124</span>
+              </div>
+              <div class="app-log-row app-log-r3">
+                <span class="app-log-time">23:15</span>
+                <div class="app-log-track">
+                  <span class="app-log-artist">Priori</span>
+                  <span class="app-log-title">Winged</span>
+                </div>
+                <span class="app-log-bpm">122</span>
+              </div>
+              <div class="app-log-row app-log-static">
                 <span class="app-log-time">22:57</span>
                 <div class="app-log-track">
                   <span class="app-log-artist">Bicep</span>
@@ -151,7 +154,8 @@
               </div>
             </div>
             <div class="tg-chat">
-              <article class="tg-post tg-post-one">
+              <div class="tg-idle">No messages yet</div>
+              <article class="tg-post tg-post-start">
                 <div class="tg-post-name">TrackCast Live</div>
                 <p class="tg-post-body">Set started — live from the booth.</p>
                 <div class="tg-post-meta">
@@ -160,27 +164,27 @@
                   <span>12</span>
                 </div>
               </article>
-              <article class="tg-post tg-post-two">
+              <article class="tg-post tg-post-t1">
                 <div class="tg-post-name">TrackCast Live</div>
-                <p class="tg-post-body"><span class="tg-post-label">Now playing</span>DJ Life — Inner Motion</p>
+                <p class="tg-post-body">DJ Life — Inner Motion</p>
                 <div class="tg-post-meta">
                   <span>23:04</span>
                   <svg class="tg-eye" viewBox="0 0 16 10" width="12" height="8"><path d="M8 1C4.5 1 1.5 4 .5 5c1 1 4 4 7.5 4s6.5-3 7.5-4c-1-1-4-4-7.5-4z" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="8" cy="5" r="2" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
                   <span>18</span>
                 </div>
               </article>
-              <article class="tg-post tg-post-three">
+              <article class="tg-post tg-post-t2">
                 <div class="tg-post-name">TrackCast Live</div>
-                <p class="tg-post-body"><span class="tg-post-label">Now playing</span>Roza Terenzi — Drawn</p>
+                <p class="tg-post-body">Roza Terenzi — Drawn · 124 BPM</p>
                 <div class="tg-post-meta">
                   <span>23:09</span>
                   <svg class="tg-eye" viewBox="0 0 16 10" width="12" height="8"><path d="M8 1C4.5 1 1.5 4 .5 5c1 1 4 4 7.5 4s6.5-3 7.5-4c-1-1-4-4-7.5-4z" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="8" cy="5" r="2" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
                   <span>24</span>
                 </div>
               </article>
-              <article class="tg-post tg-post-four">
+              <article class="tg-post tg-post-t3">
                 <div class="tg-post-name">TrackCast Live</div>
-                <p class="tg-post-body"><span class="tg-post-label">Now playing</span>Priori — Winged</p>
+                <p class="tg-post-body">Priori — Winged</p>
                 <div class="tg-post-meta">
                   <span>23:15</span>
                   <svg class="tg-eye" viewBox="0 0 16 10" width="12" height="8"><path d="M8 1C4.5 1 1.5 4 .5 5c1 1 4 4 7.5 4s6.5-3 7.5-4c-1-1-4-4-7.5-4z" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="8" cy="5" r="2" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
@@ -353,20 +357,31 @@
 
     <script>
       (function () {
+        /* Mouse forwarding to shader iframe */
         var s = document.querySelector('.hero-signal');
         var f = s && s.querySelector('iframe');
-        if (!s || !f) return;
-        s.addEventListener('mousemove', function (e) {
-          var r = s.getBoundingClientRect();
-          f.contentWindow.postMessage({
-            type: 'mousemove',
-            x: (e.clientX - r.left) / r.width,
-            y: (e.clientY - r.top) / r.height
-          }, '*');
-        });
-        s.addEventListener('mouseleave', function () {
-          f.contentWindow.postMessage({ type: 'mouseleave' }, '*');
-        });
+        if (s && f) {
+          s.addEventListener('mousemove', function (e) {
+            var r = s.getBoundingClientRect();
+            f.contentWindow.postMessage({
+              type: 'mousemove',
+              x: (e.clientX - r.left) / r.width,
+              y: (e.clientY - r.top) / r.height
+            }, '*');
+          });
+          s.addEventListener('mouseleave', function () {
+            f.contentWindow.postMessage({ type: 'mouseleave' }, '*');
+          });
+        }
+
+        /* Start broadcast demo */
+        var stage = document.querySelector('.hero-stage');
+        var btn = document.querySelector('.app-btn-start');
+        if (stage && btn) {
+          btn.addEventListener('click', function () {
+            stage.classList.add('is-live');
+          });
+        }
       })();
     </script>
 

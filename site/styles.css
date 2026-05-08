@@ -585,21 +585,39 @@ h2 {
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--amber);
+  color: var(--text-dim);
 }
 
 .np-dot {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: var(--amber);
+  background: var(--text-dim);
 }
 
-.np-dot.live {
-  background: var(--green);
-  box-shadow: 0 0 8px var(--green-soft);
-  animation: npDotPulse 1.4s ease-in-out infinite alternate;
+/* Idle / live state text */
+
+.np-idle-text {
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 300;
+  margin-bottom: 12px;
 }
+
+.np-eyebrow-live { display: none; }
+
+/* Telegram idle placeholder */
+.tg-idle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: #3D4E5C;
+  font-size: 12px;
+  font-weight: 300;
+}
+
+.is-live .tg-idle { display: none; }
 
 @keyframes npDotPulse {
   from { opacity: 1; }
@@ -626,17 +644,19 @@ h2 {
   white-space: nowrap;
 }
 
-.track-cycle .np-artist-line:nth-child(1) {
-  animation: trackOne 9s infinite;
-}
+/*
+ * Synchronized 18s timeline
+ * Track 1 (DJ Life):       0% – 26%   (0s – 4.7s)
+ * Track 2 (Roza Terenzi): 28% – 58%   (5s – 10.4s)
+ * Track 3 (Priori):       61% – 97%   (11s – 17.5s)
+ *
+ * Telegram posts lag app by ~6% (~1s)
+ * Set list rows appear as tracks change
+ */
 
-.track-cycle .np-artist-line:nth-child(2) {
-  animation: trackTwo 9s infinite;
-}
-
-.track-cycle .np-artist-line:nth-child(3) {
-  animation: trackThree 9s infinite;
-}
+.track-cycle .np-artist-line:nth-child(1) { animation: appTrack1 18s infinite; }
+.track-cycle .np-artist-line:nth-child(2) { animation: appTrack2 18s infinite; }
+.track-cycle .np-artist-line:nth-child(3) { animation: appTrack3 18s infinite; }
 
 .np-title-cycle {
   position: relative;
@@ -656,60 +676,45 @@ h2 {
   white-space: nowrap;
 }
 
-.np-title-cycle span:nth-child(1) {
-  animation: trackOne 9s infinite;
+.np-title-cycle span:nth-child(1) { animation: appTrack1 18s infinite; }
+.np-title-cycle span:nth-child(2) { animation: appTrack2 18s infinite; }
+.np-title-cycle span:nth-child(3) { animation: appTrack3 18s infinite; }
+
+/* Tags cycle in sync */
+
+.np-tags-cycle {
+  position: relative;
+  min-height: 22px;
 }
 
-.np-title-cycle span:nth-child(2) {
-  animation: trackTwo 9s infinite;
+.np-tags-cycle .np-tags {
+  position: absolute;
+  inset: 0 auto auto 0;
+  opacity: 0;
 }
 
-.np-title-cycle span:nth-child(3) {
-  animation: trackThree 9s infinite;
+.np-tags-cycle .np-tags:nth-child(1) { animation: appTrack1 18s infinite; }
+.np-tags-cycle .np-tags:nth-child(2) { animation: appTrack2 18s infinite; }
+.np-tags-cycle .np-tags:nth-child(3) { animation: appTrack3 18s infinite; }
+
+/* App track keyframes (18s loop) */
+
+@keyframes appTrack1 {
+  0%      { opacity: 0; transform: translateY(14px); }
+  3%, 26% { opacity: 1; transform: translateY(0); }
+  30%, 100% { opacity: 0; transform: translateY(-14px); }
 }
 
-@keyframes trackOne {
-  0%,
-  29% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  35%,
-  100% {
-    opacity: 0;
-    transform: translateY(-14px);
-  }
+@keyframes appTrack2 {
+  0%, 27% { opacity: 0; transform: translateY(14px); }
+  31%, 58% { opacity: 1; transform: translateY(0); }
+  62%, 100% { opacity: 0; transform: translateY(-14px); }
 }
 
-@keyframes trackTwo {
-  0%,
-  30% {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  36%,
-  62% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  68%,
-  100% {
-    opacity: 0;
-    transform: translateY(-14px);
-  }
-}
-
-@keyframes trackThree {
-  0%,
-  63% {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  69%,
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes appTrack3 {
+  0%, 59% { opacity: 0; transform: translateY(14px); }
+  63%, 97% { opacity: 1; transform: translateY(0); }
+  100%    { opacity: 0; transform: translateY(-14px); }
 }
 
 .np-tags {
@@ -732,6 +737,48 @@ h2 {
   background: var(--amber-soft);
 }
 
+/* Set list rows appear as tracks change */
+
+.app-log-r1 { animation: logRow1 18s infinite; }
+.app-log-r2 { animation: logRow2 18s infinite; }
+.app-log-r3 { animation: logRow3 18s infinite; }
+
+.app-log-r1 .app-log-artist { animation: logHighlight1 18s infinite; }
+.app-log-r2 .app-log-artist { animation: logHighlight2 18s infinite; }
+.app-log-r3 .app-log-artist { animation: logHighlight3 18s infinite; }
+
+@keyframes logRow1 {
+  0%, 100% { opacity: 1; }
+}
+
+@keyframes logRow2 {
+  0%, 29% { opacity: 0; max-height: 0; padding: 0 14px; border: 0; }
+  33%     { opacity: 1; max-height: 60px; padding: 8px 14px; }
+  100%    { opacity: 1; }
+}
+
+@keyframes logRow3 {
+  0%, 61% { opacity: 0; max-height: 0; padding: 0 14px; border: 0; }
+  65%     { opacity: 1; max-height: 60px; padding: 8px 14px; }
+  100%    { opacity: 1; }
+}
+
+@keyframes logHighlight1 {
+  0%, 26% { color: var(--amber); }
+  30%, 100% { color: var(--text); }
+}
+
+@keyframes logHighlight2 {
+  0%, 29% { color: var(--text); }
+  33%, 58% { color: var(--amber); }
+  62%, 100% { color: var(--text); }
+}
+
+@keyframes logHighlight3 {
+  0%, 61% { color: var(--text); }
+  65%, 100% { color: var(--amber); }
+}
+
 /* App controls bar */
 
 .app-controls {
@@ -741,6 +788,34 @@ h2 {
   padding: 10px 14px;
   background: var(--bg-1);
   border-bottom: 1px solid var(--border);
+}
+
+/* Start broadcast button (idle) */
+
+.app-btn-start {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--green);
+  color: #080808;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  animation: startPulse 2s ease-in-out infinite;
+  transition: transform 150ms ease-out;
+}
+
+.app-btn-start:hover {
+  transform: scale(1.04);
+}
+
+@keyframes startPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(34, 197, 94, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.6), 0 0 40px rgba(34, 197, 94, 0.15); }
 }
 
 .app-btn-stop {
@@ -790,7 +865,7 @@ h2 {
   color: var(--text-dim);
 }
 
-.app-log-header span:last-child {
+.app-log-count {
   font-weight: 400;
   color: var(--border);
   text-transform: none;
@@ -808,10 +883,7 @@ h2 {
   align-items: center;
   padding: 8px 14px;
   border-bottom: 1px solid var(--border-sub);
-}
-
-.app-log-row.current {
-  background: var(--amber-soft);
+  overflow: hidden;
 }
 
 .app-log-time {
@@ -945,24 +1017,14 @@ h2 {
   background: #212D3B;
   opacity: 0;
   transform: translateY(12px);
-  animation: tgPostIn 12s infinite;
 }
 
-.tg-post-one {
-  animation-delay: 0s;
-}
+/* Telegram posts sync to 18s loop, lagging app by ~1s */
 
-.tg-post-two {
-  animation-delay: 1.8s;
-}
-
-.tg-post-three {
-  animation-delay: 4.2s;
-}
-
-.tg-post-four {
-  animation-delay: 6.8s;
-}
+.tg-post-start { animation: tgStart 18s infinite; }
+.tg-post-t1 { animation: tgPost1 18s infinite; }
+.tg-post-t2 { animation: tgPost2 18s infinite; }
+.tg-post-t3 { animation: tgPost3 18s infinite; }
 
 .tg-post-name {
   color: #3A95D9;
@@ -981,16 +1043,6 @@ h2 {
   line-height: 1.4;
 }
 
-.tg-post-label {
-  display: block;
-  color: #6AB2F2;
-  font-size: 11px;
-  font-weight: 500;
-  margin-bottom: 2px;
-  letter-spacing: normal;
-  text-transform: none;
-}
-
 .tg-post-meta {
   display: flex;
   align-items: center;
@@ -1006,21 +1058,34 @@ h2 {
   color: #5B6F7F;
 }
 
-@keyframes tgPostIn {
-  0%,
-  8% {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  14%,
-  80% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0.3;
-    transform: translateY(0);
-  }
+/* Telegram synced keyframes (18s loop)
+ * "Set started" visible from start, fades at loop reset
+ * Track posts appear ~1s after app track change:
+ *   t1 at 6% (~1s), t2 at 34% (~6s), t3 at 67% (~12s)
+ */
+
+@keyframes tgStart {
+  0%      { opacity: 0; transform: translateY(12px); }
+  3%, 95% { opacity: 1; transform: translateY(0); }
+  100%    { opacity: 0.3; transform: translateY(0); }
+}
+
+@keyframes tgPost1 {
+  0%, 5%  { opacity: 0; transform: translateY(12px); }
+  9%, 95% { opacity: 1; transform: translateY(0); }
+  100%    { opacity: 0.3; transform: translateY(0); }
+}
+
+@keyframes tgPost2 {
+  0%, 34% { opacity: 0; transform: translateY(12px); }
+  38%, 95% { opacity: 1; transform: translateY(0); }
+  100%    { opacity: 0.3; transform: translateY(0); }
+}
+
+@keyframes tgPost3 {
+  0%, 67% { opacity: 0; transform: translateY(12px); }
+  71%, 95% { opacity: 1; transform: translateY(0); }
+  100%    { opacity: 0.3; transform: translateY(0); }
 }
 
 /* Builds */
@@ -1443,6 +1508,35 @@ h3 {
   border-radius: 50%;
   background: var(--green);
 }
+
+/* ── Idle / Live state gating ──────────────────
+ * These rules come AFTER component styles so they
+ * win on specificity for display toggles.
+ */
+
+.hero-stage:not(.is-live) .track-cycle,
+.hero-stage:not(.is-live) .np-title-cycle,
+.hero-stage:not(.is-live) .np-tags-cycle { display: none; }
+
+.hero-stage:not(.is-live) .app-btn-stop,
+.hero-stage:not(.is-live) .app-live-runtime { display: none; }
+
+.hero-stage:not(.is-live) .app-log-r1,
+.hero-stage:not(.is-live) .app-log-r2,
+.hero-stage:not(.is-live) .app-log-r3 { display: none; }
+
+.hero-stage:not(.is-live) .tg-post { display: none; }
+
+.is-live .np-idle-text { display: none; }
+.is-live .np-eyebrow-idle { display: none; }
+.is-live .np-eyebrow-live { display: inline; }
+.is-live .np-eyebrow { color: var(--amber); }
+.is-live .np-dot {
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green-soft);
+  animation: npDotPulse 1.4s ease-in-out infinite alternate;
+}
+.is-live .app-btn-start { display: none; }
 
 /* Responsive */
 
