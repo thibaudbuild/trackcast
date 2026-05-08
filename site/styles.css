@@ -302,63 +302,14 @@ h1 {
   cursor: not-allowed;
 }
 
-/* Hero status bar */
-
-.hero-status {
-  width: min(880px, 100%);
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1px;
-  margin: 54px 0 0;
-  border: 1px solid var(--border-sub);
-  background: var(--border-sub);
-}
-
-.hero-status div {
-  padding: 15px 16px;
-  background: rgba(10, 9, 8, 0.52);
-  backdrop-filter: blur(14px);
-}
-
-.hero-status dt {
-  margin-bottom: 6px;
-  color: var(--text-dim);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.hero-status dd {
-  margin: 0;
-  color: var(--text);
-  font-size: 12px;
-  font-weight: 400;
-}
-
 /* Sections */
 
-.intro-band,
 .builds-section,
 .contact-section,
 .tutorial-hero,
 .tutorial-section {
   width: min(1180px, calc(100% - 40px));
   margin-inline: auto;
-}
-
-.intro-band {
-  padding: 88px 0 72px;
-  border-bottom: 1px solid var(--border-sub);
-}
-
-.section-grid {
-  display: grid;
-  grid-template-columns: minmax(260px, 0.82fr) minmax(320px, 1fr);
-  gap: clamp(28px, 6vw, 88px);
-}
-
-.section-grid-top {
-  align-items: end;
 }
 
 .section-kicker {
@@ -376,13 +327,10 @@ h2 {
   letter-spacing: -1px;
 }
 
-.intro-copy,
-.section-note,
 .contact-copy p,
 .guide-note p,
 .step-body p,
-.build-card p,
-.release-note p {
+.build-card p {
   color: var(--text-mid);
   font-size: 17px;
   font-weight: 300;
@@ -390,10 +338,8 @@ h2 {
   letter-spacing: 0.2px;
 }
 
-.intro-copy p:last-child,
 .contact-copy p:last-child,
 .build-card p:last-child,
-.release-note p:last-child,
 .step-body p:last-child {
   margin-bottom: 0;
 }
@@ -406,7 +352,6 @@ h2 {
 
 .desktop-window,
 .phone-frame,
-.release-note,
 .build-card,
 .guide-note,
 .tutorial-card,
@@ -1217,15 +1162,6 @@ h3 {
   margin-top: 24px;
 }
 
-.release-note {
-  margin-top: 18px;
-  padding: clamp(22px, 3vw, 34px);
-  border-radius: var(--radius);
-  background:
-    linear-gradient(90deg, rgba(34, 197, 94, 0.1), transparent 32%),
-    rgba(255, 255, 255, 0.022);
-}
-
 /* Contact */
 
 .contact-section {
@@ -1609,7 +1545,6 @@ h3 {
 /* Responsive */
 
 @media (max-width: 980px) {
-  .section-grid,
   .build-list,
   .contact-section,
   .tutorial-card,
@@ -1685,17 +1620,10 @@ h3 {
     margin-top: 32px;
   }
 
-  .hero-status {
-    grid-template-columns: 1fr;
-    margin-top: 32px;
-  }
-
-  .intro-band,
   .builds-section {
     padding: 58px 0;
   }
 
-  .intro-band,
   .flow-section,
   .builds-section,
   .contact-section,
@@ -1840,7 +1768,6 @@ h3 {
   }
 
   .build-card,
-  .release-note,
   .tutorial-card,
   .guide-note {
     border-radius: var(--radius);
