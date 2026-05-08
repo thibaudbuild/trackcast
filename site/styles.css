@@ -417,6 +417,9 @@ h2 {
 .desktop-window {
   overflow: hidden;
   border-radius: 10px;
+  height: 480px;
+  display: flex;
+  flex-direction: column;
 }
 
 .window-bar {
@@ -873,6 +876,8 @@ h2 {
 }
 
 .app-setlist {
+  flex: 1;
+  overflow-y: auto;
   background: var(--bg-2);
 }
 
@@ -934,8 +939,10 @@ h2 {
 
 .phone-frame {
   overflow: hidden;
-  min-height: auto;
+  height: 480px;
   border-radius: 30px;
+  display: flex;
+  flex-direction: column;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 18%),
     var(--bg);
@@ -1008,7 +1015,8 @@ h2 {
   flex-direction: column;
   gap: 6px;
   padding: 14px 14px 18px;
-  overflow: hidden;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .tg-post {
@@ -1555,8 +1563,9 @@ h3 {
     max-height: 180px;
   }
 
+  .desktop-window,
   .phone-frame {
-    min-height: auto;
+    height: 420px;
   }
 
   .contact-actions {
