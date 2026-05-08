@@ -648,18 +648,22 @@ h2 {
 }
 
 /*
- * Synchronized 18s timeline
- * Track 1 (DJ Life):       0% – 26%   (0s – 4.7s)
- * Track 2 (Roza Terenzi): 28% – 58%   (5s – 10.4s)
- * Track 3 (Priori):       61% – 97%   (11s – 17.5s)
+ * Synchronized 24s timeline (4 tracks)
+ * ─────────────────────────────────────────────────
+ * Track 1 (DJ Life):       2% – 21%   (0.5s – 5s)
+ * Track 2 (Roza Terenzi): 27% – 46%   (6.5s – 11s)
+ * Track 3 (Priori):       52% – 71%   (12.5s – 17s)
+ * Track 4 (Peggy Gou):    77% – 96%   (18.5s – 23s)
  *
- * Telegram posts lag app by ~6% (~1s)
- * Set list rows appear as tracks change
+ * Crossovers: 21%–27%, 46%–52%, 71%–77%
+ * Telegram posts lag app by ~7% (~1.7s first, ~1.2s rest)
+ * Set list rows + highlights switch at crossover midpoints (23%, 48%, 73%)
  */
 
-.track-cycle .np-artist-line:nth-child(1) { animation: appTrack1 18s infinite; }
-.track-cycle .np-artist-line:nth-child(2) { animation: appTrack2 18s infinite; }
-.track-cycle .np-artist-line:nth-child(3) { animation: appTrack3 18s infinite; }
+.track-cycle .np-artist-line:nth-child(1) { animation: appTrack1 24s infinite; }
+.track-cycle .np-artist-line:nth-child(2) { animation: appTrack2 24s infinite; }
+.track-cycle .np-artist-line:nth-child(3) { animation: appTrack3 24s infinite; }
+.track-cycle .np-artist-line:nth-child(4) { animation: appTrack4 24s infinite; }
 
 .np-title-cycle {
   position: relative;
@@ -679,9 +683,10 @@ h2 {
   white-space: nowrap;
 }
 
-.np-title-cycle span:nth-child(1) { animation: appTrack1 18s infinite; }
-.np-title-cycle span:nth-child(2) { animation: appTrack2 18s infinite; }
-.np-title-cycle span:nth-child(3) { animation: appTrack3 18s infinite; }
+.np-title-cycle span:nth-child(1) { animation: appTrack1 24s infinite; }
+.np-title-cycle span:nth-child(2) { animation: appTrack2 24s infinite; }
+.np-title-cycle span:nth-child(3) { animation: appTrack3 24s infinite; }
+.np-title-cycle span:nth-child(4) { animation: appTrack4 24s infinite; }
 
 /* Tags cycle in sync */
 
@@ -696,28 +701,35 @@ h2 {
   opacity: 0;
 }
 
-.np-tags-cycle .np-tags:nth-child(1) { animation: appTrack1 18s infinite; }
-.np-tags-cycle .np-tags:nth-child(2) { animation: appTrack2 18s infinite; }
-.np-tags-cycle .np-tags:nth-child(3) { animation: appTrack3 18s infinite; }
+.np-tags-cycle .np-tags:nth-child(1) { animation: appTrack1 24s infinite; }
+.np-tags-cycle .np-tags:nth-child(2) { animation: appTrack2 24s infinite; }
+.np-tags-cycle .np-tags:nth-child(3) { animation: appTrack3 24s infinite; }
+.np-tags-cycle .np-tags:nth-child(4) { animation: appTrack4 24s infinite; }
 
-/* App track keyframes (18s loop) */
+/* App track keyframes (24s loop) */
 
 @keyframes appTrack1 {
-  0%      { opacity: 0; transform: translateY(14px); }
-  3%, 26% { opacity: 1; transform: translateY(0); }
-  30%, 100% { opacity: 0; transform: translateY(-14px); }
+  0%       { opacity: 0; transform: translateY(14px); }
+  2%, 21%  { opacity: 1; transform: translateY(0); }
+  25%, 100% { opacity: 0; transform: translateY(-14px); }
 }
 
 @keyframes appTrack2 {
-  0%, 27% { opacity: 0; transform: translateY(14px); }
-  31%, 58% { opacity: 1; transform: translateY(0); }
-  62%, 100% { opacity: 0; transform: translateY(-14px); }
+  0%, 23%  { opacity: 0; transform: translateY(14px); }
+  27%, 46% { opacity: 1; transform: translateY(0); }
+  50%, 100% { opacity: 0; transform: translateY(-14px); }
 }
 
 @keyframes appTrack3 {
-  0%, 59% { opacity: 0; transform: translateY(14px); }
-  63%, 97% { opacity: 1; transform: translateY(0); }
-  100%    { opacity: 0; transform: translateY(-14px); }
+  0%, 48%  { opacity: 0; transform: translateY(14px); }
+  52%, 71% { opacity: 1; transform: translateY(0); }
+  75%, 100% { opacity: 0; transform: translateY(-14px); }
+}
+
+@keyframes appTrack4 {
+  0%, 73%  { opacity: 0; transform: translateY(14px); }
+  77%, 96% { opacity: 1; transform: translateY(0); }
+  100%     { opacity: 0; transform: translateY(-14px); }
 }
 
 .np-tags {
@@ -742,44 +754,58 @@ h2 {
 
 /* Set list rows appear as tracks change */
 
-.app-log-r1 { animation: logRow1 18s infinite; }
-.app-log-r2 { animation: logRow2 18s infinite; }
-.app-log-r3 { animation: logRow3 18s infinite; }
+.app-log-r1 { animation: logRow1 24s infinite; }
+.app-log-r2 { animation: logRow2 24s infinite; }
+.app-log-r3 { animation: logRow3 24s infinite; }
+.app-log-r4 { animation: logRow4 24s infinite; }
 
-.app-log-r1 .app-log-artist { animation: logHighlight1 18s infinite; }
-.app-log-r2 .app-log-artist { animation: logHighlight2 18s infinite; }
-.app-log-r3 .app-log-artist { animation: logHighlight3 18s infinite; }
+.app-log-r1 .app-log-artist { animation: logHighlight1 24s infinite; }
+.app-log-r2 .app-log-artist { animation: logHighlight2 24s infinite; }
+.app-log-r3 .app-log-artist { animation: logHighlight3 24s infinite; }
+.app-log-r4 .app-log-artist { animation: logHighlight4 24s infinite; }
 
 @keyframes logRow1 {
   0%, 100% { opacity: 1; }
 }
 
 @keyframes logRow2 {
-  0%, 29% { opacity: 0; max-height: 0; padding: 0 14px; border: 0; }
-  33%     { opacity: 1; max-height: 60px; padding: 8px 14px; }
+  0%, 23% { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
+  27%     { opacity: 1; max-height: 60px; padding: 8px 14px; border-bottom-color: var(--border-sub); }
   100%    { opacity: 1; }
 }
 
 @keyframes logRow3 {
-  0%, 61% { opacity: 0; max-height: 0; padding: 0 14px; border: 0; }
-  65%     { opacity: 1; max-height: 60px; padding: 8px 14px; }
+  0%, 48% { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
+  52%     { opacity: 1; max-height: 60px; padding: 8px 14px; border-bottom-color: var(--border-sub); }
+  100%    { opacity: 1; }
+}
+
+@keyframes logRow4 {
+  0%, 73% { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
+  77%     { opacity: 1; max-height: 60px; padding: 8px 14px; border-bottom-color: var(--border-sub); }
   100%    { opacity: 1; }
 }
 
 @keyframes logHighlight1 {
-  0%, 26% { color: var(--amber); }
-  30%, 100% { color: var(--text); }
+  0%, 23% { color: var(--amber); }
+  27%, 100% { color: var(--text); }
 }
 
 @keyframes logHighlight2 {
-  0%, 29% { color: var(--text); }
-  33%, 58% { color: var(--amber); }
-  62%, 100% { color: var(--text); }
+  0%, 23% { color: var(--text); }
+  27%, 48% { color: var(--amber); }
+  52%, 100% { color: var(--text); }
 }
 
 @keyframes logHighlight3 {
-  0%, 61% { color: var(--text); }
-  65%, 100% { color: var(--amber); }
+  0%, 48% { color: var(--text); }
+  52%, 73% { color: var(--amber); }
+  77%, 100% { color: var(--text); }
+}
+
+@keyframes logHighlight4 {
+  0%, 73% { color: var(--text); }
+  77%, 100% { color: var(--amber); }
 }
 
 /* App controls bar */
@@ -831,6 +857,11 @@ h2 {
   font-weight: 500;
   color: var(--red);
   letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 150ms ease-out;
+}
+.app-btn-stop:hover {
+  background: rgba(239, 68, 68, 0.1);
 }
 
 .app-live-runtime {
@@ -879,6 +910,29 @@ h2 {
   flex: 1;
   overflow-y: auto;
   background: var(--bg-2);
+}
+
+/* Scrollbar (DESIGN.md: 3px, transparent track, warm thumb) */
+
+.app-setlist::-webkit-scrollbar,
+.tg-chat::-webkit-scrollbar {
+  width: 3px;
+}
+
+.app-setlist::-webkit-scrollbar-track,
+.tg-chat::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.app-setlist::-webkit-scrollbar-thumb,
+.tg-chat::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+
+.app-setlist::-webkit-scrollbar-thumb:hover,
+.tg-chat::-webkit-scrollbar-thumb:hover {
+  background: var(--text-dim);
 }
 
 .app-log-row {
@@ -1027,12 +1081,13 @@ h2 {
   transform: translateY(12px);
 }
 
-/* Telegram posts sync to 18s loop, lagging app by ~1s */
+/* Telegram posts sync to 24s loop, lagging app by ~1.2s */
 
-.tg-post-start { animation: tgStart 18s infinite; }
-.tg-post-t1 { animation: tgPost1 18s infinite; }
-.tg-post-t2 { animation: tgPost2 18s infinite; }
-.tg-post-t3 { animation: tgPost3 18s infinite; }
+.tg-post-start { animation: tgStart 24s infinite; }
+.tg-post-t1 { animation: tgPost1 24s infinite; }
+.tg-post-t2 { animation: tgPost2 24s infinite; }
+.tg-post-t3 { animation: tgPost3 24s infinite; }
+.tg-post-t4 { animation: tgPost4 24s infinite; }
 
 .tg-post-name {
   color: #3A95D9;
@@ -1066,34 +1121,40 @@ h2 {
   color: #5B6F7F;
 }
 
-/* Telegram synced keyframes (18s loop)
+/* Telegram synced keyframes (24s loop)
  * "Set started" visible from start, fades at loop reset
- * Track posts appear ~1s after app track change:
- *   t1 at 6% (~1s), t2 at 34% (~6s), t3 at 67% (~12s)
+ * Track posts appear ~1.2s after app track change:
+ *   t1 at 9% (~2.2s), t2 at 32% (~7.7s), t3 at 57% (~13.7s), t4 at 82% (~19.7s)
  */
 
 @keyframes tgStart {
-  0%      { opacity: 0; transform: translateY(12px); }
-  3%, 95% { opacity: 1; transform: translateY(0); }
-  100%    { opacity: 0.3; transform: translateY(0); }
+  0%        { opacity: 0; transform: translateY(12px); }
+  2%, 95%   { opacity: 1; transform: translateY(0); }
+  100%      { opacity: 0.3; transform: translateY(0); }
 }
 
 @keyframes tgPost1 {
-  0%, 5%  { opacity: 0; transform: translateY(12px); }
-  9%, 95% { opacity: 1; transform: translateY(0); }
-  100%    { opacity: 0.3; transform: translateY(0); }
+  0%, 9%    { opacity: 0; transform: translateY(12px); }
+  13%, 95%  { opacity: 1; transform: translateY(0); }
+  100%      { opacity: 0.3; transform: translateY(0); }
 }
 
 @keyframes tgPost2 {
-  0%, 34% { opacity: 0; transform: translateY(12px); }
-  38%, 95% { opacity: 1; transform: translateY(0); }
-  100%    { opacity: 0.3; transform: translateY(0); }
+  0%, 32%   { opacity: 0; transform: translateY(12px); }
+  36%, 95%  { opacity: 1; transform: translateY(0); }
+  100%      { opacity: 0.3; transform: translateY(0); }
 }
 
 @keyframes tgPost3 {
-  0%, 67% { opacity: 0; transform: translateY(12px); }
-  71%, 95% { opacity: 1; transform: translateY(0); }
-  100%    { opacity: 0.3; transform: translateY(0); }
+  0%, 57%   { opacity: 0; transform: translateY(12px); }
+  61%, 95%  { opacity: 1; transform: translateY(0); }
+  100%      { opacity: 0.3; transform: translateY(0); }
+}
+
+@keyframes tgPost4 {
+  0%, 82%   { opacity: 0; transform: translateY(12px); }
+  86%, 95%  { opacity: 1; transform: translateY(0); }
+  100%      { opacity: 0.3; transform: translateY(0); }
 }
 
 /* Builds */
@@ -1531,7 +1592,8 @@ h3 {
 
 .hero-stage:not(.is-live) .app-log-r1,
 .hero-stage:not(.is-live) .app-log-r2,
-.hero-stage:not(.is-live) .app-log-r3 { display: none; }
+.hero-stage:not(.is-live) .app-log-r3,
+.hero-stage:not(.is-live) .app-log-r4 { display: none; }
 
 .hero-stage:not(.is-live) .tg-post { display: none; }
 
