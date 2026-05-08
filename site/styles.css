@@ -1617,18 +1617,10 @@ h3 {
     grid-template-columns: 1fr;
   }
 
-  /* Hero: same grid as desktop, scaled to fit */
+  /* Hero: same grid as desktop, tighter signal */
   .hero-stage {
-    grid-template-columns: 1fr 1.2fr 1fr;
-  }
-
-  .desktop-window,
-  .phone-frame {
-    height: 380px;
-  }
-
-  .hero-signal {
-    min-height: 380px;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: start;
   }
 
   .contact-actions {
@@ -1696,16 +1688,7 @@ h3 {
   }
 
   .hero-stage {
-    grid-template-columns: 1fr 0.8fr 1fr;
-  }
-
-  .desktop-window,
-  .phone-frame {
-    height: 340px;
-  }
-
-  .hero-signal {
-    min-height: 340px;
+    grid-template-columns: 1fr 0.6fr 1fr;
   }
 
   .desktop-window {
