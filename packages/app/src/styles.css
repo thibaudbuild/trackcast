@@ -971,10 +971,7 @@ body::before {
 .controls-left {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-}
-.controls-left .controls-export {
-  margin-left: 0;
+  gap: 6px;
 }
 
 .btn-broadcast {
@@ -1040,10 +1037,13 @@ body::before {
   border-color: var(--border-2);
   background: transparent;
 }
-.controls-export {
+.controls-icons {
   margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
 }
-.export-icon-only {
+.controls-icon-btn {
   width: 36px;
   height: 36px;
   padding: 6px;
@@ -1056,15 +1056,15 @@ body::before {
   cursor: pointer;
   transition: color 0.15s, filter 0.15s;
 }
-.export-icon-only:not(:disabled):hover {
+.controls-icon-btn:not(:disabled):hover {
   color: var(--amber-hi);
 }
-.export-icon-only:disabled {
+.controls-icon-btn:disabled {
   opacity: 0.45;
   color: var(--text-dim);
   cursor: not-allowed;
 }
-.export-icon-only:disabled:hover {
+.controls-icon-btn:disabled:hover {
   color: var(--text-dim);
   filter: none;
 }
@@ -2432,52 +2432,3 @@ body::before {
   align-items: center;
 }
 
-/* ─── QR code section ───────────────────── */
-
-.qr-section {
-  padding: 12px var(--space-5);
-  background: var(--bg-1);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
-}
-
-.qr-code-wrap {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #ffffff;
-  border-radius: var(--radius-sm);
-  padding: 4px;
-}
-
-.qr-hint {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--text-dim);
-  letter-spacing: 0.2px;
-  line-height: 1.35;
-}
-
-.qr-hint a {
-  color: var(--amber);
-  text-decoration: none;
-}
-
-.qr-hint a:hover {
-  color: var(--amber-hi);
-}
-
-.qr-empty {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--text-dim);
-  letter-spacing: 0.2px;
-  padding: 8px var(--space-5);
-  background: var(--bg-1);
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}

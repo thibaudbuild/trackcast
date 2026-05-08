@@ -1,4 +1,4 @@
-import QRCodeSection from "./QRCode";
+import { open as openExternal } from "@tauri-apps/plugin-shell";
 
 export default function MainView({
   currentTrack,
@@ -139,6 +139,18 @@ export default function MainView({
 
   const anyChannelConfigured = publicConfigured || privateConfigured;
 
+  const shareUsername = (() => {
+    const trimmed = (publicChatId || "").trim();
+    if (trimmed.startsWith("@")) return trimmed.slice(1);
+    return "";
+  })();
+  const shareUrl = shareUsername ? `https://trackcast.xyz/@${shareUsername}` : "";
+  const handleShare = () => {
+    if (!shareUrl) return;
+    openExternal(shareUrl).catch(() => {});
+  };
+  const shareTitle = shareUrl ? "Share channel" : "Set up a public channel to share";
+
   return (
     <div className={`main-view ${isFallbackMode ? "is-fallback" : ""}`}>
       {/* ── Sub-bar: channel pill + connect status ── */}
@@ -216,6 +228,15 @@ export default function MainView({
               <button className="btn-broadcast stop" onClick={onStartStop} disabled={actionBusy}>
                 ■ &nbsp;Stop
               </button>
+              <button
+                className="controls-icon-btn"
+                onClick={handleShare}
+                disabled={!shareUrl}
+                title={shareTitle}
+                aria-label="Share channel"
+              >
+                <ShareQrIcon />
+              </button>
             </div>
             <div className="live-runtime">
               <div className="live-dot" />
@@ -232,25 +253,33 @@ export default function MainView({
             >
               ▶ &nbsp;Start broadcasting
             </button>
-            <button
-              className="controls-export export-icon-only"
-              onClick={onExport}
-              disabled={!canExportCurrentSet}
-              title={!canExportCurrentSet ? "No active set to export" : "Export set"}
-              aria-label="Export set"
-            >
-              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                <path d="M12 3v11" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                <path d="M7.5 10.5 12 15l4.5-4.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M5 17.5v1.8c0 1.5 1.2 2.7 2.7 2.7h8.6c1.5 0 2.7-1.2 2.7-2.7v-1.8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-              </svg>
-            </button>
+            <div className="controls-icons">
+              <button
+                className="controls-icon-btn"
+                onClick={handleShare}
+                disabled={!shareUrl}
+                title={shareTitle}
+                aria-label="Share channel"
+              >
+                <ShareQrIcon />
+              </button>
+              <button
+                className="controls-icon-btn"
+                onClick={onExport}
+                disabled={!canExportCurrentSet}
+                title={!canExportCurrentSet ? "No active set to export" : "Export set"}
+                aria-label="Export set"
+              >
+                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                  <path d="M12 3v11" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                  <path d="M7.5 10.5 12 15l4.5-4.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M5 17.5v1.8c0 1.5 1.2 2.7 2.7 2.7h8.6c1.5 0 2.7-1.2 2.7-2.7v-1.8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
           </>
         )}
       </div>
-
-      {/* ── QR code ──────────────────────────── */}
-      <QRCodeSection publicChatId={publicChatId} />
 
       {/* ── Set list ─────────────────────────── */}
       <div className="log-header">
@@ -283,5 +312,22 @@ export default function MainView({
         </div>
       </div>
     </div>
+  );
+}
+
+function ShareQrIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+      <rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <rect x="14" y="3.5" width="6.5" height="6.5" rx="1" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <rect x="3.5" y="14" width="6.5" height="6.5" rx="1" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <rect x="6" y="6" width="1.5" height="1.5" fill="currentColor" />
+      <rect x="16.5" y="6" width="1.5" height="1.5" fill="currentColor" />
+      <rect x="6" y="16.5" width="1.5" height="1.5" fill="currentColor" />
+      <rect x="14" y="14" width="2.5" height="2.5" fill="currentColor" />
+      <rect x="18" y="14" width="2.5" height="2.5" fill="currentColor" />
+      <rect x="14" y="18" width="2.5" height="2.5" fill="currentColor" />
+      <rect x="18" y="18" width="2.5" height="2.5" fill="currentColor" />
+    </svg>
   );
 }

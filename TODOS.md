@@ -126,6 +126,34 @@ Branch: feat/telegram-public-private (merged to main 2026-05-08)
 
 ---
 
+## 7. Public share page at `/@<username>` (site)
+
+**What:** Site agent ships a public web page at `https://trackcast.xyz/@<username>` that the desktop app links to from the share icon in the controls bar. The page renders a fullscreen-friendly QR code for `t.me/<username>`, the channel handle, and works on phone, tablet, venue screen, and prints cleanly from the browser.
+
+**Why:** A QR on the DJ's laptop is useless to the crowd. The DJ needs the QR on a *different* surface — phone in hand, tablet on the booth, venue display, or printed poster. A single public URL covers all of those: open it on whatever screen the crowd will see, or AirDrop / save-image / ⌘P from there. Reusing the browser's native primitives (copy URL, save image, print) means we don't rebuild any of that inside TrackCast.
+
+**App side (shipped 2026-05-08):** QR icon in the controls bar opens `https://trackcast.xyz/@<username>` via the OS browser. Disabled when no public channel set. Big in-app QR component removed; `qrcode.react` dep dropped.
+
+**Site contract:**
+- Route: `/@<username>` — `@` matches Telegram convention exactly
+- Renders: large QR encoding `https://t.me/<username>`, the `@<username>` handle, dark background matching the brand
+- Mobile-friendly (DJ may load it on a phone) and prints cleanly (⌘P → poster)
+- 404 / friendly error if the username is malformed; no need to validate that the channel actually exists (Telegram handles that on tap)
+- GitHub Pages constraint: routing for `/@<username>` paths needs to work with the static-site setup (likely a `404.html` redirect trick or per-username generated pages)
+
+**Pros:**
+- One artifact covers phone, tablet, venue screen, print
+- No new dependencies in the app (no QR library, no image generation)
+- Plug-and-play once the site ships — no app changes needed beyond domain swap
+
+**Cons:**
+- Until the site ships, the icon links to a 404 (acceptable: nothing was shareable before either)
+- Public web page means anyone with the username can hit it (same exposure as the public Telegram channel itself)
+
+**Depends on:** Site agent shipping the route. Branding/typography should match the existing landing page.
+
+---
+
 ## 6. Generate visual mockups for wizard, QR, and badges (superseded)
 
 **Status:** Wizard, QR, and badges are now implemented. Visual mockups are no longer needed for initial build — but could still be useful for design iteration if the shipped UI needs polish.
