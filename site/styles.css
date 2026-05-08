@@ -93,8 +93,7 @@ iframe {
 .build-meta,
 .mini-brand,
 .app-topline,
-.window-bar,
-.phone-top {
+.window-bar {
   display: flex;
   align-items: center;
 }
@@ -192,9 +191,7 @@ iframe {
 .section-kicker,
 .now-label,
 .build-meta,
-.phone-top,
 .set-list span,
-.message span,
 .tutorial-step,
 .step-tag,
 .guide-note strong {
@@ -661,94 +658,156 @@ h2 {
     var(--bg);
 }
 
-.phone-top {
-  height: 74px;
-  justify-content: space-between;
-  gap: 18px;
-  padding: 0 22px;
-  border-bottom: 1px solid var(--border-sub);
-  color: var(--text-dim);
-  font-size: 10px;
+/* Telegram channel mockup */
+
+.tg-frame {
+  display: flex;
+  flex-direction: column;
+  background: #0E1621;
 }
 
-.phone-top strong {
-  color: var(--text);
-  font-size: 13px;
-  font-weight: 500;
-  text-transform: none;
-  letter-spacing: -0.01em;
+.tg-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #17212B;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* Messages */
-
-.message-feed {
-  padding: 22px;
-  display: grid;
-  gap: 12px;
+.tg-back {
+  flex-shrink: 0;
 }
 
-.message {
-  max-width: 88%;
-  padding: 12px 13px;
-  border-radius: 12px;
-  background: #17212b;
+.tg-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E88010, #c06a0a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.tg-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tg-header-info strong {
   color: #e9f0f5;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tg-header-info span {
+  color: #6D7F8E;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.tg-chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 14px 18px;
+  overflow: hidden;
+}
+
+.tg-post {
+  padding: 8px 11px 6px;
+  border-radius: 10px;
+  background: #212D3B;
   opacity: 0;
-  transform: translateY(14px);
-  animation: messageIn 9s infinite;
+  transform: translateY(12px);
+  animation: tgPostIn 12s infinite;
 }
 
-.message span {
-  display: block;
-  margin-bottom: 4px;
-  color: #7bb8ff;
-  font-size: 9px;
+.tg-post-one {
+  animation-delay: 0s;
 }
 
-.message p {
+.tg-post-two {
+  animation-delay: 1.8s;
+}
+
+.tg-post-three {
+  animation-delay: 4.2s;
+}
+
+.tg-post-four {
+  animation-delay: 6.8s;
+}
+
+.tg-post-name {
+  color: #3A95D9;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 3px;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.tg-post-body {
   margin: 0;
+  color: #e9f0f5;
   font-size: 13px;
   font-weight: 300;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
-.message-two,
-.message-three,
-.message-four {
-  background: #15331e;
+.tg-post-label {
+  display: block;
+  color: #6AB2F2;
+  font-size: 11px;
+  font-weight: 500;
+  margin-bottom: 2px;
+  letter-spacing: normal;
+  text-transform: none;
 }
 
-.message-two span,
-.message-three span,
-.message-four span {
-  color: var(--green);
+.tg-post-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: flex-end;
+  margin-top: 4px;
+  color: #5B6F7F;
+  font-size: 11px;
+  font-weight: 300;
 }
 
-.message-two {
-  animation-delay: 1.5s;
+.tg-eye {
+  color: #5B6F7F;
 }
 
-.message-three {
-  animation-delay: 4s;
-}
-
-.message-four {
-  animation-delay: 6.5s;
-}
-
-@keyframes messageIn {
+@keyframes tgPostIn {
   0%,
-  10% {
+  8% {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(12px);
   }
-  16%,
-  82% {
+  14%,
+  80% {
     opacity: 1;
     transform: translateY(0);
   }
   100% {
-    opacity: 0.25;
+    opacity: 0.3;
     transform: translateY(0);
   }
 }
@@ -1273,6 +1332,33 @@ h3 {
 
   .set-list li {
     grid-template-columns: 54px 1fr;
+  }
+
+  .tg-header {
+    padding: 10px 12px;
+  }
+
+  .tg-avatar {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+  }
+
+  .tg-chat {
+    padding: 10px 10px 14px;
+    gap: 5px;
+  }
+
+  .tg-post {
+    padding: 6px 9px 5px;
+  }
+
+  .tg-post-name {
+    font-size: 11px;
+  }
+
+  .tg-post-body {
+    font-size: 12px;
   }
 
   .build-card,
