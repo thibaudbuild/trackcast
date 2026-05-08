@@ -164,6 +164,8 @@ iframe {
   margin: clamp(36px, 5vw, 64px) auto 0;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 /* Hero signal (shader bridge) */
@@ -455,67 +457,6 @@ h2 {
   align-items: center;
   gap: 10px;
   color: var(--text-dim);
-}
-
-/* App channel pill bar */
-
-.app-pill-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 5px 14px;
-  background: var(--bg);
-  border-bottom: 1px solid var(--border-sub);
-}
-
-.app-channel-pill {
-  display: flex;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
-  overflow: hidden;
-}
-
-.app-pill-opt {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 10px;
-  font-size: 9px;
-  font-weight: 400;
-  color: var(--text-dim);
-  letter-spacing: 0.03em;
-}
-
-.app-pill-opt.active {
-  background: var(--amber-soft);
-  color: var(--amber);
-  border-color: var(--amber-border);
-}
-
-.app-pill-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 6px var(--green-soft);
-}
-
-.app-receiver {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 9px;
-  font-weight: 400;
-  color: var(--green);
-  letter-spacing: 0.03em;
-}
-
-.app-receiver-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 6px var(--green-soft);
 }
 
 /* App now-playing panel */
@@ -1661,15 +1602,6 @@ h3 {
   .app-tab {
     font-size: 8px;
     padding: 0 7px;
-  }
-
-  .app-pill-bar {
-    padding: 4px 10px;
-  }
-
-  .app-pill-opt {
-    padding: 2px 7px;
-    font-size: 8px;
   }
 
   .app-panel {
