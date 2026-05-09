@@ -388,11 +388,11 @@ export default function Settings({
 
   // Live preview of the message
   const preview = template
-    .replaceAll("{artist}", "Blawan")
-    .replaceAll("{title}", "Why They Hide Their Bodies")
+    .replaceAll("{artist}", "Moby")
+    .replaceAll("{title}", "Porcelain")
     .replaceAll("{set_name}", setName || "My Set")
-    .replaceAll("{bpm}", "130")
-    .replaceAll("{key}", "Am");
+    .replaceAll("{bpm}", "96")
+    .replaceAll("{key}", "F");
   const sessionStartPreview = (sessionStartTemplate || DEFAULT_SESSION_START)
     .replaceAll("{set_name}", setName || "My Live Set");
   const sessionEndPreview = (sessionEndTemplate || DEFAULT_SESSION_END)
