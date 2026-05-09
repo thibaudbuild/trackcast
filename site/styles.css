@@ -1006,33 +1006,33 @@ h2 {
 }
 
 /* Telegram synced keyframes (24s loop)
- * "Set started" visible from start, fades at loop reset
  * Track posts appear ~1.2s after app track change:
  *   t1 at 9% (~2.2s), t2 at 32% (~7.7s), t3 at 57% (~13.7s), t4 at 82% (~19.7s)
+ * All posts fade to 0 by 97% so the loop reset is invisible.
  */
 
 @keyframes tgPost1 {
   0%, 9%    { opacity: 0; transform: translateY(12px); }
-  13%, 95%  { opacity: 1; transform: translateY(0); }
-  100%      { opacity: 0.3; transform: translateY(0); }
+  13%, 91%  { opacity: 1; transform: translateY(0); }
+  97%, 100% { opacity: 0; transform: translateY(0); }
 }
 
 @keyframes tgPost2 {
   0%, 32%   { opacity: 0; transform: translateY(12px); }
-  36%, 95%  { opacity: 1; transform: translateY(0); }
-  100%      { opacity: 0.3; transform: translateY(0); }
+  36%, 91%  { opacity: 1; transform: translateY(0); }
+  97%, 100% { opacity: 0; transform: translateY(0); }
 }
 
 @keyframes tgPost3 {
   0%, 57%   { opacity: 0; transform: translateY(12px); }
-  61%, 95%  { opacity: 1; transform: translateY(0); }
-  100%      { opacity: 0.3; transform: translateY(0); }
+  61%, 91%  { opacity: 1; transform: translateY(0); }
+  97%, 100% { opacity: 0; transform: translateY(0); }
 }
 
 @keyframes tgPost4 {
   0%, 82%   { opacity: 0; transform: translateY(12px); }
-  86%, 95%  { opacity: 1; transform: translateY(0); }
-  100%      { opacity: 0.3; transform: translateY(0); }
+  86%, 91%  { opacity: 1; transform: translateY(0); }
+  97%, 100% { opacity: 0; transform: translateY(0); }
 }
 
 /* Builds */
