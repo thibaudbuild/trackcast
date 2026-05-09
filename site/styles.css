@@ -1012,8 +1012,8 @@ h2 {
  */
 
 @keyframes tgPost1 {
-  0%        { opacity: 0; transform: translateY(12px); }
-  2%, 95%   { opacity: 1; transform: translateY(0); }
+  0%, 9%    { opacity: 0; transform: translateY(12px); }
+  13%, 95%  { opacity: 1; transform: translateY(0); }
   100%      { opacity: 0.3; transform: translateY(0); }
 }
 
