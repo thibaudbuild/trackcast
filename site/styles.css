@@ -176,6 +176,20 @@ iframe {
   border-radius: 0;
   min-height: 400px;
   background: var(--bg);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 32px,
+    #000 calc(100% - 32px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 32px,
+    #000 calc(100% - 32px),
+    transparent 100%
+  );
 }
 
 .hero-signal iframe {
@@ -186,7 +200,6 @@ iframe {
   border: 0;
   pointer-events: none;
   display: block;
-  mix-blend-mode: lighten;
 }
 
 /* Eyebrow / Kicker labels */
