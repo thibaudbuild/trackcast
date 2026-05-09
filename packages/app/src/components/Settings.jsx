@@ -148,11 +148,18 @@ export default function Settings({
 
   // Display fields
   const [setName, setSetName]       = useState(config?.set_name || "");
-  const [template, setTemplate]     = useState(
-    config?.message_template || "🎵 {artist} — {title}"
-  );
-  const [showBpm, setShowBpm]       = useState(config?.show_bpm ?? true);
-  const [showKey, setShowKey]       = useState(config?.show_key ?? false);
+  const [template, setTemplate]     = useState(() => {
+    let t = config?.message_template || "🎵 {artist} — {title}";
+    // Legacy migration: old show_bpm / show_key flags are now expressed as inline
+    // {bpm} / {key} tokens in the template itself. Append them once if the saved
+    // config still relies on the flags and the template doesn't already use them.
+    const wantsBpm = config?.show_bpm && !t.includes("{bpm}");
+    const wantsKey = config?.show_key && !t.includes("{key}");
+    if (wantsBpm && wantsKey) t += " [{bpm} BPM · {key}]";
+    else if (wantsBpm) t += " [{bpm} BPM]";
+    else if (wantsKey) t += " [{key}]";
+    return t.slice(0, MAX_TEMPLATE);
+  });
   const [sessionMessagesEnabled, setSessionMessagesEnabled] = useState(
     config?.session_messages_enabled ?? false
   );
@@ -164,6 +171,39 @@ export default function Settings({
   );
   const displayScrollRef = useRef(null);
   const [displayHasOverflow, setDisplayHasOverflow] = useState(false);
+  const templateInputRef = useRef(null);
+  const sessionStartInputRef = useRef(null);
+  const sessionEndInputRef = useRef(null);
+  const lastFocusedSessionRef = useRef("start");
+
+  const insertAtInput = (inputRef, setValue, maxLen, token) => {
+    const el = inputRef.current;
+    let nextCursor = 0;
+    setValue((prev) => {
+      const selStart = el?.selectionStart ?? prev.length;
+      const selEnd = el?.selectionEnd ?? prev.length;
+      const next = (prev.slice(0, selStart) + token + prev.slice(selEnd)).slice(0, maxLen);
+      nextCursor = Math.min(selStart + token.length, next.length);
+      return next;
+    });
+    requestAnimationFrame(() => {
+      const node = inputRef.current;
+      if (!node) return;
+      node.focus();
+      node.setSelectionRange(nextCursor, nextCursor);
+    });
+  };
+
+  const insertIntoTemplate = (token) =>
+    insertAtInput(templateInputRef, setTemplate, MAX_TEMPLATE, token);
+
+  const insertIntoSessionTemplate = (token) => {
+    if (lastFocusedSessionRef.current === "end") {
+      insertAtInput(sessionEndInputRef, setSessionEndTemplate, MAX_SESSION_END_TEMPLATE, token);
+    } else {
+      insertAtInput(sessionStartInputRef, setSessionStartTemplate, MAX_SESSION_START_TEMPLATE, token);
+    }
+  };
 
   const initialToken = config?.telegram_token || "";
   const tokenChanged = token !== initialToken;
@@ -182,8 +222,6 @@ export default function Settings({
   const displayChanged =
     setName !== (config?.set_name || "") ||
     template !== (config?.message_template || "🎵 {artist} — {title}") ||
-    showBpm !== (config?.show_bpm ?? true) ||
-    showKey !== (config?.show_key ?? false) ||
     sessionMessagesEnabled !== (config?.session_messages_enabled ?? false) ||
     sessionStartTemplate !== (config?.session_start_template || DEFAULT_SESSION_START) ||
     sessionEndTemplate !== (config?.session_end_template || DEFAULT_SESSION_END);
@@ -336,8 +374,6 @@ export default function Settings({
       private_verified_fingerprint: privVerified ? privFp : null,
       set_name: setName,
       message_template: template,
-      show_bpm: showBpm,
-      show_key: showKey,
       session_messages_enabled: sessionMessagesEnabled,
       session_start_template: sessionStartTemplate,
       session_end_template: sessionEndTemplate,
@@ -352,17 +388,15 @@ export default function Settings({
 
   // Live preview of the message
   const preview = template
-    .replace("{artist}", "Blawan")
-    .replace("{title}", "Why They Hide Their Bodies")
-    .replace("{set_name}", setName || "My Set")
-    .replace("{bpm}", "130")
-    .replace("{key}", "Am")
-    + (showBpm && !template.includes("{bpm}") ? " [130 BPM" + (showKey ? " · Am" : "") + "]" : "")
-    + (showKey && !showBpm && !template.includes("{key}") ? " [Am]" : "");
+    .replaceAll("{artist}", "Blawan")
+    .replaceAll("{title}", "Why They Hide Their Bodies")
+    .replaceAll("{set_name}", setName || "My Set")
+    .replaceAll("{bpm}", "130")
+    .replaceAll("{key}", "Am");
   const sessionStartPreview = (sessionStartTemplate || DEFAULT_SESSION_START)
-    .replace("{set_name}", setName || "My Live Set");
+    .replaceAll("{set_name}", setName || "My Live Set");
   const sessionEndPreview = (sessionEndTemplate || DEFAULT_SESSION_END)
-    .replace("{set_name}", setName || "My Live Set");
+    .replaceAll("{set_name}", setName || "My Live Set");
 
   useEffect(() => {
     if (tab !== "display") {
@@ -385,7 +419,7 @@ export default function Settings({
       scrollEl.removeEventListener("scroll", updateScrollState);
       window.removeEventListener("resize", updateScrollState);
     };
-  }, [tab, setName, template, showBpm, showKey, sessionMessagesEnabled, sessionStartTemplate, sessionEndTemplate]);
+  }, [tab, setName, template, sessionMessagesEnabled, sessionStartTemplate, sessionEndTemplate]);
 
   return (
     <div className={`settings-panel ${tab === "display" ? "tab-display" : ""} ${isTracking ? "is-locked" : ""}`}>
@@ -786,6 +820,7 @@ export default function Settings({
               <div className="settings-preview-like">{template}</div>
             ) : (
               <input
+                ref={templateInputRef}
                 className="tc-input"
                 type="text"
                 value={template}
@@ -796,34 +831,19 @@ export default function Settings({
               />
             )}
             <span className="settings-char-count">{template.length}/{MAX_TEMPLATE}</span>
-            <div className="settings-inline-options" style={{ display: "flex", gap: 12 }}>
-              <label className="tc-check-label">
-                <input
-                  className="tc-checkbox"
-                  type="checkbox"
-                  checked={showBpm}
-                  onChange={(e) => setShowBpm(e.target.checked)}
+            <span className="settings-hint settings-hint-tight">
+              Variables:{" "}
+              {["{artist}", "{title}", "{set_name}", "{bpm}", "{key}"].map((tok) => (
+                <button
+                  key={tok}
+                  type="button"
+                  className="settings-var-chip"
+                  onClick={() => insertIntoTemplate(tok)}
                   disabled={isTracking}
-                />
-                <span className="tc-check-text">Append BPM</span>
-              </label>
-              <label className="tc-check-label">
-                <input
-                  className="tc-checkbox"
-                  type="checkbox"
-                  checked={showKey}
-                  onChange={(e) => setShowKey(e.target.checked)}
-                  disabled={isTracking}
-                />
-                <span className="tc-check-text">Append Key</span>
-              </label>
-            </div>
-            <span className="settings-hint selectable-text settings-hint-tight">
-              Variables: <code style={{ color: "var(--amber)" }}>{"{artist}"}</code>{" "}
-              <code style={{ color: "var(--amber)" }}>{"{title}"}</code>{" "}
-              <code style={{ color: "var(--amber)" }}>{"{set_name}"}</code>{" "}
-              <code style={{ color: "var(--amber)" }}>{"{bpm}"}</code>{" "}
-              <code style={{ color: "var(--amber)" }}>{"{key}"}</code>
+                >
+                  {tok}
+                </button>
+              ))}
             </span>
             <div className="settings-preview">
               {preview}
@@ -849,10 +869,12 @@ export default function Settings({
               <div className="input-error">Set name is required when auto messages are enabled.</div>
             )}
             <input
+              ref={sessionStartInputRef}
               className="tc-input"
               type="text"
               value={sessionStartTemplate}
               onChange={(e) => setSessionStartTemplate(e.target.value)}
+              onFocus={() => { lastFocusedSessionRef.current = "start"; }}
               maxLength={MAX_SESSION_START_TEMPLATE}
               disabled={isTracking || !sessionMessagesEnabled}
               spellCheck={false}
@@ -860,18 +882,28 @@ export default function Settings({
             />
             <span className="settings-char-count">{sessionStartTemplate.length}/{MAX_SESSION_START_TEMPLATE}</span>
             <input
+              ref={sessionEndInputRef}
               className="tc-input"
               type="text"
               value={sessionEndTemplate}
               onChange={(e) => setSessionEndTemplate(e.target.value)}
+              onFocus={() => { lastFocusedSessionRef.current = "end"; }}
               maxLength={MAX_SESSION_END_TEMPLATE}
               disabled={isTracking || !sessionMessagesEnabled}
               spellCheck={false}
               placeholder="just finished playing {set_name}"
             />
             <span className="settings-char-count">{sessionEndTemplate.length}/{MAX_SESSION_END_TEMPLATE}</span>
-            <span className="settings-hint selectable-text settings-hint-tight">
-              Variable: <code style={{ color: "var(--amber)" }}>{"{set_name}"}</code>
+            <span className="settings-hint settings-hint-tight">
+              Variable:{" "}
+              <button
+                type="button"
+                className="settings-var-chip"
+                onClick={() => insertIntoSessionTemplate("{set_name}")}
+                disabled={isTracking || !sessionMessagesEnabled}
+              >
+                {"{set_name}"}
+              </button>
             </span>
             <div className={`settings-preview ${sessionMessagesEnabled ? "" : "muted"}`}>
               <div>{sessionStartPreview}</div>

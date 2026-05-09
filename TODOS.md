@@ -171,3 +171,47 @@ Three items left over from the 2026-05-09 History pass that didn't make sense to
 - **Search** — matters once a DJ has 50+ saved sets. Premature to add now.
 - **Total stats footer** — e.g. "12 sets · 247 tracks". Cute, not load-bearing.
 - **Inline-expand vs side-panel** — current inline-expand pushes content down for long sets. Switch to a side panel only if real users complain about a 100-track set being unwieldy.
+
+---
+
+## 9. Bare Setup tab loses unsaved input on tab switch
+
+Surfaced by /qa on 2026-05-09. With the onboarding wizard paused (TODO 0 / shipped 2026-05-08), new users land directly on the Setup tab. Typing a bot token / channel and switching to Live before pressing Save wipes the draft, because `<Settings>` is conditionally mounted in `App.jsx:397-409` and re-initializes from saved `config` on remount.
+
+**Resolution path:**
+- Re-enabling the wizard fixes this for the first-run case (the wizard owns the draft).
+- If the wizard is permanently gone, lift the Setup draft into `App.jsx` or persist to `localStorage` in `Settings.jsx`. Don't bother fixing locally until that direction is decided.
+
+**Severity:** medium — only bites users who explore tabs before saving; doesn't affect anyone who follows the wizard flow.
+
+**Evidence:** `.gstack/qa-reports/qa-report-trackcast-app-2026-05-09.md` (ISSUE-001).
+
+---
+
+## 10. Disabled Live-tab buttons offer no path forward
+
+Surfaced by /qa on 2026-05-09. On Live, `Connect` and `▶ Start broadcasting` are disabled until Setup is saved, but neither has a `title`, `aria-label`, or inline hint. `Share channel` already has `title="Set up a public channel to share"` — pattern is half-applied. User dislikes hover tooltips, so the fix should either (a) leave the buttons enabled and surface a one-shot inline message on click ("Save your bot token in Setup first"), or (b) replace the disabled state with a subtle prompt that routes to Setup. Don't add tooltips.
+
+**Severity:** medium — first 30 seconds of new-user experience.
+
+**Evidence:** `.gstack/qa-reports/qa-report-trackcast-app-2026-05-09.md` (ISSUE-002).
+
+---
+
+## 11. "With set name" template lets you save with empty Set Name
+
+Surfaced by /qa on 2026-05-09. On Display, picking the **With set name** template while leaving **Set name** blank produces a Telegram message like `🎵  · Klaven — Why They Hide Their Bodies` (leading separator, double space). Either (a) require Set name when this template is selected, or (b) collapse the empty placeholder server-side / template-side so the rendered message degrades gracefully.
+
+**Severity:** medium — visible to listeners.
+
+**Evidence:** `.gstack/qa-reports/qa-report-trackcast-app-2026-05-09.md` (ISSUE-004).
+
+---
+
+## 12. Theme toggle barely lightens the UI
+
+Surfaced by /qa on 2026-05-09. The "Toggle theme" button flips `documentElement.dataset.theme` between night and day, but the day theme is functionally another dark variant — only the top nav lightens. Could be intentional (two warm/cool dark modes for DJ environments), in which case the control should be relabeled. Otherwise, finish the day theme.
+
+**Severity:** low — cosmetic, doesn't break anything.
+
+**Evidence:** `.gstack/qa-reports/qa-report-trackcast-app-2026-05-09.md` (ISSUE-003).
