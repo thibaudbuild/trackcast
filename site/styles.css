@@ -539,22 +539,25 @@ h2 {
 }
 
 /*
- * Synchronized 24s timeline (4 tracks)
+ * Synchronized 24s timeline (5 tracks)
  * ─────────────────────────────────────────────────
- * Track 1 (DJ Life):       2% – 21%   (0.5s – 5s)
- * Track 2 (Roza Terenzi): 27% – 46%   (6.5s – 11s)
- * Track 3 (Priori):       52% – 71%   (12.5s – 17s)
- * Track 4 (Vael):    77% – 96%   (18.5s – 23s)
+ * Track 1 (Kessler):       2% – 14%   (0.5s – 3.4s)
+ * Track 2 (Roza Terenzi): 20% – 34%   (4.8s – 8.2s)
+ * Track 3 (Priori):       40% – 54%   (9.6s – 13.0s)
+ * Track 4 (Vael):         60% – 74%   (14.4s – 17.8s)
+ * Track 5 (Evan Baggs):   80% – 91%   (19.2s – 21.8s)
  *
- * Crossovers: 21%–27%, 46%–52%, 71%–77%
- * Telegram posts lag app by ~7% (~1.7s first, ~1.2s rest)
- * Set list rows + highlights switch at crossover midpoints (23%, 48%, 73%)
+ * Crossovers: 18%–20%, 38%–40%, 58%–60%, 78%–80%
+ * Telegram posts lag app by ~5% (~1.2s)
+ * Set list rows appear at crossover midpoints (19%, 39%, 59%, 79%)
+ * All elements fade to 0 between 91%–97% for clean loop reset
  */
 
 .track-cycle .np-artist-line:nth-child(1) { animation: appTrack1 24s infinite; }
 .track-cycle .np-artist-line:nth-child(2) { animation: appTrack2 24s infinite; }
 .track-cycle .np-artist-line:nth-child(3) { animation: appTrack3 24s infinite; }
 .track-cycle .np-artist-line:nth-child(4) { animation: appTrack4 24s infinite; }
+.track-cycle .np-artist-line:nth-child(5) { animation: appTrack5 24s infinite; }
 
 .np-title-cycle {
   position: relative;
@@ -578,6 +581,7 @@ h2 {
 .np-title-cycle span:nth-child(2) { animation: appTrack2 24s infinite; }
 .np-title-cycle span:nth-child(3) { animation: appTrack3 24s infinite; }
 .np-title-cycle span:nth-child(4) { animation: appTrack4 24s infinite; }
+.np-title-cycle span:nth-child(5) { animation: appTrack5 24s infinite; }
 
 /* Tags cycle in sync */
 
@@ -596,30 +600,37 @@ h2 {
 .np-tags-cycle .np-tags:nth-child(2) { animation: appTrack2 24s infinite; }
 .np-tags-cycle .np-tags:nth-child(3) { animation: appTrack3 24s infinite; }
 .np-tags-cycle .np-tags:nth-child(4) { animation: appTrack4 24s infinite; }
+.np-tags-cycle .np-tags:nth-child(5) { animation: appTrack5 24s infinite; }
 
 /* App track keyframes (24s loop) */
 
 @keyframes appTrack1 {
-  0%       { opacity: 0; transform: translateY(14px); }
-  2%, 21%  { opacity: 1; transform: translateY(0); }
-  25%, 100% { opacity: 0; transform: translateY(-14px); }
+  0%        { opacity: 0; transform: translateY(14px); }
+  2%, 14%   { opacity: 1; transform: translateY(0); }
+  18%, 100% { opacity: 0; transform: translateY(-14px); }
 }
 
 @keyframes appTrack2 {
-  0%, 23%  { opacity: 0; transform: translateY(14px); }
-  27%, 46% { opacity: 1; transform: translateY(0); }
-  50%, 100% { opacity: 0; transform: translateY(-14px); }
+  0%, 16%   { opacity: 0; transform: translateY(14px); }
+  20%, 34%  { opacity: 1; transform: translateY(0); }
+  38%, 100% { opacity: 0; transform: translateY(-14px); }
 }
 
 @keyframes appTrack3 {
-  0%, 48%  { opacity: 0; transform: translateY(14px); }
-  52%, 71% { opacity: 1; transform: translateY(0); }
-  75%, 100% { opacity: 0; transform: translateY(-14px); }
+  0%, 36%   { opacity: 0; transform: translateY(14px); }
+  40%, 54%  { opacity: 1; transform: translateY(0); }
+  58%, 100% { opacity: 0; transform: translateY(-14px); }
 }
 
 @keyframes appTrack4 {
-  0%, 73%  { opacity: 0; transform: translateY(14px); }
-  77%, 91% { opacity: 1; transform: translateY(0); }
+  0%, 56%   { opacity: 0; transform: translateY(14px); }
+  60%, 74%  { opacity: 1; transform: translateY(0); }
+  78%, 100% { opacity: 0; transform: translateY(-14px); }
+}
+
+@keyframes appTrack5 {
+  0%, 76%   { opacity: 0; transform: translateY(14px); }
+  80%, 91%  { opacity: 1; transform: translateY(0); }
   97%, 100% { opacity: 0; transform: translateY(-14px); }
 }
 
@@ -649,11 +660,13 @@ h2 {
 .app-log-r2 { animation: logRow2 24s infinite; }
 .app-log-r3 { animation: logRow3 24s infinite; }
 .app-log-r4 { animation: logRow4 24s infinite; }
+.app-log-r5 { animation: logRow5 24s infinite; }
 
 .app-log-r1 .app-log-artist { animation: logHighlight1 24s infinite; }
 .app-log-r2 .app-log-artist { animation: logHighlight2 24s infinite; }
 .app-log-r3 .app-log-artist { animation: logHighlight3 24s infinite; }
 .app-log-r4 .app-log-artist { animation: logHighlight4 24s infinite; }
+.app-log-r5 .app-log-artist { animation: logHighlight5 24s infinite; }
 
 @keyframes logRow1 {
   0%      { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
@@ -663,49 +676,63 @@ h2 {
 }
 
 @keyframes logRow2 {
-  0%, 23% { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
-  27%     { opacity: 1; max-height: 60px; padding: 8px 14px; border-bottom-color: var(--border-sub); }
+  0%, 17% { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
+  21%     { opacity: 1; max-height: 60px; padding: 8px 14px; border-bottom-color: var(--border-sub); }
   91%     { opacity: 1; }
   97%, 100% { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
 }
 
 @keyframes logRow3 {
-  0%, 48% { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
-  52%     { opacity: 1; max-height: 60px; padding: 8px 14px; border-bottom-color: var(--border-sub); }
+  0%, 37% { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
+  41%     { opacity: 1; max-height: 60px; padding: 8px 14px; border-bottom-color: var(--border-sub); }
   91%     { opacity: 1; }
   97%, 100% { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
 }
 
 @keyframes logRow4 {
-  0%, 73% { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
-  77%     { opacity: 1; max-height: 60px; padding: 8px 14px; border-bottom-color: var(--border-sub); }
+  0%, 57% { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
+  61%     { opacity: 1; max-height: 60px; padding: 8px 14px; border-bottom-color: var(--border-sub); }
+  91%     { opacity: 1; }
+  97%, 100% { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
+}
+
+@keyframes logRow5 {
+  0%, 77% { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
+  81%     { opacity: 1; max-height: 60px; padding: 8px 14px; border-bottom-color: var(--border-sub); }
   91%     { opacity: 1; }
   97%, 100% { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
 }
 
 @keyframes logHighlight1 {
   0%, 2%  { color: var(--amber); }
-  23%, 91% { color: var(--text); }
+  19%, 91% { color: var(--text); }
   97%, 100% { color: var(--text); }
 }
 
 @keyframes logHighlight2 {
-  0%, 23% { color: var(--text); }
-  27%, 48% { color: var(--amber); }
-  52%, 91% { color: var(--text); }
+  0%, 17% { color: var(--text); }
+  21%, 37% { color: var(--amber); }
+  41%, 91% { color: var(--text); }
   97%, 100% { color: var(--text); }
 }
 
 @keyframes logHighlight3 {
-  0%, 48% { color: var(--text); }
-  52%, 73% { color: var(--amber); }
-  77%, 91% { color: var(--text); }
+  0%, 37% { color: var(--text); }
+  41%, 57% { color: var(--amber); }
+  61%, 91% { color: var(--text); }
   97%, 100% { color: var(--text); }
 }
 
 @keyframes logHighlight4 {
-  0%, 73% { color: var(--text); }
-  77%, 91% { color: var(--amber); }
+  0%, 57% { color: var(--text); }
+  61%, 77% { color: var(--amber); }
+  81%, 91% { color: var(--text); }
+  97%, 100% { color: var(--text); }
+}
+
+@keyframes logHighlight5 {
+  0%, 77% { color: var(--text); }
+  81%, 91% { color: var(--amber); }
   97%, 100% { color: var(--text); }
 }
 
@@ -982,6 +1009,7 @@ h2 {
 .tg-post-t2 { animation: tgPost2 24s infinite; }
 .tg-post-t3 { animation: tgPost3 24s infinite; }
 .tg-post-t4 { animation: tgPost4 24s infinite; }
+.tg-post-t5 { animation: tgPost5 24s infinite; }
 
 .tg-post-name {
   color: #3A95D9;
@@ -1016,32 +1044,38 @@ h2 {
 }
 
 /* Telegram synced keyframes (24s loop)
- * Track posts appear ~1.2s after app track change:
- *   t1 at 9% (~2.2s), t2 at 32% (~7.7s), t3 at 57% (~13.7s), t4 at 82% (~19.7s)
+ * Track posts appear ~5% (~1.2s) after app track change:
+ *   t1 at 7%, t2 at 25%, t3 at 45%, t4 at 65%, t5 at 85%
  * All posts fade to 0 by 97% so the loop reset is invisible.
  */
 
 @keyframes tgPost1 {
-  0%, 9%    { opacity: 0; transform: translateY(12px); }
-  13%, 91%  { opacity: 1; transform: translateY(0); }
+  0%, 7%    { opacity: 0; transform: translateY(12px); }
+  11%, 91%  { opacity: 1; transform: translateY(0); }
   97%, 100% { opacity: 0; transform: translateY(0); }
 }
 
 @keyframes tgPost2 {
-  0%, 32%   { opacity: 0; transform: translateY(12px); }
-  36%, 91%  { opacity: 1; transform: translateY(0); }
+  0%, 25%   { opacity: 0; transform: translateY(12px); }
+  29%, 91%  { opacity: 1; transform: translateY(0); }
   97%, 100% { opacity: 0; transform: translateY(0); }
 }
 
 @keyframes tgPost3 {
-  0%, 57%   { opacity: 0; transform: translateY(12px); }
-  61%, 91%  { opacity: 1; transform: translateY(0); }
+  0%, 45%   { opacity: 0; transform: translateY(12px); }
+  49%, 91%  { opacity: 1; transform: translateY(0); }
   97%, 100% { opacity: 0; transform: translateY(0); }
 }
 
 @keyframes tgPost4 {
-  0%, 82%   { opacity: 0; transform: translateY(12px); }
-  86%, 91%  { opacity: 1; transform: translateY(0); }
+  0%, 65%   { opacity: 0; transform: translateY(12px); }
+  69%, 91%  { opacity: 1; transform: translateY(0); }
+  97%, 100% { opacity: 0; transform: translateY(0); }
+}
+
+@keyframes tgPost5 {
+  0%, 85%   { opacity: 0; transform: translateY(12px); }
+  89%, 91%  { opacity: 1; transform: translateY(0); }
   97%, 100% { opacity: 0; transform: translateY(0); }
 }
 
@@ -1474,7 +1508,8 @@ h3 {
 .hero-stage:not(.is-live) .app-log-r1,
 .hero-stage:not(.is-live) .app-log-r2,
 .hero-stage:not(.is-live) .app-log-r3,
-.hero-stage:not(.is-live) .app-log-r4 { display: none; }
+.hero-stage:not(.is-live) .app-log-r4,
+.hero-stage:not(.is-live) .app-log-r5 { display: none; }
 
 .hero-stage:not(.is-live) .tg-post { display: none; }
 
