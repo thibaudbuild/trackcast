@@ -29,17 +29,23 @@
 Same monospace identity, more refined execution. IBM Plex Mono is slightly wider, cleaner at small sizes, and has a better weight range (300-700 with real optical difference). JetBrains Mono is a developer's font; IBM Plex Mono is a designer's monospace. The character is similar but the polish is higher.
 
 ### Type Scale
-| Role | Weight | Size | Spacing | Case |
-|------|--------|------|---------|------|
-| Display (artist) | 600 | 44px | -1.5px | Normal |
-| Section title | 600 | 16px | -0.3px | Normal |
-| Tab / Button | 500 | 10-11px | 0.8px | Uppercase |
-| Body | 300 | 13px | 0.2px | Normal |
-| Set list artist | 500 | 13px | 0.1px | Normal |
-| Set list title | 300 | 12px | normal | Normal |
-| Data (time, BPM) | 400 | 11-12px | normal | Normal |
-| Eyebrow label | 500 | 10px | 0.8px | Uppercase |
-| Tag / pill | 400 | 9px | 0.3px | Normal |
+Updated 2026-05-09 (rev 2): shifted from the original spec to a more readable scale on desktop windows. Buttons sit at a single Tab/Button role; visual weight for primary CTAs comes from color (amber/green fills) and padding, not type size.
+
+| Role | Weight | Size | Spacing | Case | CSS var |
+|------|--------|------|---------|------|---------|
+| Display (artist) | 600 | 44px | -1.5px | Normal | `--fs-display` |
+| Section title | 600 | 17px | -0.3px | Normal | `--fs-title` |
+| Body / Input | 300 | 14px | 0.2px | Normal | `--fs-body` |
+| Set list artist | 500 | 14px | 0.1px | Normal | `--fs-body` |
+| Data (time, BPM) | 400 | 13px | normal | Normal | `--fs-data` |
+| Set list title | 300 | 13px | normal | Normal | `--fs-data` |
+| Eyebrow label | 500 | 12px | 0.8px | Uppercase | `--fs-eyebrow` |
+| Hint / helper | 400 | 12px | 0.2px | Normal | `--fs-hint` |
+| Tab / Button | 500 | 12px | 0.8px | Uppercase | `--fs-tab` |
+| Data, compact | 400 | 12px | normal | Normal | `--fs-data-sm` |
+| Tag / pill | 400 | 11px | 0.3px | Normal | `--fs-tag` |
+
+CSS variables live in `:root` of `packages/app/src/styles.css`. To re-tune the type scale globally, change the values there — every selector that uses the variables follows automatically.
 
 ## Color
 

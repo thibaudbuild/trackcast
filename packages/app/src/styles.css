@@ -47,6 +47,17 @@
   --space-8:   48px;
   --mono:      'IBM Plex Mono', 'SF Mono', ui-monospace, monospace;
   --sans:      'IBM Plex Mono', 'SF Mono', ui-monospace, monospace;
+
+  /* Type scale — DESIGN.md. Bump these once to shift all sized text. */
+  --fs-display: 44px; /* Hero (artist name)                              */
+  --fs-title:   17px; /* Section title                                   */
+  --fs-tab:     12px; /* Tab / button                                    */
+  --fs-body:    14px; /* Body, inputs                                    */
+  --fs-data:    13px; /* Data — timestamps, BPM, key                     */
+  --fs-data-sm: 12px; /* Data, compact                                   */
+  --fs-eyebrow: 12px; /* Eyebrow label (uppercase)                       */
+  --fs-hint:    12px; /* Hint / helper copy                              */
+  --fs-tag:     11px; /* Tag / pill                                      */
 }
 
 :root[data-theme="day"] {
@@ -188,7 +199,7 @@ body::before {
 .titlebar-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 2px;
   width: auto;
   justify-content: flex-end;
   margin-left: 0;
@@ -279,7 +290,7 @@ body::before {
   border-radius: 0;
   color: var(--text-dim);
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--fs-tab);
   font-weight: 500;
   letter-spacing: 0.8px;
   text-transform: uppercase;
@@ -309,7 +320,7 @@ body::before {
 }
 
 .channel-pill-bar .sb-item {
-  font-size: 10px;
+  font-size: var(--fs-eyebrow);
   letter-spacing: 0.45px;
   gap: 5px;
   padding: 5px 8px;
@@ -317,7 +328,7 @@ body::before {
 
 .sb-item {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--fs-eyebrow);
   color: var(--text-dim);
   display: flex;
   align-items: center;
@@ -381,7 +392,7 @@ body::before {
 .sb-spacer { flex: 1; }
 
 .connect-mini {
-  font-size: 9px;
+  font-size: var(--fs-tag);
   letter-spacing: 0.6px;
   padding: 5px 9px;
   border-radius: 4px;
@@ -420,7 +431,7 @@ body::before {
   align-items: center;
   gap: 7px;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--fs-eyebrow);
   color: var(--text-mid);
   background: var(--bg-2);
   border-bottom: 1px solid var(--border-2);
@@ -483,7 +494,7 @@ body::before {
 
 .row-label {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--fs-eyebrow);
   letter-spacing: 1.4px;
   text-transform: uppercase;
   color: var(--text-dim);
@@ -513,14 +524,14 @@ body::before {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: var(--fs-data);
   color: var(--white);
   font-weight: 500;
 }
 
 .select-check {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--fs-tag);
   color: var(--amber);
 }
 
@@ -532,7 +543,7 @@ body::before {
   border: 1px solid var(--border-2);
   border-radius: var(--radius-sm);
   color: var(--white);
-  font-size: 13px;
+  font-size: var(--fs-body);
   font-family: var(--sans);
   outline: none;
   cursor: pointer;
@@ -560,7 +571,7 @@ body::before {
   border: 1px solid var(--border-2);
   border-radius: var(--radius-sm);
   color: var(--white);
-  font-size: 13px;
+  font-size: var(--fs-body);
   font-family: var(--mono);
   outline: none;
   letter-spacing: 0.2px;
@@ -580,7 +591,7 @@ body::before {
 }
 
 .input-col { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-.input-error { font-family: var(--mono); font-size: 11px; color: #ef4444; padding-left: 2px; }
+.input-error { font-family: var(--mono); font-size: var(--fs-data-sm); color: #ef4444; padding-left: 2px; }
 
 .input-row {
   display: flex;
@@ -594,7 +605,7 @@ body::before {
   border: 1px solid var(--border-2);
   border-radius: var(--radius-sm);
   color: var(--text-mid);
-  font-size: 11px;
+  font-size: var(--fs-tab);
   font-family: var(--mono);
   cursor: pointer;
   letter-spacing: 0.5px;
@@ -619,7 +630,7 @@ body::before {
   border: 1px solid var(--border-2);
   border-radius: var(--radius-sm);
   color: var(--text-mid);
-  font-size: 11px;
+  font-size: var(--fs-tab);
   font-family: var(--mono);
   display: inline-flex;
   align-items: center;
@@ -815,7 +826,7 @@ body::before {
 
 .inline-ok-indicator {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--fs-tab);
   color: var(--green);
   border: 1px solid rgba(34, 197, 94, 0.4);
   background: var(--green-dim);
@@ -844,7 +855,7 @@ body::before {
 
 .np-eyebrow {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--fs-eyebrow);
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--text-dim);
@@ -873,7 +884,7 @@ body::before {
 
 .np-empty-eye {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: var(--fs-eyebrow);
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--text-dim);
@@ -881,7 +892,7 @@ body::before {
 }
 
 .np-artist {
-  font-size: 44px;
+  font-size: var(--fs-display);
   line-height: 1.04;
   font-weight: 600;
   color: var(--white);
@@ -892,10 +903,10 @@ body::before {
   text-overflow: ellipsis;
 }
 
-.np-artist.empty { color: var(--border-2); font-size: 44px; }
+.np-artist.empty { color: var(--border-2); font-size: var(--fs-display); }
 
 .np-title {
-  font-size: 13px;
+  font-size: var(--fs-body);
   font-weight: 300;
   color: var(--text);
   margin-bottom: 14px;
@@ -906,7 +917,7 @@ body::before {
   text-overflow: ellipsis;
 }
 
-.np-title.empty { color: var(--text-dim); font-size: 12px; }
+.np-title.empty { color: var(--text-dim); font-size: var(--fs-data); }
 
 .np-tags {
   display: flex;
@@ -917,7 +928,7 @@ body::before {
 
 .np-tag {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: var(--fs-tag);
   font-weight: 400;
   padding: 3px 8px;
   border: 1px solid var(--border-2);
@@ -973,6 +984,36 @@ body::before {
   border-color: rgba(217, 119, 6, 0.3);
 }
 
+/* ─── Setup banner (Live tab, when minimum setup is incomplete) ── */
+
+.setup-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 8px var(--space-5);
+  background: var(--amber-soft);
+  border: none;
+  border-bottom: 1px solid var(--amber-border);
+  color: var(--amber);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  text-align: left;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.setup-banner:hover {
+  background: rgba(232, 128, 16, 0.14);
+}
+.setup-banner-arrow {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
 /* ─── Controls bar ───────────────────────── */
 
 .controls-bar {
@@ -998,7 +1039,7 @@ body::before {
 .btn-broadcast {
   padding: 8px 20px;
   border-radius: var(--radius-sm);
-  font-size: 11px;
+  font-size: var(--fs-tab);
   font-family: var(--mono);
   font-weight: 500;
   letter-spacing: 0.8px;
@@ -1036,7 +1077,7 @@ body::before {
   min-height: 32px;
   padding: 0 12px;
   border-radius: var(--radius-sm);
-  font-size: 11px;
+  font-size: var(--fs-tab);
   font-family: var(--mono);
   cursor: pointer;
   border: 1px solid var(--border-2);
@@ -1092,7 +1133,7 @@ body::before {
 
 .live-runtime {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--fs-data-sm);
   color: var(--text-dim);
   letter-spacing: 0.6px;
   display: flex;
@@ -1104,7 +1145,7 @@ body::before {
   color: var(--text-dim);
   letter-spacing: 0.6px;
   margin-left: 0;
-  font-size: 10px;
+  font-size: var(--fs-data-sm);
 }
 
 .live-dot {
@@ -1129,7 +1170,7 @@ body::before {
 
 .log-label {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--fs-eyebrow);
   font-weight: 500;
   letter-spacing: 0.8px;
   text-transform: uppercase;
@@ -1138,7 +1179,7 @@ body::before {
 
 .log-count {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--fs-eyebrow);
   color: var(--border-2);
   margin-left: auto;
   text-align: right;
@@ -1218,7 +1259,7 @@ body::before {
   background: transparent;
   border: none;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--fs-eyebrow);
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--text-dim);
@@ -1261,7 +1302,7 @@ body::before {
   color: var(--text-dim);
   letter-spacing: 0.4px;
   text-transform: none;
-  font-size: 9px;
+  font-size: var(--fs-tag);
 }
 
 .history-empty {
@@ -1364,7 +1405,7 @@ body::before {
   min-height: 26px;
   height: 26px;
   padding: 0 10px 1px 6px;
-  font-size: 10px;
+  font-size: var(--fs-tab);
   font-family: var(--sans);
   letter-spacing: 0.1px;
   width: 68px;
@@ -1449,7 +1490,7 @@ body::before {
   background: transparent;
   color: var(--text-mid);
   font-family: var(--sans);
-  font-size: 10px;
+  font-size: var(--fs-tab);
   letter-spacing: 0.1px;
   text-align: left;
   white-space: nowrap;
@@ -1612,7 +1653,7 @@ body::before {
 
 .settings-panel .row-label {
   color: var(--text-mid);
-  font-size: 10px;
+  font-size: var(--fs-eyebrow);
   letter-spacing: 0.8px;
   margin-bottom: 3px;
   gap: 4px;
@@ -1624,7 +1665,7 @@ body::before {
 
 .settings-hint {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--fs-hint);
   color: var(--text-mid);
   margin-top: 0;
   line-height: 1.35;
@@ -1641,7 +1682,7 @@ body::before {
   display: block;
   width: 100%;
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: var(--fs-tag);
   color: var(--text-dim);
   letter-spacing: 0.2px;
   text-align: right;
@@ -1652,7 +1693,7 @@ body::before {
 }
 
 .settings-panel.tab-display .settings-hint {
-  font-size: 10px;
+  font-size: var(--fs-hint);
   line-height: 1.25;
   margin-top: -3px;
 }
@@ -1675,7 +1716,7 @@ body::before {
   align-items: center;
   gap: 7px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--fs-data-sm);
   color: var(--text-mid);
 }
 
@@ -1703,19 +1744,19 @@ body::before {
 .settings-panel .inline-btn {
   min-height: 30px;
   padding: 0 10px;
-  font-size: 10px;
+  font-size: var(--fs-tab);
   letter-spacing: 0.25px;
 }
 
 .settings-panel.tab-display .inline-btn {
   min-height: 29px;
-  font-size: 10px;
+  font-size: var(--fs-tab);
 }
 
 .settings-panel .inline-ok-indicator {
   min-height: 30px;
   padding: 0 10px;
-  font-size: 10px;
+  font-size: var(--fs-tab);
   letter-spacing: 0.25px;
   display: inline-flex;
   align-items: center;
@@ -1773,7 +1814,7 @@ body::before {
 
 .settings-preview {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--fs-data-sm);
   color: var(--text-mid);
   background: rgba(255, 255, 255, 0.008);
   border: 1px solid rgba(255, 255, 255, 0.10);
@@ -2026,8 +2067,8 @@ body::before {
   border: none;
   padding: 0;
   font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.2px;
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.45px;
   color: var(--text-dim);
   cursor: default;
   transition: color 0.15s;
@@ -2052,7 +2093,7 @@ body::before {
   font-weight: 500;
 }
 .destination-meta {
-  font-size: 9px;
+  font-size: var(--fs-tag);
   letter-spacing: 0.4px;
   text-transform: uppercase;
   opacity: 0.85;
@@ -2064,7 +2105,7 @@ body::before {
 
 .channel-section-tip {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--fs-hint);
   line-height: 1.45;
   color: var(--text-dim);
   opacity: 0.78;
@@ -2083,12 +2124,21 @@ body::before {
 
 .channel-slot-label {
   font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 0.7px;
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.8px;
   text-transform: uppercase;
   color: var(--text-dim);
   min-width: 56px;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.channel-slot-required {
+  margin-left: 2px;
+  color: var(--amber);
+  font-size: 11px;
+  line-height: 1;
 }
 
 .channel-detect-list {
@@ -2136,7 +2186,7 @@ body::before {
 }
 
 .channel-detect-id {
-  font-size: 10px;
+  font-size: var(--fs-tag);
   color: var(--text-dim);
   flex-shrink: 0;
 }
@@ -2352,7 +2402,7 @@ body::before {
   border: none;
   color: var(--text-dim);
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--fs-tab);
   text-align: center;
   cursor: pointer;
   letter-spacing: 0.2px;
@@ -2365,7 +2415,7 @@ body::before {
 
 .wizard-beta-note {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--fs-hint);
   color: var(--text-dim);
   line-height: 1.4;
   margin: 0;
@@ -2411,7 +2461,7 @@ body::before {
 
 .dj-badge {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: var(--fs-tag);
   font-weight: 400;
   padding: 2px 7px;
   border-radius: var(--radius-sm);
@@ -2463,7 +2513,7 @@ body::before {
 
 .wizard-summary-label {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--fs-eyebrow);
   font-weight: 500;
   letter-spacing: 0.8px;
   text-transform: uppercase;

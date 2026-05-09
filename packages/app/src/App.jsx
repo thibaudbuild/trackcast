@@ -297,6 +297,8 @@ export default function App() {
   const canStart = softwareConfigured && traktorSetupReady && !actionBusy;
   const publicConfigured = Boolean(config?.public_chat_id?.trim());
   const privateConfigured = Boolean(config?.private_chat_id?.trim());
+  const tokenConfigured = Boolean((config?.telegram_token || "").trim());
+  const setupIncomplete = !(tokenConfigured && softwareConfigured && traktorSetupReady && privateConfigured);
   const hasFreshTrackEvent =
     lastTrackEventAt != null && (trackFreshTick - lastTrackEventAt) < NOW_PLAYING_FRESH_MS;
 
@@ -391,34 +393,25 @@ export default function App() {
             publicChatId={config?.public_chat_id || ""}
             publicChatTitle={config?.public_chat_title || ""}
             privateChatTitle={config?.private_chat_title || ""}
+            setupIncomplete={setupIncomplete}
+            onOpenSetup={() => setActiveTab("connection")}
           />
         )}
 
-        {activeTab === "connection" && (
-          <div className="settings-view">
-            <Settings
-              config={config}
-              onSave={handleSaveConfig}
-              isTracking={isTracking}
-              tab="connection"
-              showTabBar={false}
-              traktorSetupStatus={traktorSetupStatus}
-            />
-          </div>
-        )}
-
-        {activeTab === "display" && (
-          <div className="settings-view settings-view-display">
-            <Settings
-              config={config}
-              onSave={handleSaveConfig}
-              isTracking={isTracking}
-              tab="display"
-              showTabBar={false}
-              traktorSetupStatus={traktorSetupStatus}
-            />
-          </div>
-        )}
+        {/* Settings stays mounted across tabs so unsaved drafts survive a Live/Display detour. */}
+        <div
+          className={`settings-view ${activeTab === "display" ? "settings-view-display" : ""}`}
+          style={{ display: (activeTab === "connection" || activeTab === "display") ? undefined : "none" }}
+        >
+          <Settings
+            config={config}
+            onSave={handleSaveConfig}
+            isTracking={isTracking}
+            tab={activeTab === "display" ? "display" : "connection"}
+            showTabBar={false}
+            traktorSetupStatus={traktorSetupStatus}
+          />
+        </div>
 
         {activeTab === "history" && (
           <div className="settings-view">

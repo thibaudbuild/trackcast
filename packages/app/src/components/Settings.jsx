@@ -608,7 +608,9 @@ export default function Settings({
 
             <div className="channel-slot">
               <div className="input-row">
-                <span className="channel-slot-label">Private</span>
+                <span className="channel-slot-label">
+                  Private<span className="channel-slot-required" aria-label="required">*</span>
+                </span>
                 {privateChatId && !editingPrivateChat ? (
                   <div className="select-locked" style={{ flex: 1 }}>
                     <span className="select-check">✓</span>

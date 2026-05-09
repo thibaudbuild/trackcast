@@ -25,6 +25,8 @@ export default function MainView({
   publicChatId = "",
   publicChatTitle = "",
   privateChatTitle = "",
+  setupIncomplete = false,
+  onOpenSetup,
 }) {
   const demoTrack = {
     artist: "Martin Roth",
@@ -226,6 +228,18 @@ export default function MainView({
           </>
         )}
       </div>
+
+      {/* ── Setup banner (shown when minimum setup is incomplete) ── */}
+      {setupIncomplete && !isTracking && (
+        <button
+          type="button"
+          className="setup-banner"
+          onClick={onOpenSetup}
+        >
+          <span className="setup-banner-text">Setup not full — finish it to start broadcasting</span>
+          <span className="setup-banner-arrow" aria-hidden="true">→</span>
+        </button>
+      )}
 
       {/* ── Controls ─────────────────────────── */}
       <div className={`controls-bar ${isTracking ? "is-live" : ""}`}>

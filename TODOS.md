@@ -22,6 +22,9 @@ Branch: feat/telegram-public-private (merged to main 2026-05-08)
 - [x] **Settings channel section unified** — Priv/Pub pill toggle replaced with a single "Channel" section containing Private and Public sub-rows, both always visible, with a dim tip line explaining the asymmetry. Detect/test buttons hidden in the locked/verified state.
 - [x] **MainView export removed** — redundant with History tab. Share icon moved to the right side in live state, sitting alongside the runtime.
 - [x] **History page polish** — three sort modes collapsed to two ("By date" / "A–Z"); deduplicated day headers; per-day fold/unfold with set count; expand caret on each row; rename moved from name-click to dedicated pencil icon (resolves click conflict); humanized dates (Today/Yesterday/...); icon-consistent action buttons; better empty state copy.
+- [x] **Setup draft persistence (TODO 9 / ISSUE-001)** — `<Settings>` now stays mounted across tab switches in `App.jsx`; hidden via `display:none` when on Live or History. Drafts survive a Live/Display detour without forcing the wizard back on.
+- [x] **Live-tab setup banner (TODO 10 / ISSUE-002)** — clickable inline banner above the controls bar shows "Finish Setup to start broadcasting →" when the minimum (token + DJ software + private channel + Traktor helper if applicable) isn't met. Click switches to Setup. No tooltip pattern, in line with the no-tooltips preference.
+- [x] **Private channel marked as required** — small "required" tag next to the Private slot label in Settings, so users understand Private is the mandatory minimum and Public is optional.
 
 ---
 
@@ -208,13 +211,44 @@ Surfaced by /qa on 2026-05-09. On Live, `Connect` and `▶ Start broadcasting` a
 
 ---
 
-## 11. "With set name" template lets you save with empty Set Name
+## 11. "With set name" template lets you save with empty Set Name — won't fix (by design)
 
-Surfaced by /qa on 2026-05-09. On Display, picking the **With set name** template while leaving **Set name** blank produces a Telegram message like `🎵  · Klaven — Why They Hide Their Bodies` (leading separator, double space). Either (a) require Set name when this template is selected, or (b) collapse the empty placeholder server-side / template-side so the rendered message degrades gracefully.
+Surfaced by /qa on 2026-05-09. On Display, picking the **With set name** template while leaving **Set name** blank produces a Telegram message like `🎵  · Klaven — Why They Hide Their Bodies` (leading separator, double space).
 
-**Severity:** medium — visible to listeners.
+**Decision (2026-05-09):** Closed as won't-fix. By design, any template can save with whatever the user has typed (or not typed) — adding per-template validation contradicts the "templates are free-form" intent. If a DJ doesn't fill set name, the rendered line being slightly off is on them. See TODO 13 — the broader question is whether the template feature itself earns its keep.
 
 **Evidence:** `.gstack/qa-reports/qa-report-trackcast-app-2026-05-09.md` (ISSUE-004).
+
+---
+
+## 14. Convert remaining hard-coded font-sizes to type-scale variables
+
+**What:** ~30 selectors in `packages/app/src/styles.css` still use literal `font-size: 11px / 12px / 13px` instead of the type-scale variables (`--fs-tab`, `--fs-body`, `--fs-data`, `--fs-data-sm`). They're at-spec today, but a future global bump via `:root` won't reach them — they need a manual edit each time.
+
+**Affected areas (not exhaustive):** set-list rows (artist/title), channel-detect items, settings preview, settings save row, history day items, wizard step body, destination meta variants, plus a few one-offs.
+
+**Why:** The type-scale CSS variables shipped 2026-05-09 (DESIGN.md update). The first sweep covered the elements that needed visible bumps + the most user-visible body/input/button selectors. The leftover literals are technically correct but defeat the "bump in one place" benefit going forward.
+
+**Pros:** Future type-scale tuning becomes a one-line `:root` change for everything. Zero behavior change today.
+
+**Cons:** ~30 mechanical edits with low risk; need to map each selector to the right role (some are ambiguous between `--fs-data` and `--fs-data-sm`, or `--fs-body` vs `--fs-tab`).
+
+**Depends on:** Nothing. Mechanical sweep, ~5–10 min.
+
+---
+
+## 13. Reconsider templates feature
+
+**What:** The Display tab offers four template presets (Default, With set name, Minimal, Custom) for the Telegram broadcast line. Question whether this configuration surface earns its keep, or whether a single editable string with `{artist}` / `{title}` / `{set_name}` tokens (no presets) would be just as good.
+
+**Why:** During the 2026-05-09 review the feature's purpose felt unclear. Most DJs probably never change the default. The presets add UI weight and the "With set name" preset surfaced an empty-state quirk (TODO 11). If real testers ignore the presets, simplification is the right call.
+
+**Decision path:**
+- (a) Keep as-is.
+- (b) Reduce to 1–2 presets + free-text custom.
+- (c) Drop presets; one editable string with token chips, that's it.
+
+**Depends on:** Tester feedback. Not an MVP problem — revisit after first round of testers tells us how they actually use it.
 
 ---
 
@@ -225,3 +259,43 @@ Surfaced by /qa on 2026-05-09. The "Toggle theme" button flips `documentElement.
 **Severity:** low — cosmetic, doesn't break anything.
 
 **Evidence:** `.gstack/qa-reports/qa-report-trackcast-app-2026-05-09.md` (ISSUE-003).
+
+---
+
+## 15. Logo rework — replace amber waveform bars with lowercase Geist "t" + green dot
+
+**What:** Replace the current "five amber waveform bars + green dot" mark with a lowercase amber `t` set in **Geist Medium**, on a sharp 6px-radius warm-black tile (`#0A0908`), with a solid green `#22C55E` dot at the tittle-of-i position (above-right of the t crossbar). Variant F from `~/.gstack/projects/thibaudbuild-trackcast/designs/logo-icon-20260509/board.html`.
+
+**Why:** Current waveform bars are a generic "audio app" signifier — overlaps visually with Spotify, Apple Podcasts, system EQ icons. Doesn't differentiate at dock size. The lowercase t monogram (a) makes the icon wear the product's name, (b) preserves the green broadcast dot which is the only distinctive element of the current mark, (c) doesn't collide with Traktor (capital, italicized, blocky) since ours is lowercase + tile-housed.
+
+**Decision recap (design-shotgun 2026-05-10):** Geist Medium beat IBM Plex Mono for the icon. Sharp 6px tile beat bare-on-warm-black. Solid dot beat glow halo.
+
+**DESIGN.md tension to resolve:** DESIGN.md says "monospace IS the identity" but Geist won the icon comparison. Cleanest resolution: **Geist for the brand mark + wordmark, IBM Plex Mono stays for app UI.** Many brands run a wordmark font separate from a UI font (Linear, Vercel). Update DESIGN.md to reflect this split before regenerating assets.
+
+**Asset replacement list:**
+- `assets/brand/logo-mark.png` — bare mark (just t + dot, no tile) for use in wordmark lockups
+- `assets/brand/logo.png` — full app icon (t + dot on 6px tile)
+- `assets/brand/logo-lockup-on-dark.png` — bare mark + Geist wordmark
+- `assets/brand/logo-lockup-on-light.png` — bare mark + Geist wordmark
+- `assets/brand/wordmark-geist-medium.svg` — already correct, keep as-is
+- New: `assets/brand/logo-mark.svg` — vector source-of-truth for all PNG exports
+- `apps/mac/icons/*` — Tauri Mac icon set (regenerate from `logo.png`)
+- `apps/windows/icons/*` — Tauri Windows icon set
+- `site/apple-touch-icon.png` and any favicons in `site/`
+
+**Pros:**
+- Distinctive at dock size (current bars blur into other audio apps)
+- Wears the product's name, not just its category
+- Preserves the green-dot "alive" signal
+- The existing `wordmark-geist-medium.svg` is now the correct file by accident
+
+**Cons:**
+- Asset regeneration touches both Tauri builds + the site
+- Requires updating DESIGN.md to acknowledge the Geist/Plex split
+- A future taste shift back to monospace would mean redoing this
+
+**Decision artifacts:**
+- Comparison board: `~/.gstack/projects/thibaudbuild-trackcast/designs/logo-icon-20260509/board.html`
+- Approved spec: `~/.gstack/projects/thibaudbuild-trackcast/designs/logo-icon-20260509/approved.json`
+
+**Depends on:** Nothing technical. Deferred post-MVP — purely a polish + branding pass once core product stabilizes.
