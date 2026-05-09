@@ -9,6 +9,9 @@
     />
     <title>TrackCast — Live tracklists for DJs</title>
 
+    <link rel="canonical" href="https://trackcast.xyz/" />
+    <meta name="theme-color" content="#0A0908" />
+
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://trackcast.xyz/" />
@@ -17,6 +20,9 @@
     <meta property="og:image" content="https://trackcast.xyz/og.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="TrackCast logo on dark background" />
+    <meta property="og:site_name" content="TrackCast" />
+    <meta property="og:locale" content="en_US" />
 
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -24,11 +30,26 @@
     <meta name="twitter:description" content="Your set list, live to Telegram. Every track you play, broadcast to your audience in real time." />
     <meta name="twitter:image" content="https://trackcast.xyz/og.png" />
 
-    <link
-      rel="icon"
-      href="./assets/brand/logo.png"
-      type="image/png"
-    />
+    <!-- Structured data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "TrackCast",
+      "url": "https://trackcast.xyz",
+      "description": "TrackCast posts every track you play to Telegram in real time. Your audience sees it the moment you drop it.",
+      "applicationCategory": "MultimediaApplication",
+      "operatingSystem": "macOS, Windows",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+
+    <link rel="icon" href="./assets/brand/logo.png" type="image/png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./styles.css" />
   </head>
