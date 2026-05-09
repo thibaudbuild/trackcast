@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TrackCast</title>
+    <link rel="icon" href="/assets/brand/logo.png" type="image/png" />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #0A0908;
+        --bg-1: #121110;
+        --amber: #E88010;
+        --green: #22C55E;
+        --text: #D8D4D0;
+        --text-mid: #888888;
+        --text-dim: #555555;
+        --border: #2A2824;
+        --radius: 6px;
+        --mono: "IBM Plex Mono", ui-monospace, monospace;
+      }
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      html, body {
+        height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--mono);
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0.02;
+        background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        background-size: 256px 256px;
+      }
+
+      /* Share page layout */
+
+      .share-page {
+        position: relative;
+        z-index: 1;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+      }
+
+      .share-mark {
+        width: 32px;
+        height: 32px;
+        margin-bottom: 48px;
+        opacity: 0.4;
+        transition: opacity 300ms ease-out;
+      }
+
+      .share-mark:hover { opacity: 0.7; }
+
+      .share-qr {
+        width: 260px;
+        height: 260px;
+        padding: 20px;
+        background: #ffffff;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 0.06),
+          0 24px 80px rgba(0, 0, 0, 0.5);
+        animation: fadeUp 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+
+      .share-qr svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      .share-handle {
+        margin-top: 32px;
+        font-size: 20px;
+        font-weight: 500;
+        color: var(--amber);
+        letter-spacing: -0.02em;
+        animation: fadeUp 600ms 100ms cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+
+      .share-link {
+        margin-top: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        color: var(--text-mid);
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        text-decoration: none;
+        transition: border-color 150ms ease-out, color 150ms ease-out, transform 150ms ease-out;
+        animation: fadeUp 600ms 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+
+      .share-link:hover {
+        color: var(--text);
+        border-color: var(--text-dim);
+        transform: translateY(-1px);
+      }
+
+      .share-link svg {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+      }
+
+      .share-footer {
+        position: absolute;
+        bottom: 24px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        animation: fadeUp 600ms 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+
+      .share-footer a {
+        color: var(--text-dim);
+        font-size: 11px;
+        font-weight: 400;
+        text-decoration: none;
+        letter-spacing: 0.02em;
+        transition: color 150ms ease-out;
+      }
+
+      .share-footer a:hover { color: var(--text-mid); }
+
+      /* Error / 404 state */
+
+      .error-page {
+        position: relative;
+        z-index: 1;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        text-align: center;
+      }
+
+      .error-page h1 {
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+        margin-bottom: 12px;
+      }
+
+      .error-page p {
+        color: var(--text-mid);
+        font-size: 14px;
+        font-weight: 300;
+        line-height: 1.5;
+        max-width: 360px;
+      }
+
+      .error-page a {
+        margin-top: 28px;
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 20px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        color: var(--text-mid);
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        text-decoration: none;
+        transition: border-color 150ms ease-out, color 150ms ease-out;
+      }
+
+      .error-page a:hover {
+        color: var(--text);
+        border-color: var(--text-dim);
+      }
+
+      /* Animation */
+
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      /* Print */
+
+      @media print {
+        body, html { background: #fff; }
+        body::before { display: none; }
+        .share-page { min-height: auto; padding: 60px 20px; }
+        .share-mark { opacity: 1; filter: brightness(0); }
+        .share-qr {
+          box-shadow: none;
+          border: 1px solid #ddd;
+        }
+        .share-handle { color: #000; }
+        .share-link, .share-footer { display: none; }
+        * { animation: none !important; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 1ms !important;
+          transition-duration: 1ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <script>
+      (function () {
+        var path = window.location.pathname;
+
+        // Match /@<username> — alphanumeric, underscores, 1-64 chars (Telegram rules)
+        var match = path.match(/^\/@([A-Za-z0-9_]{1,64})$/);
+
+        if (!match) {
+          // Not a valid share URL — show 404 or redirect
+          showError();
+          return;
+        }
+
+        var username = match[1];
+        var tgUrl = 'https://t.me/' + username;
+
+        // Set page title and OG
+        document.title = '@' + username + ' — TrackCast';
+
+        showShare(username, tgUrl);
+
+        function showShare(handle, url) {
+          // Generate QR code
+          var qr = qrcode(0, 'M');
+          qr.addData(url);
+          qr.make();
+
+          var moduleCount = qr.getModuleCount();
+          var cellSize = 10;
+          var size = moduleCount * cellSize;
+
+          // Build SVG path for filled modules
+          var d = '';
+          for (var row = 0; row < moduleCount; row++) {
+            for (var col = 0; col < moduleCount; col++) {
+              if (qr.isDark(row, col)) {
+                d += 'M' + (col * cellSize) + ',' + (row * cellSize) +
+                     'h' + cellSize + 'v' + cellSize + 'h-' + cellSize + 'z';
+              }
+            }
+          }
+
+          var svgQr =
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + size + ' ' + size + '">' +
+              '<path d="' + d + '" fill="#0A0908"/>' +
+            '</svg>';
+
+          document.getElementById('root').innerHTML =
+            '<div class="share-page">' +
+              '<a href="/" aria-label="TrackCast home">' +
+                '<img class="share-mark" src="/assets/brand/logo-mark.png" alt="" width="32" height="32" />' +
+              '</a>' +
+              '<div class="share-qr">' + svgQr + '</div>' +
+              '<div class="share-handle">@' + escapeHtml(handle) + '</div>' +
+              '<a class="share-link" href="' + url + '" target="_blank" rel="noopener">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+                  '<path d="M21.73 2.27a2.63 2.63 0 0 0-3.72 0l-2.4 2.4"/>' +
+                  '<path d="M18.6 5.4 9.4 14.6"/>' +
+                  '<path d="m14.07 6.53-1.27 1.27a2.63 2.63 0 0 0 0 3.72l0 0a2.63 2.63 0 0 0 3.72 0l1.27-1.27"/>' +
+                  '<path d="M2.27 21.73a2.63 2.63 0 0 0 3.72 0l2.4-2.4"/>' +
+                  '<path d="m9.93 17.47 1.27-1.27a2.63 2.63 0 0 0 0-3.72l0 0a2.63 2.63 0 0 0-3.72 0L6.21 13.75"/>' +
+                '</svg>' +
+                'Open in Telegram' +
+              '</a>' +
+              '<div class="share-footer">' +
+                '<a href="/">trackcast.xyz</a>' +
+              '</div>' +
+            '</div>';
+        }
+
+        function showError() {
+          document.getElementById('root').innerHTML =
+            '<div class="error-page">' +
+              '<h1>Page not found</h1>' +
+              '<p>This link doesn\u2019t point to a channel. Check the URL and try again.</p>' +
+              '<a href="/">Back to TrackCast</a>' +
+            '</div>';
+        }
+
+        function escapeHtml(str) {
+          var div = document.createElement('div');
+          div.appendChild(document.createTextNode(str));
+          return div.innerHTML;
+        }
+      })();
+    </script>
+  </body>
+</html>

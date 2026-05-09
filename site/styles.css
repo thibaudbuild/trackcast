@@ -1161,6 +1161,7 @@ h3 {
   letter-spacing: 0.2px;
 }
 
+.crowd-section,
 .flow-section {
   width: min(1180px, calc(100% - 40px));
   margin-inline: auto;
@@ -1168,6 +1169,7 @@ h3 {
   border-bottom: 1px solid var(--border-sub);
 }
 
+.crowd-section h2,
 .flow-section h2 {
   margin-top: 8px;
   font-size: clamp(28px, 4vw, 48px);
@@ -1566,6 +1568,7 @@ h3 {
     padding: 58px 0;
   }
 
+  .crowd-section,
   .flow-section,
   .builds-section,
   .contact-section,
