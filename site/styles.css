@@ -668,34 +668,42 @@ h2 {
 .app-log-r4 .app-log-artist { animation: logHighlight4 24s infinite; }
 .app-log-r5 .app-log-artist { animation: logHighlight5 24s infinite; }
 
+/* Rows expand height instantly (step-end) so the push-down is a snap,
+   then opacity fades the content in smoothly. */
+
 @keyframes logRow1 {
-  0%        { opacity: 0; border-bottom-color: transparent; }
-  2%, 91%   { opacity: 1; border-bottom-color: var(--border-sub); }
-  97%, 100% { opacity: 0; border-bottom-color: transparent; }
+  0%        { max-height: 0; padding: 0 14px; opacity: 0; border-bottom-color: transparent; }
+  1%        { max-height: 60px; padding: 8px 14px; opacity: 0; border-bottom-color: var(--border-sub); }
+  3%, 91%   { max-height: 60px; padding: 8px 14px; opacity: 1; border-bottom-color: var(--border-sub); }
+  97%, 100% { max-height: 0; padding: 0 14px; opacity: 0; border-bottom-color: transparent; }
 }
 
 @keyframes logRow2 {
-  0%, 19%   { opacity: 0; border-bottom-color: transparent; }
-  21%, 91%  { opacity: 1; border-bottom-color: var(--border-sub); }
-  97%, 100% { opacity: 0; border-bottom-color: transparent; }
+  0%, 19%   { max-height: 0; padding: 0 14px; opacity: 0; border-bottom-color: transparent; }
+  20%       { max-height: 60px; padding: 8px 14px; opacity: 0; border-bottom-color: var(--border-sub); }
+  22%, 91%  { max-height: 60px; padding: 8px 14px; opacity: 1; border-bottom-color: var(--border-sub); }
+  97%, 100% { max-height: 0; padding: 0 14px; opacity: 0; border-bottom-color: transparent; }
 }
 
 @keyframes logRow3 {
-  0%, 39%   { opacity: 0; border-bottom-color: transparent; }
-  41%, 91%  { opacity: 1; border-bottom-color: var(--border-sub); }
-  97%, 100% { opacity: 0; border-bottom-color: transparent; }
+  0%, 39%   { max-height: 0; padding: 0 14px; opacity: 0; border-bottom-color: transparent; }
+  40%       { max-height: 60px; padding: 8px 14px; opacity: 0; border-bottom-color: var(--border-sub); }
+  42%, 91%  { max-height: 60px; padding: 8px 14px; opacity: 1; border-bottom-color: var(--border-sub); }
+  97%, 100% { max-height: 0; padding: 0 14px; opacity: 0; border-bottom-color: transparent; }
 }
 
 @keyframes logRow4 {
-  0%, 59%   { opacity: 0; border-bottom-color: transparent; }
-  61%, 91%  { opacity: 1; border-bottom-color: var(--border-sub); }
-  97%, 100% { opacity: 0; border-bottom-color: transparent; }
+  0%, 59%   { max-height: 0; padding: 0 14px; opacity: 0; border-bottom-color: transparent; }
+  60%       { max-height: 60px; padding: 8px 14px; opacity: 0; border-bottom-color: var(--border-sub); }
+  62%, 91%  { max-height: 60px; padding: 8px 14px; opacity: 1; border-bottom-color: var(--border-sub); }
+  97%, 100% { max-height: 0; padding: 0 14px; opacity: 0; border-bottom-color: transparent; }
 }
 
 @keyframes logRow5 {
-  0%, 79%   { opacity: 0; border-bottom-color: transparent; }
-  81%, 91%  { opacity: 1; border-bottom-color: var(--border-sub); }
-  97%, 100% { opacity: 0; border-bottom-color: transparent; }
+  0%, 79%   { max-height: 0; padding: 0 14px; opacity: 0; border-bottom-color: transparent; }
+  80%       { max-height: 60px; padding: 8px 14px; opacity: 0; border-bottom-color: var(--border-sub); }
+  82%, 91%  { max-height: 60px; padding: 8px 14px; opacity: 1; border-bottom-color: var(--border-sub); }
+  97%, 100% { max-height: 0; padding: 0 14px; opacity: 0; border-bottom-color: transparent; }
 }
 
 @keyframes logHighlight1 {
