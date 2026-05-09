@@ -164,6 +164,16 @@ Branch: feat/telegram-public-private (merged to main 2026-05-08)
 
 ---
 
+## 7b. Contact section polish (site)
+
+**What:** The landing page contact section needs work. Current state is placeholder-level. Replace with either a working contact form (e.g. Formspree/Formspark, no backend needed) or accurate direct links (email, Telegram, socials). Also consider adding a shortcut to contact/support from within the desktop app itself (e.g. Help menu or Settings footer linking to the site contact page or opening a direct channel).
+
+**Why:** A landing page with a broken or vague contact section erodes trust. DJs evaluating the tool want to know there's a human behind it. An in-app shortcut reduces friction for users who hit a wall and need help.
+
+**Depends on:** Nothing -- can be done independently.
+
+---
+
 ## 8. History page — deferred polish
 
 Three items left over from the 2026-05-09 History pass that didn't make sense to ship until the data argues for them.
