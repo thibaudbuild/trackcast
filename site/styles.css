@@ -1198,6 +1198,40 @@ h3 {
   letter-spacing: 0.2px;
 }
 
+.hero-software {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.sw-pill {
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
+}
+
+.sw-pill.verified {
+  color: var(--green);
+  border-color: rgba(34, 197, 94, 0.3);
+  background: rgba(34, 197, 94, 0.06);
+}
+
+.sw-pill.supported {
+  color: var(--text-mid);
+  border-color: rgba(136, 136, 136, 0.3);
+}
+
+.sw-pill.beta {
+  color: var(--text-dim);
+  border-color: var(--border);
+}
+
 .crowd-section,
 .flow-section {
   width: min(1180px, calc(100% - 40px));
