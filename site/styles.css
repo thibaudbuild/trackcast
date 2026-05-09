@@ -669,38 +669,33 @@ h2 {
 .app-log-r5 .app-log-artist { animation: logHighlight5 24s infinite; }
 
 @keyframes logRow1 {
-  0%      { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
-  2%      { opacity: 1; max-height: 60px; padding: 8px 14px; border-bottom-color: var(--border-sub); }
-  91%     { opacity: 1; }
-  97%, 100% { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
+  0%        { opacity: 0; border-bottom-color: transparent; }
+  2%, 91%   { opacity: 1; border-bottom-color: var(--border-sub); }
+  97%, 100% { opacity: 0; border-bottom-color: transparent; }
 }
 
 @keyframes logRow2 {
-  0%, 17% { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
-  21%     { opacity: 1; max-height: 60px; padding: 8px 14px; border-bottom-color: var(--border-sub); }
-  91%     { opacity: 1; }
-  97%, 100% { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
+  0%, 19%   { opacity: 0; border-bottom-color: transparent; }
+  21%, 91%  { opacity: 1; border-bottom-color: var(--border-sub); }
+  97%, 100% { opacity: 0; border-bottom-color: transparent; }
 }
 
 @keyframes logRow3 {
-  0%, 37% { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
-  41%     { opacity: 1; max-height: 60px; padding: 8px 14px; border-bottom-color: var(--border-sub); }
-  91%     { opacity: 1; }
-  97%, 100% { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
+  0%, 39%   { opacity: 0; border-bottom-color: transparent; }
+  41%, 91%  { opacity: 1; border-bottom-color: var(--border-sub); }
+  97%, 100% { opacity: 0; border-bottom-color: transparent; }
 }
 
 @keyframes logRow4 {
-  0%, 57% { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
-  61%     { opacity: 1; max-height: 60px; padding: 8px 14px; border-bottom-color: var(--border-sub); }
-  91%     { opacity: 1; }
-  97%, 100% { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
+  0%, 59%   { opacity: 0; border-bottom-color: transparent; }
+  61%, 91%  { opacity: 1; border-bottom-color: var(--border-sub); }
+  97%, 100% { opacity: 0; border-bottom-color: transparent; }
 }
 
 @keyframes logRow5 {
-  0%, 77% { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
-  81%     { opacity: 1; max-height: 60px; padding: 8px 14px; border-bottom-color: var(--border-sub); }
-  91%     { opacity: 1; }
-  97%, 100% { opacity: 0; max-height: 0; padding: 0 14px; border-bottom-color: transparent; }
+  0%, 79%   { opacity: 0; border-bottom-color: transparent; }
+  81%, 91%  { opacity: 1; border-bottom-color: var(--border-sub); }
+  97%, 100% { opacity: 0; border-bottom-color: transparent; }
 }
 
 @keyframes logHighlight1 {
@@ -836,26 +831,26 @@ h2 {
 
 /* Scrollbar (DESIGN.md: 3px, transparent track, warm thumb) */
 
-.app-setlist::-webkit-scrollbar,
-.tg-chat::-webkit-scrollbar {
+.app-setlist::-webkit-scrollbar {
   width: 3px;
 }
 
-.app-setlist::-webkit-scrollbar-track,
-.tg-chat::-webkit-scrollbar-track {
+.app-setlist::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.app-setlist::-webkit-scrollbar-thumb,
-.tg-chat::-webkit-scrollbar-thumb {
+.app-setlist::-webkit-scrollbar-thumb {
   background: var(--border);
   border-radius: 9999px;
 }
 
-.app-setlist::-webkit-scrollbar-thumb:hover,
-.tg-chat::-webkit-scrollbar-thumb:hover {
+.app-setlist::-webkit-scrollbar-thumb:hover {
   background: var(--text-dim);
 }
+
+/* Hide scrollbar on Telegram mockup (non-interactive) */
+.tg-chat::-webkit-scrollbar { display: none; }
+.tg-chat { scrollbar-width: none; }
 
 .app-log-row {
   display: grid;
