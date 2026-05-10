@@ -159,6 +159,60 @@ iframe {
   align-items: stretch;
 }
 
+.hero-flank {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-dim);
+  opacity: 0.6;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.hero-flank-left {
+  right: 100%;
+}
+
+.hero-flank-right {
+  left: 100%;
+}
+
+.hero {
+  overflow-x: clip;
+}
+
+.hero-bg-figure {
+  position: absolute;
+  top: 50%;
+  pointer-events: none;
+  color: var(--text-dim);
+  opacity: 0.32;
+  z-index: 0;
+}
+
+.hero-bg-figure-left {
+  left: calc((100% - 100vw) / 2);
+  transform: translate(-50%, -50%);
+}
+
+.hero-bg-figure-right {
+  right: calc((100% - 100vw) / 2);
+  transform: translate(50%, -50%);
+}
+
+.hero-bg-figure-right svg {
+  transform: scaleX(-1);
+}
+
+@media (max-width: 1340px) {
+  .hero-flank { display: none; }
+}
+
+@media (max-width: 980px) {
+  .hero-bg-figure { display: none; }
+}
+
 .hero-meta {
   width: min(1180px, calc(100% - 40px));
   margin: clamp(36px, 5vw, 64px) auto 0;

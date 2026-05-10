@@ -1,0 +1,1267 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TrackCast — Icon sandbox</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0A0908;
+      --bg-1: #121110;
+      --text: #D8D4D0;
+      --text-mid: #888888;
+      --text-dim: #555555;
+      --border: #2A2824;
+      --amber: #E88010;
+      --mono: "IBM Plex Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      font-weight: 300;
+      padding: 64px 40px 120px;
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      margin: 0 0 6px;
+    }
+    .lead {
+      color: var(--text-mid);
+      font-size: 13px;
+      margin: 0 0 48px;
+      max-width: 640px;
+    }
+    h2 {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin: 56px 0 16px;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 16px;
+      max-width: 1080px;
+    }
+    .row.wide {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .cell {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 24px 12px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      background: var(--bg-1);
+    }
+    .stage {
+      height: 84px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+    }
+    .stage svg {
+      display: block;
+    }
+    .label {
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-mid);
+    }
+    .wire-stage {
+      width: 100%;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      color: var(--text-dim);
+    }
+    .wire-stage svg {
+      width: 100%;
+      height: 100%;
+    }
+    .ascii {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-dim);
+      white-space: pre;
+      line-height: 1.3;
+    }
+    .note {
+      color: var(--text-dim);
+      font-size: 11px;
+      margin-top: 8px;
+      max-width: 640px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Icon sandbox</h1>
+<p class="lead">Five variants per category. Pick the one that fits the landing's voice. The icons render in <code style="color:var(--text-mid)">var(--text-dim)</code> at sandbox scale (~48px) — they'll be smaller and ~65% opacity in production.</p>
+
+<!-- ============ DJ ============ -->
+<h2>DJ — 5 variants</h2>
+<div class="row">
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 1: Front-facing with headphones, filled body -->
+      <svg width="42" height="56" viewBox="0 0 42 56" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <path d="M5 22 Q5 8 21 8 Q37 8 37 22"/>
+        <rect x="3" y="20" width="6" height="10" rx="1.6" fill="currentColor" stroke="none"/>
+        <rect x="33" y="20" width="6" height="10" rx="1.6" fill="currentColor" stroke="none"/>
+        <circle cx="21" cy="22" r="7" fill="currentColor" stroke="none"/>
+        <path d="M7 56 Q7 32 21 32 Q35 32 35 56 Z" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
+    <div class="label">1 — Front, filled</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 2: Profile with headphones (side view) -->
+      <svg width="44" height="56" viewBox="0 0 44 56" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <!-- head profile -->
+        <path d="M22 8 Q34 8 34 20 Q34 26 30 28 L30 32 L20 32 Q14 32 14 26 Q14 18 18 14 Q20 8 22 8 Z" fill="currentColor" stroke="none"/>
+        <!-- single visible cup -->
+        <rect x="14" y="20" width="6" height="9" rx="1.6" fill="currentColor" stroke="none"/>
+        <!-- band arc -->
+        <path d="M17 18 Q22 6 30 8" stroke-width="1.6"/>
+        <!-- body -->
+        <path d="M10 56 Q10 36 22 36 Q34 36 34 56 Z" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
+    <div class="label">2 — Profile</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 3: DJ behind decks (full scene) -->
+      <svg width="56" height="56" viewBox="0 0 56 56" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <!-- head -->
+        <circle cx="28" cy="14" r="6" fill="currentColor" stroke="none"/>
+        <!-- headphones band -->
+        <path d="M20 14 Q20 6 28 6 Q36 6 36 14"/>
+        <!-- cups -->
+        <rect x="18" y="12" width="4" height="6" rx="1" fill="currentColor" stroke="none"/>
+        <rect x="34" y="12" width="4" height="6" rx="1" fill="currentColor" stroke="none"/>
+        <!-- shoulders -->
+        <path d="M14 36 Q14 22 28 22 Q42 22 42 36 Z" fill="currentColor" stroke="none"/>
+        <!-- mixer/deck rectangle -->
+        <rect x="4" y="38" width="48" height="12" rx="1.5"/>
+        <circle cx="14" cy="44" r="2" fill="currentColor" stroke="none"/>
+        <circle cx="42" cy="44" r="2" fill="currentColor" stroke="none"/>
+        <line x1="22" y1="42" x2="34" y2="42"/>
+        <line x1="22" y1="46" x2="34" y2="46"/>
+      </svg>
+    </div>
+    <div class="label">3 — Behind decks</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 4: Minimal head + prominent headphones -->
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+        <path d="M6 24 Q6 6 24 6 Q42 6 42 24"/>
+        <rect x="4" y="22" width="8" height="14" rx="2" fill="currentColor" stroke="none"/>
+        <rect x="36" y="22" width="8" height="14" rx="2" fill="currentColor" stroke="none"/>
+        <circle cx="24" cy="26" r="9" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
+    <div class="label">4 — Head only</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 5: DJ with raised arm -->
+      <svg width="44" height="56" viewBox="0 0 44 56" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <!-- head + headphones -->
+        <path d="M8 18 Q8 6 22 6 Q36 6 36 18"/>
+        <rect x="6" y="16" width="5" height="8" rx="1.4" fill="currentColor" stroke="none"/>
+        <rect x="33" y="16" width="5" height="8" rx="1.4" fill="currentColor" stroke="none"/>
+        <circle cx="22" cy="20" r="6" fill="currentColor" stroke="none"/>
+        <!-- body -->
+        <path d="M12 56 Q12 32 22 32 Q32 32 32 56 Z" fill="currentColor" stroke="none"/>
+        <!-- raised arm -->
+        <path d="M30 36 L40 12" stroke-width="3" stroke-linecap="round" stroke="currentColor"/>
+        <circle cx="40" cy="10" r="2.5" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
+    <div class="label">5 — Raised arm</div>
+  </div>
+
+</div>
+
+<!-- ============ LAPTOP ============ -->
+<h2>Laptop — 5 variants</h2>
+<div class="row">
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 1: Open straight-on, empty screen -->
+      <svg width="56" height="40" viewBox="0 0 56 40" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <rect x="6" y="4" width="44" height="26" rx="1.6"/>
+        <path d="M2 32 H54 L52 36 H4 Z" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
+    <div class="label">1 — Open, empty</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 2: With waveform on screen -->
+      <svg width="56" height="40" viewBox="0 0 56 40" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <rect x="6" y="4" width="44" height="26" rx="1.6"/>
+        <path d="M11 17 Q15 10 19 17 T27 17 T35 17 T43 17 T51 17" stroke-width="1.2" fill="none" transform="translate(-3 0)"/>
+        <path d="M2 32 H54 L52 36 H4 Z" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
+    <div class="label">2 — Waveform</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 3: Track list -->
+      <svg width="56" height="40" viewBox="0 0 56 40" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <rect x="6" y="4" width="44" height="26" rx="1.6"/>
+        <line x1="11" y1="11" x2="40" y2="11" stroke-width="1.2"/>
+        <line x1="11" y1="17" x2="36" y2="17" stroke-width="1.2"/>
+        <line x1="11" y1="23" x2="44" y2="23" stroke-width="1.2"/>
+        <path d="M2 32 H54 L52 36 H4 Z" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
+    <div class="label">3 — Track list</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 4: 3/4 perspective -->
+      <svg width="56" height="40" viewBox="0 0 56 40" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 6 L46 6 L50 28 L10 28 Z"/>
+        <path d="M4 30 L52 30 L56 36 L0 36 Z" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
+    <div class="label">4 — 3/4 angle</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 5: Closed slab -->
+      <svg width="56" height="14" viewBox="0 0 56 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <rect x="2" y="2" width="52" height="6" rx="1" fill="currentColor" stroke="none"/>
+        <path d="M0 9 H56 L54 13 H2 Z" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
+    <div class="label">5 — Closed</div>
+  </div>
+
+</div>
+
+<!-- ============ SOFTWARE ============ -->
+<h2>Software — 5 variants <span style="color:var(--text-dim);text-transform:none;letter-spacing:0;font-size:11px">(generic, no real logos)</span></h2>
+<div class="row">
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 1: App window with play -->
+      <svg width="48" height="40" viewBox="0 0 48 40" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <rect x="2" y="2" width="44" height="36" rx="3"/>
+        <line x1="2" y1="10" x2="46" y2="10"/>
+        <circle cx="6" cy="6" r="1" fill="currentColor" stroke="none"/>
+        <circle cx="10" cy="6" r="1" fill="currentColor" stroke="none"/>
+        <circle cx="14" cy="6" r="1" fill="currentColor" stroke="none"/>
+        <path d="M20 18 L20 30 L30 24 Z" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
+    <div class="label">1 — App + play</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 2: App window with waveform -->
+      <svg width="48" height="40" viewBox="0 0 48 40" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <rect x="2" y="2" width="44" height="36" rx="3"/>
+        <line x1="2" y1="10" x2="46" y2="10"/>
+        <circle cx="6" cy="6" r="1" fill="currentColor" stroke="none"/>
+        <circle cx="10" cy="6" r="1" fill="currentColor" stroke="none"/>
+        <path d="M6 24 L10 18 L14 28 L18 14 L22 30 L26 16 L30 26 L34 18 L38 24 L42 22" stroke-width="1.2"/>
+      </svg>
+    </div>
+    <div class="label">2 — App + wave</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 3: Vinyl/disc -->
+      <svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <circle cx="22" cy="22" r="20"/>
+        <circle cx="22" cy="22" r="14" stroke-width="1"/>
+        <circle cx="22" cy="22" r="9" stroke-width="1"/>
+        <circle cx="22" cy="22" r="3" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
+    <div class="label">3 — Vinyl</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 4: Stacked tracks -->
+      <svg width="48" height="40" viewBox="0 0 48 40" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <rect x="2" y="4" width="44" height="6" rx="1.5"/>
+        <rect x="2" y="14" width="32" height="6" rx="1.5"/>
+        <rect x="2" y="24" width="40" height="6" rx="1.5"/>
+        <rect x="2" y="34" width="28" height="6" rx="1.5"/>
+      </svg>
+    </div>
+    <div class="label">4 — Track stack</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 5: Equalizer bars -->
+      <svg width="44" height="40" viewBox="0 0 44 40" fill="none" stroke="currentColor" stroke-width="0" stroke-linecap="round">
+        <rect x="2" y="20" width="6" height="18" rx="1" fill="currentColor"/>
+        <rect x="11" y="10" width="6" height="28" rx="1" fill="currentColor"/>
+        <rect x="20" y="16" width="6" height="22" rx="1" fill="currentColor"/>
+        <rect x="29" y="4" width="6" height="34" rx="1" fill="currentColor"/>
+        <rect x="38" y="22" width="4" height="16" rx="1" fill="currentColor"/>
+      </svg>
+    </div>
+    <div class="label">5 — Equalizer</div>
+  </div>
+
+</div>
+
+<!-- ============ PHONE ============ -->
+<h2>Phone — 5 variants</h2>
+<div class="row">
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 1: Standard rounded phone with speaker line -->
+      <svg width="28" height="48" viewBox="0 0 28 48" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <rect x="2" y="2" width="24" height="44" rx="3"/>
+        <line x1="11" y1="6" x2="17" y2="6" stroke-width="1.2"/>
+        <circle cx="14" cy="42" r="1.5" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
+    <div class="label">1 — Standard</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 2: Phone with chat bubble inside -->
+      <svg width="28" height="48" viewBox="0 0 28 48" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="2" width="24" height="44" rx="3"/>
+        <line x1="11" y1="6" x2="17" y2="6" stroke-width="1.2"/>
+        <path d="M6 16 H22 V26 H14 L10 30 V26 H6 Z" stroke-width="1.2"/>
+      </svg>
+    </div>
+    <div class="label">2 — Chat bubble</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 3: Phone with signal arcs -->
+      <svg width="44" height="48" viewBox="0 0 44 48" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <rect x="10" y="2" width="24" height="44" rx="3"/>
+        <line x1="19" y1="6" x2="25" y2="6" stroke-width="1.2"/>
+        <path d="M6 14 Q3 22 6 30" stroke-width="1.2"/>
+        <path d="M2 12 Q-2 22 2 32" stroke-width="1.2"/>
+        <path d="M38 14 Q41 22 38 30" stroke-width="1.2"/>
+        <path d="M42 12 Q46 22 42 32" stroke-width="1.2"/>
+      </svg>
+    </div>
+    <div class="label">3 — Signal waves</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 4: Minimal outline -->
+      <svg width="28" height="48" viewBox="0 0 28 48" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <rect x="2" y="2" width="24" height="44" rx="4"/>
+      </svg>
+    </div>
+    <div class="label">4 — Minimal</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 5: Phone with notification dot -->
+      <svg width="32" height="48" viewBox="0 0 32 48" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <rect x="2" y="2" width="24" height="44" rx="3"/>
+        <line x1="11" y1="6" x2="17" y2="6" stroke-width="1.2"/>
+        <circle cx="26" cy="6" r="3" fill="var(--amber)" stroke="none"/>
+      </svg>
+    </div>
+    <div class="label">5 — Notification</div>
+  </div>
+
+</div>
+
+<!-- ============ PEOPLE ============ -->
+<h2>People — 5 variants</h2>
+<div class="row">
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 1: Head + shoulders silhouette -->
+      <svg width="40" height="48" viewBox="0 0 40 48" fill="currentColor" stroke="none">
+        <circle cx="20" cy="14" r="8"/>
+        <path d="M4 48 Q4 26 20 26 Q36 26 36 48 Z"/>
+      </svg>
+    </div>
+    <div class="label">1 — Head + body</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 2: Head only (filled circle) -->
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="currentColor" stroke="none">
+        <circle cx="20" cy="20" r="14"/>
+      </svg>
+    </div>
+    <div class="label">2 — Head only</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 3: Stick figure -->
+      <svg width="32" height="56" viewBox="0 0 32 56" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+        <circle cx="16" cy="8" r="5" fill="currentColor" stroke="none"/>
+        <line x1="16" y1="14" x2="16" y2="36"/>
+        <line x1="16" y1="20" x2="6" y2="28"/>
+        <line x1="16" y1="20" x2="26" y2="28"/>
+        <line x1="16" y1="36" x2="8" y2="52"/>
+        <line x1="16" y1="36" x2="24" y2="52"/>
+      </svg>
+    </div>
+    <div class="label">3 — Stick figure</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 4: Crowd cluster (3 overlapping heads + shoulders) -->
+      <svg width="64" height="48" viewBox="0 0 64 48" fill="currentColor" stroke="none">
+        <!-- back row faded -->
+        <circle cx="14" cy="18" r="6" opacity="0.55"/>
+        <circle cx="50" cy="18" r="6" opacity="0.55"/>
+        <path d="M2 48 Q2 30 14 30 Q26 30 26 48 Z" opacity="0.55"/>
+        <path d="M38 48 Q38 30 50 30 Q62 30 62 48 Z" opacity="0.55"/>
+        <!-- front center -->
+        <circle cx="32" cy="14" r="8"/>
+        <path d="M16 48 Q16 26 32 26 Q48 26 48 48 Z"/>
+      </svg>
+    </div>
+    <div class="label">4 — Crowd</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage">
+      <!-- 5: Person with raised arm -->
+      <svg width="40" height="56" viewBox="0 0 40 56" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+        <circle cx="20" cy="10" r="6" fill="currentColor" stroke="none"/>
+        <path d="M8 56 Q8 28 20 28 Q32 28 32 56 Z" fill="currentColor" stroke="none"/>
+        <!-- raised arm -->
+        <path d="M28 32 L36 8" stroke-width="3"/>
+        <circle cx="36" cy="6" r="2.5" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
+    <div class="label">5 — Raised arm</div>
+  </div>
+
+</div>
+
+<!-- ============ BIG DJ FIGURES ============ -->
+<h2>DJ silhouette — big figure (6 variants, headphone-focused)</h2>
+<p class="note">For the big half-cropped figure at viewport edge. All ~200×360 source size, displayed here at half scale. Variants 1–4 face front (different headphone styles), 5 is 3/4 right, 6 is full profile right.</p>
+
+<div class="row" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 1: Classic over-ear (current production) -->
+      <svg viewBox="0 0 200 360" width="100" height="180" fill="currentColor" style="color: var(--text-mid)">
+        <path d="M50 110 C 50 50, 150 50, 150 110" stroke="currentColor" stroke-width="14" fill="none" stroke-linecap="round"/>
+        <rect x="36" y="100" width="28" height="50" rx="10"/>
+        <rect x="136" y="100" width="28" height="50" rx="10"/>
+        <circle cx="100" cy="118" r="48"/>
+        <path d="M30 360 Q30 195 100 195 Q170 195 170 360 Z"/>
+      </svg>
+    </div>
+    <div class="label">1 — Classic over-ear</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 2: Studio chunky -->
+      <svg viewBox="0 0 200 360" width="100" height="180" fill="currentColor" style="color: var(--text-mid)">
+        <path d="M44 116 C 44 38, 156 38, 156 116" stroke="currentColor" stroke-width="20" fill="none" stroke-linecap="round"/>
+        <rect x="22" y="96" width="40" height="62" rx="14"/>
+        <rect x="138" y="96" width="40" height="62" rx="14"/>
+        <circle cx="100" cy="120" r="42"/>
+        <path d="M30 360 Q30 195 100 195 Q170 195 170 360 Z"/>
+      </svg>
+    </div>
+    <div class="label">2 — Studio chunky</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 3: Vintage round cups -->
+      <svg viewBox="0 0 200 360" width="100" height="180" fill="currentColor" style="color: var(--text-mid)">
+        <path d="M48 116 C 48 50, 152 50, 152 116" stroke="currentColor" stroke-width="12" fill="none" stroke-linecap="round"/>
+        <circle cx="48" cy="128" r="28"/>
+        <circle cx="152" cy="128" r="28"/>
+        <circle cx="100" cy="118" r="42"/>
+        <path d="M30 360 Q30 195 100 195 Q170 195 170 360 Z"/>
+      </svg>
+    </div>
+    <div class="label">3 — Vintage round</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 4: Modern slim minimal -->
+      <svg viewBox="0 0 200 360" width="100" height="180" fill="currentColor" style="color: var(--text-mid)">
+        <path d="M58 108 C 58 64, 142 64, 142 108" stroke="currentColor" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <rect x="44" y="104" width="20" height="38" rx="3"/>
+        <rect x="136" y="104" width="20" height="38" rx="3"/>
+        <circle cx="100" cy="116" r="46"/>
+        <path d="M30 360 Q30 195 100 195 Q170 195 170 360 Z"/>
+      </svg>
+    </div>
+    <div class="label">4 — Modern slim</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 5: 3/4 view right facing -->
+      <svg viewBox="0 0 200 360" width="100" height="180" fill="currentColor" style="color: var(--text-mid)">
+        <path d="M58 116 C 58 56, 152 50, 158 110" stroke="currentColor" stroke-width="14" fill="none" stroke-linecap="round"/>
+        <rect x="44" y="104" width="26" height="50" rx="10"/>
+        <rect x="146" y="100" width="20" height="50" rx="9"/>
+        <ellipse cx="106" cy="118" rx="48" ry="48"/>
+        <path d="M40 360 Q40 195 110 195 Q175 200 175 360 Z"/>
+      </svg>
+    </div>
+    <div class="label">5 — 3/4 facing right</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 6: Full profile right -->
+      <svg viewBox="0 0 200 360" width="100" height="180" fill="currentColor" style="color: var(--text-mid)">
+        <path d="M70 90 C 80 50, 138 52, 145 92" stroke="currentColor" stroke-width="12" fill="none" stroke-linecap="round"/>
+        <path d="M76 80
+                 C 110 72, 142 92, 148 120
+                 C 150 142, 140 162, 118 168
+                 C 96 172, 76 162, 70 140
+                 C 66 124, 66 100, 76 80 Z"/>
+        <ellipse cx="82" cy="125" rx="13" ry="22"/>
+        <path d="M55 360 Q55 200 100 200 Q150 200 155 360 Z"/>
+      </svg>
+    </div>
+    <div class="label">6 — Profile right</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 7: Profile right + chunky studio (full filled) -->
+      <svg viewBox="0 0 200 360" width="100" height="180" fill="currentColor" style="color: var(--text-mid)">
+        <path d="M50 360 Q50 200 100 200 Q145 200 150 360 Z"/>
+        <path d="M65 95 C 75 60, 130 60, 145 95 C 155 120, 150 155, 130 168 C 105 178, 78 170, 68 150 C 60 130, 60 110, 65 95 Z"/>
+        <path d="M68 92 C 80 38, 138 42, 148 92" stroke="currentColor" stroke-width="20" fill="none" stroke-linecap="round"/>
+        <rect x="54" y="108" width="36" height="58" rx="14"/>
+      </svg>
+    </div>
+    <div class="label">7 — Profile right, chunky</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 8: Profile right + round chunky cup -->
+      <svg viewBox="0 0 200 360" width="100" height="180" fill="currentColor" style="color: var(--text-mid)">
+        <path d="M50 360 Q50 200 100 200 Q145 200 150 360 Z"/>
+        <path d="M65 95 C 75 60, 130 60, 145 95 C 155 120, 150 155, 130 168 C 105 178, 78 170, 68 150 C 60 130, 60 110, 65 95 Z"/>
+        <path d="M68 92 C 80 38, 138 42, 148 92" stroke="currentColor" stroke-width="22" fill="none" stroke-linecap="round"/>
+        <circle cx="74" cy="134" r="32"/>
+      </svg>
+    </div>
+    <div class="label">8 — Profile, round cup</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 9: Profile right + NEGATIVE cup (hole through head) -->
+      <svg viewBox="0 0 200 360" width="100" height="180" fill="currentColor" style="color: var(--text-mid)">
+        <path d="M50 360 Q50 200 100 200 Q145 200 150 360 Z"/>
+        <path fill-rule="evenodd" d="M65 95 C 75 60, 130 60, 145 95 C 155 120, 150 155, 130 168 C 105 178, 78 170, 68 150 C 60 130, 60 110, 65 95 Z M68 116 C 68 109, 73 104, 80 104 L92 104 C 99 104, 104 109, 104 116 L104 156 C 104 163, 99 168, 92 168 L80 168 C 73 168, 68 163, 68 156 Z"/>
+        <path d="M68 92 C 80 38, 138 42, 148 92" stroke="currentColor" stroke-width="20" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="label">9 — Profile, negative cup</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 10: Profile right + hollow head + filled chunky headphones -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M50 360 Q50 200 100 200 Q145 200 150 360 Z" fill="currentColor"/>
+        <path d="M65 95 C 75 60, 130 60, 145 95 C 155 120, 150 155, 130 168 C 105 178, 78 170, 68 150 C 60 130, 60 110, 65 95 Z" fill="none" stroke="currentColor" stroke-width="5"/>
+        <path d="M68 92 C 80 38, 138 42, 148 92" stroke="currentColor" stroke-width="20" fill="none" stroke-linecap="round"/>
+        <rect x="54" y="108" width="36" height="58" rx="14" fill="currentColor"/>
+      </svg>
+    </div>
+    <div class="label">10 — Profile, hollow head</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 11: Profile right + outlined cup only (negative cup contour) -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M50 360 Q50 200 100 200 Q145 200 150 360 Z" fill="currentColor"/>
+        <path d="M65 95 C 75 60, 130 60, 145 95 C 155 120, 150 155, 130 168 C 105 178, 78 170, 68 150 C 60 130, 60 110, 65 95 Z" fill="currentColor"/>
+        <path d="M68 92 C 80 38, 138 42, 148 92" stroke="currentColor" stroke-width="20" fill="none" stroke-linecap="round"/>
+        <rect x="54" y="108" width="36" height="58" rx="14" fill="none" stroke="currentColor" stroke-width="5"/>
+      </svg>
+    </div>
+    <div class="label">11 — Profile, outlined cup</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 12: Both outlined thin (hairline cup + hairline band) -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M50 360 Q50 200 100 200 Q145 200 150 360 Z" fill="currentColor"/>
+        <path d="M65 95 C 75 60, 130 60, 145 95 C 155 120, 150 155, 130 168 C 105 178, 78 170, 68 150 C 60 130, 60 110, 65 95 Z" fill="currentColor"/>
+        <path d="M68 92 C 80 38, 138 42, 148 92" stroke="currentColor" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <rect x="54" y="108" width="36" height="58" rx="14" fill="none" stroke="currentColor" stroke-width="5"/>
+      </svg>
+    </div>
+    <div class="label">12 — Both thin outlined</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 13: Cup hole + tube band (both true negative, hollow) -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M50 360 Q50 200 100 200 Q145 200 150 360 Z" fill="currentColor"/>
+        <path fill-rule="evenodd" d="M65 95 C 75 60, 130 60, 145 95 C 155 120, 150 155, 130 168 C 105 178, 78 170, 68 150 C 60 130, 60 110, 65 95 Z M68 116 C 68 109, 73 104, 80 104 L92 104 C 99 104, 104 109, 104 116 L104 156 C 104 163, 99 168, 92 168 L80 168 C 73 168, 68 163, 68 156 Z" fill="currentColor"/>
+        <path d="M68 92 C 80 38, 138 42, 148 92" stroke="currentColor" stroke-width="22" fill="none" stroke-linecap="round"/>
+        <path d="M68 92 C 80 38, 138 42, 148 92" stroke="var(--bg-1)" stroke-width="12" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="label">13 — Cup hole + tube band</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 14: Tube cup + tube band (both visible thickness, both hollow) -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M50 360 Q50 200 100 200 Q145 200 150 360 Z" fill="currentColor"/>
+        <path d="M65 95 C 75 60, 130 60, 145 95 C 155 120, 150 155, 130 168 C 105 178, 78 170, 68 150 C 60 130, 60 110, 65 95 Z" fill="currentColor"/>
+        <path d="M68 92 C 80 38, 138 42, 148 92" stroke="currentColor" stroke-width="22" fill="none" stroke-linecap="round"/>
+        <path d="M68 92 C 80 38, 138 42, 148 92" stroke="var(--bg-1)" stroke-width="12" fill="none" stroke-linecap="round"/>
+        <rect x="50" y="104" width="40" height="62" rx="14" fill="currentColor"/>
+        <rect x="58" y="112" width="24" height="46" rx="8" fill="var(--bg-1)"/>
+      </svg>
+    </div>
+    <div class="label">14 — Tube cup + tube band</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 15: Cup hole + thin outlined band (cup deep negative, band hairline) -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M50 360 Q50 200 100 200 Q145 200 150 360 Z" fill="currentColor"/>
+        <path fill-rule="evenodd" d="M65 95 C 75 60, 130 60, 145 95 C 155 120, 150 155, 130 168 C 105 178, 78 170, 68 150 C 60 130, 60 110, 65 95 Z M68 116 C 68 109, 73 104, 80 104 L92 104 C 99 104, 104 109, 104 116 L104 156 C 104 163, 99 168, 92 168 L80 168 C 73 168, 68 163, 68 156 Z" fill="currentColor"/>
+        <path d="M68 92 C 80 38, 138 42, 148 92" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="label">15 — Cup hole + hairline band</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 16: Repositioned profile (cup in visible-right zone) + cup hole + tube band -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M70 360 Q70 200 120 200 Q170 200 170 360 Z" fill="currentColor"/>
+        <path fill-rule="evenodd" d="M88 75 C 106 56, 134 56, 150 65 C 162 72, 170 92, 172 118 C 171 142, 163 160, 148 168 C 130 174, 110 172, 96 165 C 83 158, 76 142, 76 118 C 76 98, 80 82, 88 75 Z M114 116 C 114 109, 119 104, 126 104 L 138 104 C 145 104, 150 109, 150 116 L 150 156 C 150 163, 145 168, 138 168 L 126 168 C 119 168, 114 163, 114 156 Z" fill="currentColor"/>
+        <path d="M86 88 C 102 38, 156 42, 168 92" stroke="currentColor" stroke-width="22" fill="none" stroke-linecap="round"/>
+        <path d="M86 88 C 102 38, 156 42, 168 92" stroke="var(--bg-1)" stroke-width="12" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="label">16 — Cup hole right + tube band</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 17: Repositioned profile + tube cup at ear + outlined band -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M70 360 Q70 200 120 200 Q170 200 170 360 Z" fill="currentColor"/>
+        <path d="M88 75 C 106 56, 134 56, 150 65 C 162 72, 170 92, 172 118 C 171 142, 163 160, 148 168 C 130 174, 110 172, 96 165 C 83 158, 76 142, 76 118 C 76 98, 80 82, 88 75 Z" fill="currentColor"/>
+        <path d="M86 88 C 102 38, 156 42, 168 92" stroke="currentColor" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <rect x="110" y="104" width="40" height="64" rx="14" fill="currentColor"/>
+        <rect x="118" y="112" width="24" height="48" rx="8" fill="var(--bg-1)"/>
+      </svg>
+    </div>
+    <div class="label">17 — Tube cup right + thin band</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 18: Repositioned profile + cup hole + hairline band -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M70 360 Q70 200 120 200 Q170 200 170 360 Z" fill="currentColor"/>
+        <path fill-rule="evenodd" d="M88 75 C 106 56, 134 56, 150 65 C 162 72, 170 92, 172 118 C 171 142, 163 160, 148 168 C 130 174, 110 172, 96 165 C 83 158, 76 142, 76 118 C 76 98, 80 82, 88 75 Z M114 116 C 114 109, 119 104, 126 104 L 138 104 C 145 104, 150 109, 150 116 L 150 156 C 150 163, 145 168, 138 168 L 126 168 C 119 168, 114 163, 114 156 Z" fill="currentColor"/>
+        <path d="M86 88 C 102 38, 156 42, 168 92" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="label">18 — Cup hole right + hairline</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 19: Slight 3/4 (less profile, more visible head) + cup hole + tube band -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M65 360 Q65 200 120 200 Q175 200 175 360 Z" fill="currentColor"/>
+        <path fill-rule="evenodd" d="M82 78 C 100 58, 138 58, 158 70 C 168 78, 174 96, 174 120 C 174 144, 166 162, 152 170 C 132 178, 108 175, 92 168 C 78 160, 70 142, 70 118 C 70 98, 74 84, 82 78 Z M118 116 C 118 109, 123 104, 130 104 L 142 104 C 149 104, 154 109, 154 116 L 154 156 C 154 163, 149 168, 142 168 L 130 168 C 123 168, 118 163, 118 156 Z" fill="currentColor"/>
+        <path d="M82 90 C 100 38, 162 42, 174 92" stroke="currentColor" stroke-width="22" fill="none" stroke-linecap="round"/>
+        <path d="M82 90 C 100 38, 162 42, 174 92" stroke="var(--bg-1)" stroke-width="12" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="label">19 — Slight 3/4 + cup hole</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 20: 95% profile + round cup hole (medium) + tube band -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M75 360 Q75 200 122 200 Q168 200 168 360 Z" fill="currentColor"/>
+        <path fill-rule="evenodd" d="M92 75 C 102 56, 128 56, 140 62 C 152 68, 158 88, 158 116 C 158 140, 152 158, 140 166 C 124 172, 108 170, 96 162 C 84 154, 80 138, 80 116 C 80 96, 84 82, 92 75 Z M125 132 m -22 0 a 22 22 0 1 0 44 0 a 22 22 0 1 0 -44 0" fill="currentColor"/>
+        <path d="M96 86 C 116 44, 152 46, 160 90" stroke="currentColor" stroke-width="22" fill="none" stroke-linecap="round"/>
+        <path d="M96 86 C 116 44, 152 46, 160 90" stroke="var(--bg-1)" stroke-width="12" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="label">20 — 95° + round hole + tube band</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 21: 95% profile + round cup ring (chunky outlined) + outlined band -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M75 360 Q75 200 122 200 Q168 200 168 360 Z" fill="currentColor"/>
+        <path d="M92 75 C 102 56, 128 56, 140 62 C 152 68, 158 88, 158 116 C 158 140, 152 158, 140 166 C 124 172, 108 170, 96 162 C 84 154, 80 138, 80 116 C 80 96, 84 82, 92 75 Z" fill="currentColor"/>
+        <path d="M96 86 C 116 44, 152 46, 160 90" stroke="currentColor" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <circle cx="125" cy="132" r="24" fill="currentColor"/>
+        <circle cx="125" cy="132" r="14" fill="var(--bg-1)"/>
+      </svg>
+    </div>
+    <div class="label">21 — 95° + ring cup + thin band</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 22: 95% profile + round cup hole + hairline band -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M75 360 Q75 200 122 200 Q168 200 168 360 Z" fill="currentColor"/>
+        <path fill-rule="evenodd" d="M92 75 C 102 56, 128 56, 140 62 C 152 68, 158 88, 158 116 C 158 140, 152 158, 140 166 C 124 172, 108 170, 96 162 C 84 154, 80 138, 80 116 C 80 96, 84 82, 92 75 Z M125 132 m -22 0 a 22 22 0 1 0 44 0 a 22 22 0 1 0 -44 0" fill="currentColor"/>
+        <path d="M96 86 C 116 44, 152 46, 160 90" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="label">22 — 95° + round hole + hairline</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 23: 95% profile + LARGER round cup hole + tube band -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M75 360 Q75 200 122 200 Q168 200 168 360 Z" fill="currentColor"/>
+        <path fill-rule="evenodd" d="M92 75 C 102 56, 128 56, 140 62 C 152 68, 158 88, 158 116 C 158 140, 152 158, 140 166 C 124 172, 108 170, 96 162 C 84 154, 80 138, 80 116 C 80 96, 84 82, 92 75 Z M125 132 m -30 0 a 30 30 0 1 0 60 0 a 30 30 0 1 0 -60 0" fill="currentColor"/>
+        <path d="M96 86 C 116 44, 152 46, 160 90" stroke="currentColor" stroke-width="22" fill="none" stroke-linecap="round"/>
+        <path d="M96 86 C 116 44, 152 46, 160 90" stroke="var(--bg-1)" stroke-width="12" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="label">23 — 95° + big round hole + tube</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 24: 23-style + tube band connecting cup top → back of head -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M75 360 Q75 200 122 200 Q168 200 168 360 Z" fill="currentColor"/>
+        <path fill-rule="evenodd" d="M92 75 C 102 56, 128 56, 140 62 C 152 68, 158 88, 158 116 C 158 140, 152 158, 140 166 C 124 172, 108 170, 96 162 C 84 154, 80 138, 80 116 C 80 96, 84 82, 92 75 Z M125 132 m -30 0 a 30 30 0 1 0 60 0 a 30 30 0 1 0 -60 0" fill="currentColor"/>
+        <path d="M125 102 C 145 60, 96 48, 88 78" stroke="currentColor" stroke-width="22" fill="none" stroke-linecap="round"/>
+        <path d="M125 102 C 145 60, 96 48, 88 78" stroke="var(--bg-1)" stroke-width="12" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="label">24 — Tube connects cup ↔ head</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 25: 23-style + medium cup + tube band connecting cleanly -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M75 360 Q75 200 122 200 Q168 200 168 360 Z" fill="currentColor"/>
+        <path fill-rule="evenodd" d="M92 75 C 102 56, 128 56, 140 62 C 152 68, 158 88, 158 116 C 158 140, 152 158, 140 166 C 124 172, 108 170, 96 162 C 84 154, 80 138, 80 116 C 80 96, 84 82, 92 75 Z M125 132 m -26 0 a 26 26 0 1 0 52 0 a 26 26 0 1 0 -52 0" fill="currentColor"/>
+        <path d="M125 106 C 145 64, 96 50, 88 78" stroke="currentColor" stroke-width="22" fill="none" stroke-linecap="round"/>
+        <path d="M125 106 C 145 64, 96 50, 88 78" stroke="var(--bg-1)" stroke-width="12" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="label">25 — Medium cup, tube connects</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 26: 23-style big cup + thick filled band (not tube), clean connection -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M75 360 Q75 200 122 200 Q168 200 168 360 Z" fill="currentColor"/>
+        <path fill-rule="evenodd" d="M92 75 C 102 56, 128 56, 140 62 C 152 68, 158 88, 158 116 C 158 140, 152 158, 140 166 C 124 172, 108 170, 96 162 C 84 154, 80 138, 80 116 C 80 96, 84 82, 92 75 Z M125 132 m -30 0 a 30 30 0 1 0 60 0 a 30 30 0 1 0 -60 0" fill="currentColor"/>
+        <path d="M125 102 C 145 60, 96 48, 88 78" stroke="currentColor" stroke-width="14" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="label">26 — Big cup + solid band</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 27: 23-style big cup + tube band wrapping further down behind head -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M75 360 Q75 200 122 200 Q168 200 168 360 Z" fill="currentColor"/>
+        <path fill-rule="evenodd" d="M92 75 C 102 56, 128 56, 140 62 C 152 68, 158 88, 158 116 C 158 140, 152 158, 140 166 C 124 172, 108 170, 96 162 C 84 154, 80 138, 80 116 C 80 96, 84 82, 92 75 Z M125 132 m -30 0 a 30 30 0 1 0 60 0 a 30 30 0 1 0 -60 0" fill="currentColor"/>
+        <path d="M125 102 C 152 56, 92 44, 84 102" stroke="currentColor" stroke-width="22" fill="none" stroke-linecap="round"/>
+        <path d="M125 102 C 152 56, 92 44, 84 102" stroke="var(--bg-1)" stroke-width="12" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="label">27 — Tube wraps behind head</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 28: Bar band hugs skull from cup → back of head -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M75 360 Q75 200 122 200 Q168 200 168 360 Z" fill="currentColor"/>
+        <path fill-rule="evenodd" d="M92 75 C 102 56, 128 56, 140 62 C 152 68, 158 88, 158 116 C 158 140, 152 158, 140 166 C 124 172, 108 170, 96 162 C 84 154, 80 138, 80 116 C 80 96, 84 82, 92 75 Z M125 132 m -30 0 a 30 30 0 1 0 60 0 a 30 30 0 1 0 -60 0" fill="currentColor"/>
+        <path d="M125 102 C 132 86, 128 66, 118 58 C 108 52, 94 58, 88 78" stroke="currentColor" stroke-width="22" fill="none" stroke-linecap="round"/>
+        <path d="M125 102 C 132 86, 128 66, 118 58 C 108 52, 94 58, 88 78" stroke="var(--bg-1)" stroke-width="12" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="label">28 — Skull-hugging tube bar</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 29: Bar band, solid (no tube), hugging skull -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M75 360 Q75 200 122 200 Q168 200 168 360 Z" fill="currentColor"/>
+        <path fill-rule="evenodd" d="M92 75 C 102 56, 128 56, 140 62 C 152 68, 158 88, 158 116 C 158 140, 152 158, 140 166 C 124 172, 108 170, 96 162 C 84 154, 80 138, 80 116 C 80 96, 84 82, 92 75 Z M125 132 m -30 0 a 30 30 0 1 0 60 0 a 30 30 0 1 0 -60 0" fill="currentColor"/>
+        <path d="M125 102 C 132 86, 128 66, 118 58 C 108 52, 94 58, 88 78" stroke="currentColor" stroke-width="14" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="label">29 — Skull-hugging solid bar</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 30: Bar band, double-line (band edges), hugging skull -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M75 360 Q75 200 122 200 Q168 200 168 360 Z" fill="currentColor"/>
+        <path fill-rule="evenodd" d="M92 75 C 102 56, 128 56, 140 62 C 152 68, 158 88, 158 116 C 158 140, 152 158, 140 166 C 124 172, 108 170, 96 162 C 84 154, 80 138, 80 116 C 80 96, 84 82, 92 75 Z M125 132 m -30 0 a 30 30 0 1 0 60 0 a 30 30 0 1 0 -60 0" fill="currentColor"/>
+        <path d="M132 102 C 138 86, 134 66, 124 58 C 114 52, 100 58, 94 78" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M118 102 C 124 88, 122 70, 112 62 C 102 56, 90 62, 84 78" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="label">30 — Double-line band edges</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 31: Bar band with cushion top (thicker over top of skull, narrower at cup) -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M75 360 Q75 200 122 200 Q168 200 168 360 Z" fill="currentColor"/>
+        <path fill-rule="evenodd" d="M92 75 C 102 56, 128 56, 140 62 C 152 68, 158 88, 158 116 C 158 140, 152 158, 140 166 C 124 172, 108 170, 96 162 C 84 154, 80 138, 80 116 C 80 96, 84 82, 92 75 Z M125 132 m -30 0 a 30 30 0 1 0 60 0 a 30 30 0 1 0 -60 0" fill="currentColor"/>
+        <!-- Bar with bulge over skull top -->
+        <path d="M125 102 C 130 88, 138 76, 126 60 C 116 50, 96 50, 86 64 C 80 74, 86 80, 88 78" fill="currentColor"/>
+        <!-- Inner bg cut to make it look hollow tube -->
+        <path d="M125 110 C 128 96, 132 80, 122 68 C 114 60, 100 60, 94 70 C 92 74, 96 76, 98 76" fill="var(--bg-1)"/>
+      </svg>
+    </div>
+    <div class="label">31 — Padded bar (cushion top)</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 32: V26 wide-arc, outline-negative (top + bottom edges only) -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M75 360 Q75 200 122 200 Q168 200 168 360 Z" fill="currentColor"/>
+        <path fill-rule="evenodd" d="M92 75 C 102 56, 128 56, 140 62 C 152 68, 158 88, 158 116 C 158 140, 152 158, 140 166 C 124 172, 108 170, 96 162 C 84 154, 80 138, 80 116 C 80 96, 84 82, 92 75 Z M125 132 m -30 0 a 30 30 0 1 0 60 0 a 30 30 0 1 0 -60 0" fill="currentColor"/>
+        <path d="M132 100 C 154 56, 100 38, 84 72" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M118 104 C 138 68, 96 56, 94 84" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="label">32 — V26 outlined arc</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 33: V26 wide-arc, outline-negative chunkier (thicker edges) -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M75 360 Q75 200 122 200 Q168 200 168 360 Z" fill="currentColor"/>
+        <path fill-rule="evenodd" d="M92 75 C 102 56, 128 56, 140 62 C 152 68, 158 88, 158 116 C 158 140, 152 158, 140 166 C 124 172, 108 170, 96 162 C 84 154, 80 138, 80 116 C 80 96, 84 82, 92 75 Z M125 132 m -30 0 a 30 30 0 1 0 60 0 a 30 30 0 1 0 -60 0" fill="currentColor"/>
+        <path d="M134 98 C 158 52, 96 32, 80 70" stroke="currentColor" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M116 106 C 134 72, 100 60, 96 86" stroke="currentColor" stroke-width="5" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="label">33 — V26 outlined arc, chunkier</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 34: V29 skull-hugging, outline-negative (clean parallel edges) -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M75 360 Q75 200 122 200 Q168 200 168 360 Z" fill="currentColor"/>
+        <path fill-rule="evenodd" d="M92 75 C 102 56, 128 56, 140 62 C 152 68, 158 88, 158 116 C 158 140, 152 158, 140 166 C 124 172, 108 170, 96 162 C 84 154, 80 138, 80 116 C 80 96, 84 82, 92 75 Z M125 132 m -30 0 a 30 30 0 1 0 60 0 a 30 30 0 1 0 -60 0" fill="currentColor"/>
+        <path d="M132 102 C 140 86, 136 64, 124 54 C 112 48, 96 54, 90 76" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M118 102 C 124 88, 120 70, 110 62 C 102 56, 90 62, 86 78" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="label">34 — V29 outlined skull-hug</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 35: V29 skull-hugging, outline-negative chunkier -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M75 360 Q75 200 122 200 Q168 200 168 360 Z" fill="currentColor"/>
+        <path fill-rule="evenodd" d="M92 75 C 102 56, 128 56, 140 62 C 152 68, 158 88, 158 116 C 158 140, 152 158, 140 166 C 124 172, 108 170, 96 162 C 84 154, 80 138, 80 116 C 80 96, 84 82, 92 75 Z M125 132 m -30 0 a 30 30 0 1 0 60 0 a 30 30 0 1 0 -60 0" fill="currentColor"/>
+        <path d="M134 100 C 144 84, 140 60, 126 50 C 110 44, 92 52, 86 78" stroke="currentColor" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M116 104 C 122 90, 118 72, 108 64 C 100 58, 90 64, 88 80" stroke="currentColor" stroke-width="5" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="label">35 — V29 outlined skull-hug, chunkier</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 36: V31 padded bar with rounder head shape -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M70 360 Q70 200 122 200 Q172 200 172 360 Z" fill="currentColor"/>
+        <path fill-rule="evenodd" d="M86 78 C 102 56, 138 56, 154 66 C 166 74, 174 96, 174 122 C 174 146, 166 162, 152 170 C 132 176, 108 174, 92 166 C 80 158, 74 142, 74 118 C 74 96, 78 82, 86 78 Z M127 134 m -30 0 a 30 30 0 1 0 60 0 a 30 30 0 1 0 -60 0" fill="currentColor"/>
+        <path d="M127 104 C 134 88, 142 76, 130 58 C 118 48, 94 48, 84 64 C 78 74, 84 80, 86 78" fill="currentColor"/>
+        <path d="M127 112 C 132 96, 136 80, 124 68 C 116 60, 100 60, 94 70 C 92 74, 96 76, 98 76" fill="var(--bg-1)"/>
+      </svg>
+    </div>
+    <div class="label">36 — V31 + rounder head</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- 37: V31 padded bar with even rounder head + cleaner cushion -->
+      <svg viewBox="0 0 200 360" width="100" height="180" style="color: var(--text-mid)">
+        <path d="M68 360 Q68 200 124 200 Q176 200 176 360 Z" fill="currentColor"/>
+        <path fill-rule="evenodd" d="M84 78 C 102 56, 144 54, 160 66 C 172 76, 178 100, 178 124 C 178 148, 168 164, 152 172 C 130 178, 106 174, 90 166 C 76 156, 72 138, 72 116 C 72 94, 78 80, 84 78 Z M129 134 m -30 0 a 30 30 0 1 0 60 0 a 30 30 0 1 0 -60 0" fill="currentColor"/>
+        <path d="M129 104 C 138 86, 146 70, 132 56 C 118 46, 92 48, 82 64 C 76 74, 84 80, 86 78" fill="currentColor"/>
+        <path d="M129 112 C 134 94, 138 78, 124 66 C 114 58, 96 60, 90 70 C 88 74, 94 76, 96 76" fill="var(--bg-1)"/>
+      </svg>
+    </div>
+    <div class="label">37 — Even rounder head + V31</div>
+  </div>
+
+</div>
+
+<!-- ============ DJ + PERSON BODY ITERATIONS ============ -->
+<h2>Body iterations — V36 base (DJ on top row, Person on bottom row, paired by column)</h2>
+<p class="note">Variations on V36's body: head closer to body, wider body, narrower body, pronounced shoulders. Persons match the same body shapes minus headphones.</p>
+
+<div class="row" style="grid-template-columns: repeat(5, minmax(0, 1fr));">
+
+  <!-- DJ row -->
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- D1: V36 base, head closer to body (body top y=180) -->
+      <svg viewBox="0 0 200 360" width="100" height="180" fill="currentColor" style="color: var(--text-mid)">
+        <path d="M70 360 Q70 180 122 180 Q172 180 172 360 Z"/>
+        <path fill-rule="evenodd" d="M86 78 C 102 56, 138 56, 154 66 C 166 74, 174 96, 174 122 C 174 146, 166 162, 152 170 C 132 176, 108 174, 92 166 C 80 158, 74 142, 74 118 C 74 96, 78 82, 86 78 Z M127 134 m -30 0 a 30 30 0 1 0 60 0 a 30 30 0 1 0 -60 0"/>
+        <path d="M127 104 C 134 88, 142 76, 130 58 C 118 48, 94 48, 84 64 C 78 74, 84 80, 86 78"/>
+        <path d="M127 112 C 132 96, 136 80, 124 68 C 116 60, 100 60, 94 70 C 92 74, 96 76, 98 76" fill="var(--bg-1)"/>
+      </svg>
+    </div>
+    <div class="label">D1 — Closer head/body</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- D2: V36 with wider body -->
+      <svg viewBox="0 0 200 360" width="100" height="180" fill="currentColor" style="color: var(--text-mid)">
+        <path d="M50 360 Q50 200 122 200 Q194 200 194 360 Z"/>
+        <path fill-rule="evenodd" d="M86 78 C 102 56, 138 56, 154 66 C 166 74, 174 96, 174 122 C 174 146, 166 162, 152 170 C 132 176, 108 174, 92 166 C 80 158, 74 142, 74 118 C 74 96, 78 82, 86 78 Z M127 134 m -30 0 a 30 30 0 1 0 60 0 a 30 30 0 1 0 -60 0"/>
+        <path d="M127 104 C 134 88, 142 76, 130 58 C 118 48, 94 48, 84 64 C 78 74, 84 80, 86 78"/>
+        <path d="M127 112 C 132 96, 136 80, 124 68 C 116 60, 100 60, 94 70 C 92 74, 96 76, 98 76" fill="var(--bg-1)"/>
+      </svg>
+    </div>
+    <div class="label">D2 — Wider body</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- D3: V36 closer + wider -->
+      <svg viewBox="0 0 200 360" width="100" height="180" fill="currentColor" style="color: var(--text-mid)">
+        <path d="M50 360 Q50 175 122 175 Q194 175 194 360 Z"/>
+        <path fill-rule="evenodd" d="M86 78 C 102 56, 138 56, 154 66 C 166 74, 174 96, 174 122 C 174 146, 166 162, 152 170 C 132 176, 108 174, 92 166 C 80 158, 74 142, 74 118 C 74 96, 78 82, 86 78 Z M127 134 m -30 0 a 30 30 0 1 0 60 0 a 30 30 0 1 0 -60 0"/>
+        <path d="M127 104 C 134 88, 142 76, 130 58 C 118 48, 94 48, 84 64 C 78 74, 84 80, 86 78"/>
+        <path d="M127 112 C 132 96, 136 80, 124 68 C 116 60, 100 60, 94 70 C 92 74, 96 76, 98 76" fill="var(--bg-1)"/>
+      </svg>
+    </div>
+    <div class="label">D3 — Closer + wider</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- D4: V36 with narrower body -->
+      <svg viewBox="0 0 200 360" width="100" height="180" fill="currentColor" style="color: var(--text-mid)">
+        <path d="M88 360 Q88 200 122 200 Q156 200 156 360 Z"/>
+        <path fill-rule="evenodd" d="M86 78 C 102 56, 138 56, 154 66 C 166 74, 174 96, 174 122 C 174 146, 166 162, 152 170 C 132 176, 108 174, 92 166 C 80 158, 74 142, 74 118 C 74 96, 78 82, 86 78 Z M127 134 m -30 0 a 30 30 0 1 0 60 0 a 30 30 0 1 0 -60 0"/>
+        <path d="M127 104 C 134 88, 142 76, 130 58 C 118 48, 94 48, 84 64 C 78 74, 84 80, 86 78"/>
+        <path d="M127 112 C 132 96, 136 80, 124 68 C 116 60, 100 60, 94 70 C 92 74, 96 76, 98 76" fill="var(--bg-1)"/>
+      </svg>
+    </div>
+    <div class="label">D4 — Narrower body</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- D5: V36 with pronounced flat shoulders + rounded corners -->
+      <svg viewBox="0 0 200 360" width="100" height="180" fill="currentColor" style="color: var(--text-mid)">
+        <path d="M64 360 L64 200 Q64 175 84 175 L160 175 Q180 175 180 200 L180 360 Z"/>
+        <path fill-rule="evenodd" d="M86 78 C 102 56, 138 56, 154 66 C 166 74, 174 96, 174 122 C 174 146, 166 162, 152 170 C 132 176, 108 174, 92 166 C 80 158, 74 142, 74 118 C 74 96, 78 82, 86 78 Z M127 134 m -30 0 a 30 30 0 1 0 60 0 a 30 30 0 1 0 -60 0"/>
+        <path d="M127 104 C 134 88, 142 76, 130 58 C 118 48, 94 48, 84 64 C 78 74, 84 80, 86 78"/>
+        <path d="M127 112 C 132 96, 136 80, 124 68 C 116 60, 100 60, 94 70 C 92 74, 96 76, 98 76" fill="var(--bg-1)"/>
+      </svg>
+    </div>
+    <div class="label">D5 — Pronounced shoulders</div>
+  </div>
+
+  <!-- Person row (no headphones) -->
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <svg viewBox="0 0 200 360" width="100" height="180" fill="currentColor" style="color: var(--text-mid)">
+        <path d="M70 360 Q70 180 122 180 Q172 180 172 360 Z"/>
+        <path d="M86 78 C 102 56, 138 56, 154 66 C 166 74, 174 96, 174 122 C 174 146, 166 162, 152 170 C 132 176, 108 174, 92 166 C 80 158, 74 142, 74 118 C 74 96, 78 82, 86 78 Z"/>
+      </svg>
+    </div>
+    <div class="label">P1 — Closer head/body</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <svg viewBox="0 0 200 360" width="100" height="180" fill="currentColor" style="color: var(--text-mid)">
+        <path d="M50 360 Q50 200 122 200 Q194 200 194 360 Z"/>
+        <path d="M86 78 C 102 56, 138 56, 154 66 C 166 74, 174 96, 174 122 C 174 146, 166 162, 152 170 C 132 176, 108 174, 92 166 C 80 158, 74 142, 74 118 C 74 96, 78 82, 86 78 Z"/>
+      </svg>
+    </div>
+    <div class="label">P2 — Wider body</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <svg viewBox="0 0 200 360" width="100" height="180" fill="currentColor" style="color: var(--text-mid)">
+        <path d="M50 360 Q50 175 122 175 Q194 175 194 360 Z"/>
+        <path d="M86 78 C 102 56, 138 56, 154 66 C 166 74, 174 96, 174 122 C 174 146, 166 162, 152 170 C 132 176, 108 174, 92 166 C 80 158, 74 142, 74 118 C 74 96, 78 82, 86 78 Z"/>
+      </svg>
+    </div>
+    <div class="label">P3 — Closer + wider</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <svg viewBox="0 0 200 360" width="100" height="180" fill="currentColor" style="color: var(--text-mid)">
+        <path d="M88 360 Q88 200 122 200 Q156 200 156 360 Z"/>
+        <path d="M86 78 C 102 56, 138 56, 154 66 C 166 74, 174 96, 174 122 C 174 146, 166 162, 152 170 C 132 176, 108 174, 92 166 C 80 158, 74 142, 74 118 C 74 96, 78 82, 86 78 Z"/>
+      </svg>
+    </div>
+    <div class="label">P4 — Narrower body</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <svg viewBox="0 0 200 360" width="100" height="180" fill="currentColor" style="color: var(--text-mid)">
+        <path d="M64 360 L64 200 Q64 175 84 175 L160 175 Q180 175 180 200 L180 360 Z"/>
+        <path d="M86 78 C 102 56, 138 56, 154 66 C 166 74, 174 96, 174 122 C 174 146, 166 162, 152 170 C 132 176, 108 174, 92 166 C 80 158, 74 142, 74 118 C 74 96, 78 82, 86 78 Z"/>
+      </svg>
+    </div>
+    <div class="label">P5 — Pronounced shoulders</div>
+  </div>
+
+</div>
+
+<!-- ============ PERSON HEAD ITERATIONS ============ -->
+<h2>Person — D1 body, head iterations (no headphones)</h2>
+<p class="note">Same D1 body across all four. Varying the head shape to find what reads cleanest as a person silhouette without headphones to anchor orientation.</p>
+
+<div class="row" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- A: Symmetric egg (current production) -->
+      <svg viewBox="0 0 200 360" width="100" height="180" fill="currentColor" style="color: var(--text-mid)">
+        <path d="M70 360 Q70 180 122 180 Q172 180 172 360 Z"/>
+        <path d="M124 58 C 156 58, 176 84, 176 118 C 176 152, 156 178, 124 178 C 92 178, 72 152, 72 118 C 72 84, 92 58, 124 58 Z"/>
+      </svg>
+    </div>
+    <div class="label">A — Symmetric egg (current)</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- B: Perfect circle -->
+      <svg viewBox="0 0 200 360" width="100" height="180" fill="currentColor" style="color: var(--text-mid)">
+        <path d="M70 360 Q70 180 122 180 Q172 180 172 360 Z"/>
+        <circle cx="124" cy="118" r="58"/>
+      </svg>
+    </div>
+    <div class="label">B — Perfect circle</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- C: Wider oval (squatter, rounder) -->
+      <svg viewBox="0 0 200 360" width="100" height="180" fill="currentColor" style="color: var(--text-mid)">
+        <path d="M70 360 Q70 180 122 180 Q172 180 172 360 Z"/>
+        <ellipse cx="124" cy="120" rx="62" ry="52"/>
+      </svg>
+    </div>
+    <div class="label">C — Wider oval (squat)</div>
+  </div>
+
+  <div class="cell">
+    <div class="stage" style="height: 200px; align-items: end;">
+      <!-- D: Egg with subtle chin (more humanoid) -->
+      <svg viewBox="0 0 200 360" width="100" height="180" fill="currentColor" style="color: var(--text-mid)">
+        <path d="M70 360 Q70 180 122 180 Q172 180 172 360 Z"/>
+        <path d="M124 56 C 156 56, 176 80, 176 114 C 176 144, 160 168, 124 180 C 88 168, 72 144, 72 114 C 72 80, 92 56, 124 56 Z"/>
+      </svg>
+    </div>
+    <div class="label">D — Egg with chin</div>
+  </div>
+
+</div>
+
+<!-- ============ TRUNK / WIRE ============ -->
+<h2>Trunk &amp; wire styles</h2>
+<p class="note">The connecting line aesthetic between elements. Each example shows a left-to-right run, ~280px wide.</p>
+
+<div class="row" style="grid-template-columns: 1fr; gap: 10px; max-width: 720px;">
+
+  <div class="cell" style="flex-direction: row; gap: 24px; padding: 16px 20px;">
+    <div class="wire-stage">
+      <svg viewBox="0 0 280 40" preserveAspectRatio="none">
+        <line x1="0" y1="20" x2="280" y2="20" stroke="currentColor" stroke-width="1"/>
+      </svg>
+    </div>
+    <div class="label" style="white-space:nowrap">1 — Solid 1px</div>
+  </div>
+
+  <div class="cell" style="flex-direction: row; gap: 24px; padding: 16px 20px;">
+    <div class="wire-stage">
+      <svg viewBox="0 0 280 40" preserveAspectRatio="none">
+        <line x1="0" y1="20" x2="280" y2="20" stroke="currentColor" stroke-width="1" stroke-dasharray="4 4"/>
+      </svg>
+    </div>
+    <div class="label" style="white-space:nowrap">2 — Dashed</div>
+  </div>
+
+  <div class="cell" style="flex-direction: row; gap: 24px; padding: 16px 20px;">
+    <div class="wire-stage">
+      <svg viewBox="0 0 280 40" preserveAspectRatio="none">
+        <line x1="0" y1="20" x2="280" y2="20" stroke="currentColor" stroke-width="1.2" stroke-dasharray="1 3" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="label" style="white-space:nowrap">3 — Dotted</div>
+  </div>
+
+  <div class="cell" style="flex-direction: row; gap: 24px; padding: 16px 20px;">
+    <div class="wire-stage">
+      <svg viewBox="0 0 280 40" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="fade" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0" stop-color="currentColor" stop-opacity="0"/>
+            <stop offset="0.15" stop-color="currentColor" stop-opacity="1"/>
+            <stop offset="0.85" stop-color="currentColor" stop-opacity="1"/>
+            <stop offset="1" stop-color="currentColor" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <line x1="0" y1="20" x2="280" y2="20" stroke="url(#fade)" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <div class="label" style="white-space:nowrap">4 — Faded ends</div>
+  </div>
+
+  <div class="cell" style="flex-direction: row; gap: 24px; padding: 16px 20px;">
+    <div class="wire-stage">
+      <svg viewBox="0 0 280 40" preserveAspectRatio="none">
+        <path d="M0 20 Q70 8 140 20 T280 20" stroke="currentColor" stroke-width="1.2" fill="none"/>
+      </svg>
+    </div>
+    <div class="label" style="white-space:nowrap">5 — Wavy</div>
+  </div>
+
+  <div class="cell" style="flex-direction: row; gap: 24px; padding: 16px 20px;">
+    <div class="wire-stage">
+      <svg viewBox="0 0 280 80" preserveAspectRatio="none">
+        <line x1="0" y1="40" x2="100" y2="40" stroke="currentColor" stroke-width="1.2"/>
+        <line x1="100" y1="40" x2="180" y2="14" stroke="currentColor" stroke-width="1.2"/>
+        <line x1="100" y1="40" x2="180" y2="66" stroke="currentColor" stroke-width="1.2"/>
+        <line x1="180" y1="14" x2="270" y2="2" stroke="currentColor" stroke-width="1.2"/>
+        <line x1="180" y1="14" x2="270" y2="26" stroke="currentColor" stroke-width="1.2"/>
+        <line x1="180" y1="66" x2="270" y2="54" stroke="currentColor" stroke-width="1.2"/>
+        <line x1="180" y1="66" x2="270" y2="78" stroke="currentColor" stroke-width="1.2"/>
+      </svg>
+    </div>
+    <div class="label" style="white-space:nowrap">6 — Branch tree (1→2→4)</div>
+  </div>
+
+  <div class="cell" style="flex-direction: row; gap: 24px; padding: 16px 20px;">
+    <div class="wire-stage">
+      <svg viewBox="0 0 280 80" preserveAspectRatio="none">
+        <line x1="0" y1="40" x2="100" y2="40" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="100" y1="40" x2="180" y2="14" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="100" y1="40" x2="180" y2="66" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="180" y1="14" x2="270" y2="2" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="180" y1="14" x2="270" y2="26" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="180" y1="66" x2="270" y2="54" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="180" y1="66" x2="270" y2="78" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"/>
+      </svg>
+    </div>
+    <div class="label" style="white-space:nowrap">7 — Branch tree dashed</div>
+  </div>
+
+  <div class="cell" style="flex-direction: row; gap: 24px; padding: 16px 20px;">
+    <div class="wire-stage">
+      <svg viewBox="0 0 280 40" preserveAspectRatio="none">
+        <line x1="0" y1="14" x2="280" y2="14" stroke="currentColor" stroke-width="0.8" opacity="0.4"/>
+        <line x1="0" y1="20" x2="280" y2="20" stroke="currentColor" stroke-width="1"/>
+        <line x1="0" y1="26" x2="280" y2="26" stroke="currentColor" stroke-width="0.8" opacity="0.4"/>
+      </svg>
+    </div>
+    <div class="label" style="white-space:nowrap">8 — Triple bus</div>
+  </div>
+
+</div>
+
+</body>
+</html>
